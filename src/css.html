@@ -61,6 +61,16 @@
             line-height: 1;
             letter-spacing: 1px;
         }
+
+        /* Circular CSS implementation - optimized for circular container */
+        .circular-icon {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            line-height: 1;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body class="p-8 bg-gray-100">
@@ -94,94 +104,448 @@
     </div>
 
     <div class="mb-8">
-        <h2 class="text-xl font-semibold mb-4">Performance Test Results</h2>
+        <h2 class="text-xl font-semibold mb-4">Circular CSS Implementation</h2>
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div class="circular-icon">&lt;/&gt;</div>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Performance Testing Controls</h2>
+        <div class="bg-white p-4 rounded border">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Test Type:</label>
+                    <select id="testType" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        <option value="quick">Quick Test (100 iterations)</option>
+                        <option value="standard">Standard Test (1,000 iterations)</option>
+                        <option value="stress" selected>Stress Test (10,000 iterations)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Batch Size:</label>
+                    <input id="batchSize" type="number" value="50" min="1" max="500" class="w-full p-2 border border-gray-300 rounded text-sm">
+                    <div class="text-xs text-gray-500 mt-1">Icons per batch (prevents UI freezing)</div>
+                </div>
+                <div class="flex items-end">
+                    <button id="startTest" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition text-sm font-medium">
+                        Start Stress Test
+                    </button>
+                </div>
+            </div>
+            
+            <div id="testProgress" class="hidden">
+                <div class="mb-2">
+                    <div class="flex justify-between text-sm">
+                        <span id="currentIcon">Testing...</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div><strong>Current Iteration:</strong> <span id="currentIteration">0</span></div>
+                    <div><strong>Elapsed Time:</strong> <span id="elapsedTime">0s</span></div>
+                    <div><strong>Memory Usage:</strong> <span id="memoryUsage">0 MB</span></div>
+                    <div><strong>ETA:</strong> <span id="eta">calculating...</span></div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button id="stopTest" class="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700 transition text-sm hidden">
+                    Stop Test
+                </button>
+                <button id="clearResults" class="bg-gray-600 text-white px-4 py-1 rounded hover:bg-gray-700 transition text-sm ml-2">
+                    Clear Results
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Test Results</h2>
         <div id="results" class="text-sm text-gray-700 space-y-2">
-            <div>Loading performance measurements...</div>
+            <div class="text-gray-500">No tests run yet. Click "Start Stress Test" to begin performance analysis.</div>
         </div>
     </div>
 
     <script>
-        class IconPerformanceTest {
+        class StressTestManager {
             constructor() {
+                this.isRunning = false;
+                this.shouldStop = false;
+                this.currentTest = null;
                 this.results = {};
-                this.measurementStarted = false;
-                this.fontLoadStart = performance.now();
-                this.networkRequests = [];
-                this.setupNetworkMonitoring();
-            }
-
-            // Monitor network requests for font loading
-            setupNetworkMonitoring() {
-                if ('PerformanceObserver' in window) {
-                    const observer = new PerformanceObserver((list) => {
-                        const entries = list.getEntries();
-                        entries.forEach(entry => {
-                            if (entry.name.includes('remixicon') || entry.name.includes('remix')) {
-                                this.networkRequests.push({
-                                    url: entry.name,
-                                    duration: entry.duration,
-                                    size: entry.transferSize || entry.decodedBodySize || 0,
-                                    startTime: entry.startTime,
-                                    type: 'font'
-                                });
-                            }
-                        });
-                    });
-                    observer.observe({ type: 'resource', buffered: true });
-                }
-            }
-
-            // Check font loading status
-            async measureFontOverhead() {
-                const fontLoadPromises = [];
+                this.startTime = 0;
+                this.totalIterations = 0;
+                this.completedIterations = 0;
+                this.batchSize = 50;
                 
-                // Check if fonts are loading
-                if (document.fonts && document.fonts.check) {
-                    const remixFonts = Array.from(document.fonts).filter(font => 
-                        font.family.toLowerCase().includes('remix')
-                    );
-                    
-                    if (remixFonts.length > 0) {
-                        fontLoadPromises.push(
-                            ...remixFonts.map(font => font.loaded)
-                        );
+                this.iconConfigs = [
+                    {
+                        name: 'Remix Icon (Font)',
+                        selector: '.ri-code-s-slash-line',
+                        containerSelector: '.ri-code-s-slash-line',
+                        hasNetworkOverhead: true
+                    },
+                    {
+                        name: 'Pure CSS Icon',
+                        selector: '.code-slash-icon',
+                        containerSelector: '.code-slash-icon',
+                        hasNetworkOverhead: false
+                    },
+                    {
+                        name: 'Minimal CSS Icon',
+                        selector: '.simple-icon',
+                        containerSelector: '.simple-icon',
+                        hasNetworkOverhead: false
+                    },
+                    {
+                        name: 'Circular CSS Icon',
+                        selector: '.circular-icon',
+                        containerSelector: '.circular-icon',
+                        hasNetworkOverhead: false
                     }
+                ];
+                
+                this.setupEventListeners();
+                this.updateMemoryDisplay();
+            }
+
+            setupEventListeners() {
+                document.getElementById('startTest').addEventListener('click', () => this.startStressTest());
+                document.getElementById('stopTest').addEventListener('click', () => this.stopTest());
+                document.getElementById('clearResults').addEventListener('click', () => this.clearResults());
+                
+                // Update memory display every 2 seconds
+                setInterval(() => this.updateMemoryDisplay(), 2000);
+            }
+
+            updateMemoryDisplay() {
+                if (performance.memory && document.getElementById('memoryUsage')) {
+                    const memoryMB = (performance.memory.usedJSHeapSize / (1024 * 1024)).toFixed(1);
+                    document.getElementById('memoryUsage').textContent = `${memoryMB} MB`;
+                }
+            }
+
+            async startStressTest() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.shouldStop = false;
+                this.startTime = performance.now();
+                this.results = {};
+                this.completedIterations = 0;
+                
+                // Get test parameters
+                const testType = document.getElementById('testType').value;
+                const iterationMap = { quick: 100, standard: 1000, stress: 10000 };
+                this.totalIterations = iterationMap[testType] * this.iconConfigs.length;
+                this.batchSize = parseInt(document.getElementById('batchSize').value) || 50;
+                
+                // Update UI
+                this.showProgress(true);
+                this.updateProgress('Initializing stress test...', 0);
+                
+                try {
+                    // Run test for each icon configuration
+                    for (const config of this.iconConfigs) {
+                        if (this.shouldStop) break;
+                        
+                        await this.testIconConfiguration(config, iterationMap[testType]);
+                    }
+                    
+                    if (!this.shouldStop) {
+                        await this.displayAggregatedResults();
+                    }
+                } catch (error) {
+                    console.error('Stress test error:', error);
+                    this.displayError(error.message);
+                } finally {
+                    this.isRunning = false;
+                    this.showProgress(false);
+                }
+            }
+
+            async testIconConfiguration(config, iterations) {
+                this.updateProgress(`Testing ${config.name}...`, this.completedIterations / this.totalIterations * 100);
+                
+                const measurements = {
+                    renderTimes: [],
+                    memoryUsage: [],
+                    elementMetrics: null,
+                    networkMetrics: null
+                };
+
+                // Measure network overhead for font-based icons (once)
+                if (config.hasNetworkOverhead && !measurements.networkMetrics) {
+                    measurements.networkMetrics = await this.measureNetworkOverhead();
                 }
 
-                const fontLoadEnd = performance.now();
-                const totalFontLoadTime = fontLoadEnd - this.fontLoadStart;
+                // Run iterations in batches
+                for (let i = 0; i < iterations; i += this.batchSize) {
+                    if (this.shouldStop) break;
+                    
+                    const batchEnd = Math.min(i + this.batchSize, iterations);
+                    await this.processBatch(config, i, batchEnd, measurements);
+                    
+                    this.completedIterations += (batchEnd - i);
+                    const progress = (this.completedIterations / this.totalIterations) * 100;
+                    this.updateProgress(`${config.name}: ${batchEnd}/${iterations}`, progress);
+                    
+                    // Memory cleanup between batches
+                    if (i % (this.batchSize * 5) === 0 && typeof window.gc === 'function') {
+                        window.gc();
+                    }
+                    
+                    // Small delay to prevent UI freezing
+                    await this.delay(10);
+                }
+
+                // Store aggregated results
+                this.results[config.name] = this.calculateStatistics(measurements);
+            }
+
+            async processBatch(config, startIndex, endIndex, measurements) {
+                const element = document.querySelector(config.selector);
+                if (!element) {
+                    throw new Error(`Element not found: ${config.selector}`);
+                }
+
+                // Measure element metrics once per configuration
+                if (!measurements.elementMetrics) {
+                    measurements.elementMetrics = this.measureElementMetrics(element);
+                }
+
+                // Run batch iterations
+                for (let i = startIndex; i < endIndex; i++) {
+                    const startMemory = this.getMemoryUsage();
+                    const renderTime = await this.measureSingleRender(element);
+                    const endMemory = this.getMemoryUsage();
+                    
+                    measurements.renderTimes.push(renderTime);
+                    measurements.memoryUsage.push({
+                        used: endMemory.used - startMemory.used,
+                        total: endMemory.total
+                    });
+                }
+            }
+
+            async measureSingleRender(element) {
+                return new Promise((resolve) => {
+                    const start = performance.now();
+                    
+                    // Force a style recalculation by modifying and restoring a property
+                    const originalDisplay = element.style.display;
+                    element.style.display = 'none';
+                    element.offsetHeight; // Force reflow
+                    element.style.display = originalDisplay;
+                    
+                    requestAnimationFrame(() => {
+                        const end = performance.now();
+                        resolve(end - start);
+                    });
+                });
+            }
+
+            measureElementMetrics(element) {
+                const rect = element.getBoundingClientRect();
+                const computedStyle = window.getComputedStyle(element);
+                
+                return {
+                    width: rect.width,
+                    height: rect.height,
+                    area: rect.width * rect.height,
+                    childNodes: element.childNodes ? element.childNodes.length : 0,
+                    cssRules: computedStyle.length,
+                    computedStyles: {
+                        fontSize: computedStyle.fontSize,
+                        fontFamily: computedStyle.fontFamily,
+                        color: computedStyle.color
+                    }
+                };
+            }
+
+            async measureNetworkOverhead() {
+                const startTime = performance.now();
+                const networkRequests = [];
+                
+                if ('PerformanceObserver' in window) {
+                    const entries = performance.getEntriesByType('resource');
+                    entries.forEach(entry => {
+                        if (entry.name.includes('remixicon') || entry.name.includes('remix')) {
+                            networkRequests.push({
+                                url: entry.name,
+                                duration: entry.duration,
+                                size: entry.transferSize || entry.decodedBodySize || 0,
+                                startTime: entry.startTime
+                            });
+                        }
+                    });
+                }
 
                 return {
-                    fontLoadTime: totalFontLoadTime,
-                    networkRequests: this.networkRequests,
-                    totalFontSize: this.networkRequests.reduce((sum, req) => sum + req.size, 0),
+                    fontLoadTime: performance.now() - startTime,
+                    networkRequests: networkRequests,
+                    totalFontSize: networkRequests.reduce((sum, req) => sum + req.size, 0),
                     fontStatus: document.fonts ? document.fonts.status : 'unknown'
                 };
             }
 
-            // Start measuring performance
-            startMeasurement(iconType) {
-                performance.mark(`${iconType}-start`);
-                this.results[iconType] = {
-                    startMemory: this.getMemoryUsage(),
-                    loadTime: 0,
-                    memoryUsed: 0,
-                    renderTime: 0
+            calculateStatistics(measurements) {
+                const stats = {
+                    renderTime: this.calculateArrayStats(measurements.renderTimes),
+                    memoryUsage: {
+                        used: this.calculateArrayStats(measurements.memoryUsage.map(m => m.used)),
+                        total: measurements.memoryUsage.length > 0 ? measurements.memoryUsage[measurements.memoryUsage.length - 1].total : 0
+                    },
+                    elementMetrics: measurements.elementMetrics,
+                    networkMetrics: measurements.networkMetrics,
+                    sampleSize: measurements.renderTimes.length
+                };
+                
+                return stats;
+            }
+
+            calculateArrayStats(values) {
+                if (values.length === 0) return { min: 0, max: 0, average: 0, stdDev: 0, median: 0 };
+                
+                const sorted = [...values].sort((a, b) => a - b);
+                const sum = values.reduce((a, b) => a + b, 0);
+                const average = sum / values.length;
+                
+                const variance = values.reduce((acc, val) => acc + Math.pow(val - average, 2), 0) / values.length;
+                const stdDev = Math.sqrt(variance);
+                
+                const median = sorted.length % 2 === 0 
+                    ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+                    : sorted[Math.floor(sorted.length / 2)];
+                
+                return {
+                    min: sorted[0],
+                    max: sorted[sorted.length - 1],
+                    average: average,
+                    stdDev: stdDev,
+                    median: median
                 };
             }
 
-            // End measuring performance  
-            endMeasurement(iconType) {
-                performance.mark(`${iconType}-end`);
-                performance.measure(`${iconType}-duration`, `${iconType}-start`, `${iconType}-end`);
+            async displayAggregatedResults() {
+                const resultsDiv = document.getElementById('results');
+                const testDuration = (performance.now() - this.startTime) / 1000;
                 
-                const measure = performance.getEntriesByName(`${iconType}-duration`)[0];
-                this.results[iconType].loadTime = measure.duration;
-                this.results[iconType].endMemory = this.getMemoryUsage();
-                this.results[iconType].memoryUsed = this.results[iconType].endMemory - this.results[iconType].startMemory;
+                let html = `
+                    <div class="bg-green-50 border border-green-200 p-3 rounded mb-4">
+                        <h3 class="font-semibold text-green-800">Stress Test Complete!</h3>
+                        <div class="text-sm text-green-700 mt-1">
+                            Total Duration: ${testDuration.toFixed(1)}s | 
+                            Total Iterations: ${this.completedIterations.toLocaleString()} | 
+                            Average Speed: ${(this.completedIterations / testDuration).toFixed(1)} iterations/sec
+                        </div>
+                    </div>
+                `;
+
+                // Performance comparison table
+                html += '<div class="bg-white rounded border overflow-hidden mb-4">';
+                html += '<h3 class="font-semibold p-3 bg-gray-50 border-b">Performance Statistics</h3>';
+                html += '<div class="overflow-x-auto">';
+                html += '<table class="w-full text-xs">';
+                html += '<thead><tr class="bg-gray-50 border-b">';
+                html += '<th class="p-2 text-left">Icon Type</th>';
+                html += '<th class="p-2 text-center">Avg Render (ms)</th>';
+                html += '<th class="p-2 text-center">Min/Max (ms)</th>';
+                html += '<th class="p-2 text-center">Std Dev</th>';
+                html += '<th class="p-2 text-center">Memory Δ (KB)</th>';
+                html += '<th class="p-2 text-center">Sample Size</th>';
+                html += '</tr></thead><tbody>';
+
+                // Sort results by average render time
+                const sortedResults = Object.entries(this.results).sort((a, b) => 
+                    a[1].renderTime.average - b[1].renderTime.average
+                );
+
+                for (const [iconType, data] of sortedResults) {
+                    const isRemixIcon = iconType.includes('Font');
+                    const rowClass = isRemixIcon ? 'bg-blue-25' : '';
+                    
+                    html += `<tr class="${rowClass} border-b">`;
+                    html += `<td class="p-2 font-medium">${iconType}</td>`;
+                    html += `<td class="p-2 text-center">${data.renderTime.average.toFixed(3)}</td>`;
+                    html += `<td class="p-2 text-center">${data.renderTime.min.toFixed(3)} - ${data.renderTime.max.toFixed(3)}</td>`;
+                    html += `<td class="p-2 text-center">${data.renderTime.stdDev.toFixed(3)}</td>`;
+                    html += `<td class="p-2 text-center">${(data.memoryUsage.used.average / 1024).toFixed(1)}</td>`;
+                    html += `<td class="p-2 text-center">${data.sampleSize.toLocaleString()}</td>`;
+                    html += '</tr>';
+                }
+
+                html += '</tbody></table></div></div>';
+
+                // Detailed analysis
+                html += this.generateDetailedAnalysis(sortedResults, testDuration);
+
+                resultsDiv.innerHTML = html;
             }
 
-            // Get current memory usage (if available)
+            generateDetailedAnalysis(sortedResults, testDuration) {
+                let html = '<div class="space-y-4">';
+                
+                // Performance ranking
+                html += '<div class="bg-white p-4 rounded border">';
+                html += '<h4 class="font-semibold mb-3">Performance Ranking</h4>';
+                
+                sortedResults.forEach(([iconType, data], index) => {
+                    const rank = index + 1;
+                    const rankColor = rank === 1 ? 'text-green-600' : rank === sortedResults.length ? 'text-red-600' : 'text-gray-600';
+                    html += `<div class="flex justify-between items-center py-1">`;
+                    html += `<span class="${rankColor} font-medium">#${rank} ${iconType}</span>`;
+                    html += `<span class="text-sm">${data.renderTime.average.toFixed(3)}ms avg</span>`;
+                    html += '</div>';
+                });
+                html += '</div>';
+
+                // Network overhead analysis
+                const fontIcon = sortedResults.find(([name]) => name.includes('Font'));
+                if (fontIcon && fontIcon[1].networkMetrics) {
+                    const networkData = fontIcon[1].networkMetrics;
+                    html += '<div class="bg-yellow-50 border border-yellow-200 p-4 rounded">';
+                    html += '<h4 class="font-semibold text-yellow-800 mb-3">Network Overhead (Font-based Icons)</h4>';
+                    html += '<div class="grid grid-cols-2 gap-4 text-sm">';
+                    html += `<div><strong>Font Load Time:</strong> ${networkData.fontLoadTime.toFixed(2)}ms</div>`;
+                    html += `<div><strong>Font File Size:</strong> ${this.formatMemory(networkData.totalFontSize)}</div>`;
+                    html += `<div><strong>Network Requests:</strong> ${networkData.networkRequests.length}</div>`;
+                    html += `<div><strong>Font Status:</strong> ${networkData.fontStatus}</div>`;
+                    html += '</div></div>';
+                }
+
+                // Speed comparison
+                if (sortedResults.length > 1) {
+                    const fastest = sortedResults[0][1].renderTime.average;
+                    const slowest = sortedResults[sortedResults.length - 1][1].renderTime.average;
+                    const speedDiff = (slowest / fastest).toFixed(1);
+                    
+                    html += '<div class="bg-blue-50 border border-blue-200 p-4 rounded">';
+                    html += '<h4 class="font-semibold text-blue-800 mb-3">Speed Analysis</h4>';
+                    html += '<div class="grid grid-cols-2 gap-4 text-sm">';
+                    html += `<div><strong>Speed Difference:</strong> ${speedDiff}x</div>`;
+                    html += `<div><strong>Total Test Time:</strong> ${testDuration.toFixed(1)}s</div>`;
+                    html += `<div><strong>Fastest Method:</strong> ${sortedResults[0][0]}</div>`;
+                    html += `<div><strong>Slowest Method:</strong> ${sortedResults[sortedResults.length - 1][0]}</div>`;
+                    html += '</div></div>';
+                }
+
+                html += '</div>';
+                return html;
+            }
+
+            formatMemory(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
             getMemoryUsage() {
                 if (performance.memory) {
                     return {
@@ -193,184 +557,78 @@
                 return { used: 0, total: 0, limit: 0 };
             }
 
-            // Measure DOM element size and impact
-            measureElementImpact(element, iconType) {
-                const rect = element.getBoundingClientRect();
-                const computedStyle = window.getComputedStyle(element);
+            updateProgress(message, percentage) {
+                if (document.getElementById('currentIcon')) {
+                    document.getElementById('currentIcon').textContent = message;
+                }
+                if (document.getElementById('progressText')) {
+                    document.getElementById('progressText').textContent = `${percentage.toFixed(1)}%`;
+                }
+                if (document.getElementById('progressBar')) {
+                    document.getElementById('progressBar').style.width = `${percentage}%`;
+                }
+                if (document.getElementById('currentIteration')) {
+                    document.getElementById('currentIteration').textContent = this.completedIterations.toLocaleString();
+                }
+                if (document.getElementById('elapsedTime')) {
+                    const elapsed = (performance.now() - this.startTime) / 1000;
+                    document.getElementById('elapsedTime').textContent = `${elapsed.toFixed(1)}s`;
+                }
+                if (document.getElementById('eta') && percentage > 0) {
+                    const elapsed = (performance.now() - this.startTime) / 1000;
+                    const totalEstimated = (elapsed / percentage) * 100;
+                    const remaining = totalEstimated - elapsed;
+                    document.getElementById('eta').textContent = `${remaining.toFixed(0)}s`;
+                }
+            }
+
+            showProgress(show) {
+                const progressDiv = document.getElementById('testProgress');
+                const startBtn = document.getElementById('startTest');
+                const stopBtn = document.getElementById('stopTest');
                 
-                this.results[iconType].elementMetrics = {
-                    width: rect.width,
-                    height: rect.height,
-                    area: rect.width * rect.height,
-                    childNodes: element.childNodes.length,
-                    cssRules: this.countCSSRules(element)
-                };
+                if (show) {
+                    progressDiv.classList.remove('hidden');
+                    startBtn.disabled = true;
+                    startBtn.textContent = 'Testing...';
+                    startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    stopBtn.classList.remove('hidden');
+                } else {
+                    progressDiv.classList.add('hidden');
+                    startBtn.disabled = false;
+                    startBtn.textContent = 'Start Stress Test';
+                    startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    stopBtn.classList.add('hidden');
+                }
             }
 
-            // Count CSS rules applied to element
-            countCSSRules(element) {
-                const styles = window.getComputedStyle(element);
-                return styles.length;
-            }
-
-            // Measure rendering performance with requestAnimationFrame
-            measureRenderTime(iconType, callback) {
-                const start = performance.now();
-                requestAnimationFrame(() => {
-                    const end = performance.now();
-                    this.results[iconType].renderTime = end - start;
-                    if (callback) callback();
-                });
-            }
-
-            // Display results
-            async displayResults() {
-                const fontOverhead = await this.measureFontOverhead();
+            stopTest() {
+                this.shouldStop = true;
+                this.isRunning = false;
+                this.showProgress(false);
                 
                 const resultsDiv = document.getElementById('results');
-                let html = '<h3 class="font-semibold mb-2">Performance Comparison</h3>';
-                
-                for (const [iconType, data] of Object.entries(this.results)) {
-                    const isRemixIcon = iconType.includes('Remix');
-                    
-                    html += `
-                        <div class="bg-white p-3 rounded border mb-2">
-                            <h4 class="font-medium">${iconType}</h4>
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <div><strong>Load Time:</strong> ${data.loadTime.toFixed(2)}ms</div>
-                                <div><strong>Render Time:</strong> ${data.renderTime.toFixed(2)}ms</div>
-                                <div><strong>Memory Used:</strong> ${this.formatMemory(data.memoryUsed?.used || 0)}</div>
-                                <div><strong>Element Area:</strong> ${data.elementMetrics?.area.toFixed(0)}px²</div>
-                                <div><strong>CSS Rules:</strong> ${data.elementMetrics?.cssRules || 0}</div>
-                                <div><strong>DOM Nodes:</strong> ${data.elementMetrics?.childNodes || 0}</div>
-                                ${isRemixIcon ? `
-                                    <div class="col-span-2 border-t pt-2 mt-2">
-                                        <div><strong>Font Load Time:</strong> ${fontOverhead.fontLoadTime.toFixed(2)}ms</div>
-                                        <div><strong>Font File Size:</strong> ${this.formatMemory(fontOverhead.totalFontSize)}</div>
-                                        <div><strong>Network Requests:</strong> ${fontOverhead.networkRequests.length}</div>
-                                        <div><strong>Font Status:</strong> ${fontOverhead.fontStatus}</div>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                html += this.generateComparison(fontOverhead);
-                resultsDiv.innerHTML = html;
+                resultsDiv.innerHTML = '<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">Test stopped by user.</div>';
             }
 
-            // Format memory usage
-            formatMemory(bytes) {
-                if (bytes === 0) return '0 B';
-                const k = 1024;
-                const sizes = ['B', 'KB', 'MB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            clearResults() {
+                document.getElementById('results').innerHTML = '<div class="text-gray-500">No tests run yet. Click "Start Stress Test" to begin performance analysis.</div>';
             }
 
-            // Generate performance comparison
-            generateComparison(fontOverhead) {
-                const types = Object.keys(this.results);
-                if (types.length < 2) return '';
+            displayError(message) {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Error: ${message}</div>`;
+            }
 
-                let html = '<div class="mt-4 p-3 bg-blue-50 rounded"><h4 class="font-medium mb-2">Overhead Analysis</h4>';
-                
-                // Find fastest/slowest load times
-                const loadTimes = types.map(type => ({ type, time: this.results[type].loadTime }));
-                loadTimes.sort((a, b) => a.time - b.time);
-                
-                html += `<div class="text-xs space-y-1">`;
-                html += `<div><strong>Fastest Render:</strong> ${loadTimes[0].type} (${loadTimes[0].time.toFixed(2)}ms)</div>`;
-                html += `<div><strong>Slowest Render:</strong> ${loadTimes[loadTimes.length - 1].type} (${loadTimes[loadTimes.length - 1].time.toFixed(2)}ms)</div>`;
-                
-                if (fontOverhead.totalFontSize > 0) {
-                    html += `<div class="border-t pt-2 mt-2">`;
-                    html += `<div><strong>Remix Icons Overhead:</strong></div>`;
-                    html += `<div class="ml-2"><strong>Font Download:</strong> ${fontOverhead.fontLoadTime.toFixed(2)}ms</div>`;
-                    html += `<div class="ml-2"><strong>File Size:</strong> ${this.formatMemory(fontOverhead.totalFontSize)}</div>`;
-                    html += `<div class="ml-2"><strong>Network Overhead:</strong> ${fontOverhead.networkRequests.length} request(s)</div>`;
-                    html += `</div>`;
-                }
-                
-                if (loadTimes.length > 1) {
-                    const speedup = (loadTimes[loadTimes.length - 1].time / loadTimes[0].time).toFixed(1);
-                    html += `<div class="border-t pt-2 mt-2"><strong>Speed Difference:</strong> ${speedup}x faster (excluding font overhead)</div>`;
-                }
-                
-                html += `</div></div>`;
-                return html;
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
             }
         }
 
-        // Initialize performance testing
-        const perfTest = new IconPerformanceTest();
-        
-        // Test icon implementations when DOM is ready
+        // Initialize the stress test manager when DOM is ready
+        let stressTestManager;
         document.addEventListener('DOMContentLoaded', function() {
-            // Wait a bit for CSS/fonts to load
-            setTimeout(() => {
-                testIconPerformance();
-            }, 100);
-        });
-
-        function testIconPerformance() {
-            // Test Remix Icon  
-            perfTest.startMeasurement('Remix Icon (Font)');
-            
-            perfTest.measureRenderTime('Remix Icon (Font)', () => {
-                const remixIcon = document.querySelector('.ri-code-s-slash-line').closest('.w-12');
-                perfTest.measureElementImpact(remixIcon, 'Remix Icon (Font)');
-                perfTest.endMeasurement('Remix Icon (Font)');
-                
-                // Test Pure CSS Icon
-                setTimeout(() => {
-                    perfTest.startMeasurement('Pure CSS Icon');
-                    
-                    perfTest.measureRenderTime('Pure CSS Icon', () => {
-                        const cssIcon = document.querySelector('.code-slash-icon').closest('.w-12');
-                        perfTest.measureElementImpact(cssIcon, 'Pure CSS Icon');
-                        perfTest.endMeasurement('Pure CSS Icon');
-                        
-                        // Test Minimal CSS Icon
-                        setTimeout(() => {
-                            perfTest.startMeasurement('Minimal CSS Icon');
-                            
-                            perfTest.measureRenderTime('Minimal CSS Icon', () => {
-                                const simpleIcon = document.querySelector('.simple-icon').closest('.w-12');
-                                perfTest.measureElementImpact(simpleIcon, 'Minimal CSS Icon');
-                                perfTest.endMeasurement('Minimal CSS Icon');
-                                
-                                // Display results (now async)
-                                setTimeout(async () => {
-                                    await perfTest.displayResults();
-                                }, 50);
-                            });
-                        }, 50);
-                    });
-                }, 50);
-            });
-        }
-
-        // Additional resource loading measurements
-        window.addEventListener('load', function() {
-            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-            
-            // Add overall page load info
-            setTimeout(() => {
-                const resultsDiv = document.getElementById('results');
-                const currentContent = resultsDiv.innerHTML;
-                resultsDiv.innerHTML = currentContent + `
-                    <div class="mt-4 p-3 bg-gray-50 rounded">
-                        <h4 class="font-medium mb-2">Page Load Metrics</h4>
-                        <div class="text-xs">
-                            <div><strong>Total Page Load Time:</strong> ${loadTime}ms</div>
-                            <div><strong>DOM Content Loaded:</strong> ${performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart}ms</div>
-                            ${performance.memory ? `<div><strong>Current Memory Usage:</strong> ${perfTest.formatMemory(performance.memory.usedJSHeapSize)}</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            }, 100);
+            stressTestManager = new StressTestManager();
         });
     </script>
 </body>
