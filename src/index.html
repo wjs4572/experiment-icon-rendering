@@ -1,7 +1,345 @@
-<html>
-<body>
-<div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-	<i class="ri-code-s-slash-line text-white text-xl"/>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Rendering Performance Test</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Remix Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        .code-slash-icon {
+            position: relative;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: 550;
+            color: white;
+        }
+        
+        /* Left bracket < */
+        .code-slash-icon::before {
+            content: '<';
+            position: absolute;
+            left: -4px;
+            top: 50%;
+            transform: translateY(-50%) scaleY(1.2);
+            line-height: 1;
+        }
+        
+        /* Right bracket > */
+        .code-slash-icon::after {
+            content: '>';
+            position: absolute;
+            right: -3px;
+            top: 50%;
+            transform: translateY(-50%) scaleY(1.2);
+            line-height: 1;
+        }
+        
+        /* Forward slash in the middle */
+        .code-slash-icon .slash {
+            font-size: 14px;
+            font-weight: 550;
+            color: white;
+            z-index: 1;
+            transform: scaleY(1.5);
+        }
+    </style>
+</head>
+<body class="p-8 bg-gray-100">
+    <h1 class="text-3xl font-bold mb-8">Icon Rendering Performance Test</h1>
+    
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">CSS + Icon Font (Remix Icons)</h2>
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <i class="ri-code-s-slash-line text-white text-xl"></i>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Pure CSS Implementation</h2>
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div class="code-slash-icon">
+                <span class="slash">/</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Performance Test Results</h2>
+        <div id="results" class="text-sm text-gray-700 space-y-2">
+            <div>Loading performance measurements...</div>
+        </div>
+    </div>
+
+    <script>
+        class IconPerformanceTest {
+            constructor() {
+                this.results = {};
+                this.measurementStarted = false;
+                this.fontLoadStart = performance.now();
+                this.networkRequests = [];
+                this.setupNetworkMonitoring();
+            }
+
+            // Monitor network requests for font loading
+            setupNetworkMonitoring() {
+                if ('PerformanceObserver' in window) {
+                    const observer = new PerformanceObserver((list) => {
+                        const entries = list.getEntries();
+                        entries.forEach(entry => {
+                            if (entry.name.includes('remixicon') || entry.name.includes('remix')) {
+                                this.networkRequests.push({
+                                    url: entry.name,
+                                    duration: entry.duration,
+                                    size: entry.transferSize || entry.decodedBodySize || 0,
+                                    startTime: entry.startTime,
+                                    type: 'font'
+                                });
+                            }
+                        });
+                    });
+                    observer.observe({ type: 'resource', buffered: true });
+                }
+            }
+
+            // Check font loading status
+            async measureFontOverhead() {
+                const fontLoadPromises = [];
+                
+                // Check if fonts are loading
+                if (document.fonts && document.fonts.check) {
+                    const remixFonts = Array.from(document.fonts).filter(font => 
+                        font.family.toLowerCase().includes('remix')
+                    );
+                    
+                    if (remixFonts.length > 0) {
+                        fontLoadPromises.push(
+                            ...remixFonts.map(font => font.loaded)
+                        );
+                    }
+                }
+
+                const fontLoadEnd = performance.now();
+                const totalFontLoadTime = fontLoadEnd - this.fontLoadStart;
+
+                return {
+                    fontLoadTime: totalFontLoadTime,
+                    networkRequests: this.networkRequests,
+                    totalFontSize: this.networkRequests.reduce((sum, req) => sum + req.size, 0),
+                    fontStatus: document.fonts ? document.fonts.status : 'unknown'
+                };
+            }
+
+            // Start measuring performance
+            startMeasurement(iconType) {
+                performance.mark(`${iconType}-start`);
+                this.results[iconType] = {
+                    startMemory: this.getMemoryUsage(),
+                    loadTime: 0,
+                    memoryUsed: 0,
+                    renderTime: 0
+                };
+            }
+
+            // End measuring performance  
+            endMeasurement(iconType) {
+                performance.mark(`${iconType}-end`);
+                performance.measure(`${iconType}-duration`, `${iconType}-start`, `${iconType}-end`);
+                
+                const measure = performance.getEntriesByName(`${iconType}-duration`)[0];
+                this.results[iconType].loadTime = measure.duration;
+                this.results[iconType].endMemory = this.getMemoryUsage();
+                this.results[iconType].memoryUsed = this.results[iconType].endMemory - this.results[iconType].startMemory;
+            }
+
+            // Get current memory usage (if available)
+            getMemoryUsage() {
+                if (performance.memory) {
+                    return {
+                        used: performance.memory.usedJSHeapSize,
+                        total: performance.memory.totalJSHeapSize,
+                        limit: performance.memory.jsHeapSizeLimit
+                    };
+                }
+                return { used: 0, total: 0, limit: 0 };
+            }
+
+            // Measure DOM element size and impact
+            measureElementImpact(element, iconType) {
+                const rect = element.getBoundingClientRect();
+                const computedStyle = window.getComputedStyle(element);
+                
+                this.results[iconType].elementMetrics = {
+                    width: rect.width,
+                    height: rect.height,
+                    area: rect.width * rect.height,
+                    childNodes: element.childNodes.length,
+                    cssRules: this.countCSSRules(element)
+                };
+            }
+
+            // Count CSS rules applied to element
+            countCSSRules(element) {
+                const styles = window.getComputedStyle(element);
+                return styles.length;
+            }
+
+            // Measure rendering performance with requestAnimationFrame
+            measureRenderTime(iconType, callback) {
+                const start = performance.now();
+                requestAnimationFrame(() => {
+                    const end = performance.now();
+                    this.results[iconType].renderTime = end - start;
+                    if (callback) callback();
+                });
+            }
+
+            // Display results
+            async displayResults() {
+                const fontOverhead = await this.measureFontOverhead();
+                
+                const resultsDiv = document.getElementById('results');
+                let html = '<h3 class="font-semibold mb-2">Performance Comparison</h3>';
+                
+                for (const [iconType, data] of Object.entries(this.results)) {
+                    const isRemixIcon = iconType.includes('Remix');
+                    
+                    html += `
+                        <div class="bg-white p-3 rounded border mb-2">
+                            <h4 class="font-medium">${iconType}</h4>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div><strong>Load Time:</strong> ${data.loadTime.toFixed(2)}ms</div>
+                                <div><strong>Render Time:</strong> ${data.renderTime.toFixed(2)}ms</div>
+                                <div><strong>Memory Used:</strong> ${this.formatMemory(data.memoryUsed?.used || 0)}</div>
+                                <div><strong>Element Area:</strong> ${data.elementMetrics?.area.toFixed(0)}px²</div>
+                                <div><strong>CSS Rules:</strong> ${data.elementMetrics?.cssRules || 0}</div>
+                                <div><strong>DOM Nodes:</strong> ${data.elementMetrics?.childNodes || 0}</div>
+                                ${isRemixIcon ? `
+                                    <div class="col-span-2 border-t pt-2 mt-2">
+                                        <div><strong>Font Load Time:</strong> ${fontOverhead.fontLoadTime.toFixed(2)}ms</div>
+                                        <div><strong>Font File Size:</strong> ${this.formatMemory(fontOverhead.totalFontSize)}</div>
+                                        <div><strong>Network Requests:</strong> ${fontOverhead.networkRequests.length}</div>
+                                        <div><strong>Font Status:</strong> ${fontOverhead.fontStatus}</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += this.generateComparison(fontOverhead);
+                resultsDiv.innerHTML = html;
+            }
+
+            // Format memory usage
+            formatMemory(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            // Generate performance comparison
+            generateComparison(fontOverhead) {
+                const types = Object.keys(this.results);
+                if (types.length < 2) return '';
+
+                let html = '<div class="mt-4 p-3 bg-blue-50 rounded"><h4 class="font-medium mb-2">Overhead Analysis</h4>';
+                
+                // Find fastest/slowest load times
+                const loadTimes = types.map(type => ({ type, time: this.results[type].loadTime }));
+                loadTimes.sort((a, b) => a.time - b.time);
+                
+                html += `<div class="text-xs space-y-1">`;
+                html += `<div><strong>Fastest Render:</strong> ${loadTimes[0].type} (${loadTimes[0].time.toFixed(2)}ms)</div>`;
+                html += `<div><strong>Slowest Render:</strong> ${loadTimes[loadTimes.length - 1].type} (${loadTimes[loadTimes.length - 1].time.toFixed(2)}ms)</div>`;
+                
+                if (fontOverhead.totalFontSize > 0) {
+                    html += `<div class="border-t pt-2 mt-2">`;
+                    html += `<div><strong>Remix Icons Overhead:</strong></div>`;
+                    html += `<div class="ml-2"><strong>Font Download:</strong> ${fontOverhead.fontLoadTime.toFixed(2)}ms</div>`;
+                    html += `<div class="ml-2"><strong>File Size:</strong> ${this.formatMemory(fontOverhead.totalFontSize)}</div>`;
+                    html += `<div class="ml-2"><strong>Network Overhead:</strong> ${fontOverhead.networkRequests.length} request(s)</div>`;
+                    html += `</div>`;
+                }
+                
+                if (loadTimes.length > 1) {
+                    const speedup = (loadTimes[loadTimes.length - 1].time / loadTimes[0].time).toFixed(1);
+                    html += `<div class="border-t pt-2 mt-2"><strong>Speed Difference:</strong> ${speedup}x faster (excluding font overhead)</div>`;
+                }
+                
+                html += `</div></div>`;
+                return html;
+            }
+        }
+
+        // Initialize performance testing
+        const perfTest = new IconPerformanceTest();
+        
+        // Test icon implementations when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a bit for CSS/fonts to load
+            setTimeout(() => {
+                testIconPerformance();
+            }, 100);
+        });
+
+        function testIconPerformance() {
+            // Test Remix Icon  
+            perfTest.startMeasurement('Remix Icon (Font)');
+            
+            perfTest.measureRenderTime('Remix Icon (Font)', () => {
+                const remixIcon = document.querySelector('.ri-code-s-slash-line').closest('.w-12');
+                perfTest.measureElementImpact(remixIcon, 'Remix Icon (Font)');
+                perfTest.endMeasurement('Remix Icon (Font)');
+                
+                // Test Pure CSS Icon
+                setTimeout(() => {
+                    perfTest.startMeasurement('Pure CSS Icon');
+                    
+                    perfTest.measureRenderTime('Pure CSS Icon', () => {
+                        const cssIcon = document.querySelector('.code-slash-icon').closest('.w-12');
+                        perfTest.measureElementImpact(cssIcon, 'Pure CSS Icon');
+                        perfTest.endMeasurement('Pure CSS Icon');
+                        
+                        // Display results (now async)
+                        setTimeout(async () => {
+                            await perfTest.displayResults();
+                        }, 50);
+                    });
+                }, 50);
+            });
+        }
+
+        // Additional resource loading measurements
+        window.addEventListener('load', function() {
+            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+            
+            // Add overall page load info
+            setTimeout(() => {
+                const resultsDiv = document.getElementById('results');
+                const currentContent = resultsDiv.innerHTML;
+                resultsDiv.innerHTML = currentContent + `
+                    <div class="mt-4 p-3 bg-gray-50 rounded">
+                        <h4 class="font-medium mb-2">Page Load Metrics</h4>
+                        <div class="text-xs">
+                            <div><strong>Total Page Load Time:</strong> ${loadTime}ms</div>
+                            <div><strong>DOM Content Loaded:</strong> ${performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart}ms</div>
+                            ${performance.memory ? `<div><strong>Current Memory Usage:</strong> ${perfTest.formatMemory(performance.memory.usedJSHeapSize)}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }, 100);
+        });
+    </script>
 </body>
 </html>
