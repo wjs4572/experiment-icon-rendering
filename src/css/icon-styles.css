@@ -1,0 +1,61 @@
+.code-slash-icon {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: 550;
+    color: white;
+}
+
+/* Left bracket < */
+.code-slash-icon::before {
+    content: '<';
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%) scaleY(1.2);
+    line-height: 1;
+}
+
+/* Right bracket > */
+.code-slash-icon::after {
+    content: '>';
+    position: absolute;
+    right: -3px;
+    top: 50%;
+    transform: translateY(-50%) scaleY(1.2);
+    line-height: 1;
+}
+
+/* Forward slash in the middle */
+.code-slash-icon .slash {
+    font-size: 14px;
+    font-weight: 550;
+    color: white;
+    z-index: 1;
+    transform: scaleY(1.5);
+}
+
+/* Minimal CSS implementation - no transforms */
+.simple-icon {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: 550;
+    color: white;
+    line-height: 1;
+    letter-spacing: 1px;
+}
+
+/* Circular CSS implementation - optimized for circular container */
+.circular-icon {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    line-height: 1;
+    letter-spacing: 0.5px;
+}

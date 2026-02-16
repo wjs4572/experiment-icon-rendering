@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>CSS Implementation Tests - Icon Rendering Performance</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Remix Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        /* PERFORMANCE-CRITICAL: Keep these icon styles inline for accurate testing */
+        .code-slash-icon {
+            position: relative;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: 550;
+            color: white;
+        }
+        
+        /* Left bracket < */
+        .code-slash-icon::before {
+            content: '<';
+            position: absolute;
+            left: -4px;
+            top: 50%;
+            transform: translateY(-50%) scaleY(1.2);
+            line-height: 1;
+        }
+        
+        /* Right bracket > */
+        .code-slash-icon::after {
+            content: '>';
+            position: absolute;
+            right: -3px;
+            top: 50%;
+            transform: translateY(-50%) scaleY(1.2);
+            line-height: 1;
+        }
+        
+        /* Forward slash in the middle */
+        .code-slash-icon .slash {
+            font-size: 14px;
+            font-weight: 550;
+            color: white;
+            z-index: 1;
+            transform: scaleY(1.5);
+        }
+
+        /* Minimal CSS implementation - no transforms */
+        .simple-icon {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: 550;
+            color: white;
+            line-height: 1;
+            letter-spacing: 1px;
+        }
+
+        /* Circular CSS implementation - optimized for circular container */
+        .circular-icon {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            line-height: 1;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body class="p-8 bg-gray-100">
+    <header class="mb-8">
+        <a href="index.html" class="text-blue-600 hover:underline text-sm">&larr; Back to Test Suite</a>
+        <h1 class="text-3xl font-bold mt-4 mb-2">CSS Implementation Tests</h1>
+        <p class="text-gray-600">Testing icon font, pure CSS with transforms, and minimal CSS implementations</p>
+    </header>
+    
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">CSS + Icon Font (Remix Icons)</h2>
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <i class="ri-code-s-slash-line text-white text-xl"></i>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Pure CSS Implementation</h2>
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div class="code-slash-icon">
+                <span class="slash">/</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Minimal CSS Implementation</h2>
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div class="simple-icon">&lt;/&gt;</div>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Circular CSS Implementation</h2>
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <div class="circular-icon">&lt;/&gt;</div>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Circular Icon Font Implementation</h2>
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <i class="ri-code-s-slash-line text-white text-xl"></i>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Performance Testing Controls</h2>
+        <div class="bg-white p-4 rounded border">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Test Type:</label>
+                    <select id="testType" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        <option value="single">Single Icon Test (2,000 iterations)</option>
+                        <option value="bulk" selected>Bulk Icon Test (100 icons × 50 iterations)</option>
+                        <option value="stress">Stress Test (500 icons × 200 iterations)</option>
+                        <option value="statistical">Statistical Power Test (100 icons × 200 iterations)</option>
+                        <option value="massive">Maximum Power Test (100 icons × 1,000 iterations)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Method:</label>
+                    <select id="testMethod" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        <option value="straight" selected>Straight Through (Real Performance)</option>
+                        <option value="batched">Batched (Safer, Less Realistic)</option>
+                    </select>
+                    <div class="text-xs text-gray-500 mt-1">Straight = realistic stress test</div>
+                </div>
+                <div class="flex items-end">
+                    <button id="startTest" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition text-sm font-medium">
+                        Start Stress Test
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="flex items-center">
+                    <button id="toggleVisibility" class="w-full p-2 bg-gray-200 border border-gray-300 rounded text-sm hover:bg-gray-300">
+                        Show Rendering Container
+                    </button>
+                </div>
+            </div>
+            
+            <div id="testProgress" class="hidden">
+                <div class="mb-2">
+                    <div class="flex justify-between text-sm">
+                        <span id="currentIcon">Testing...</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div><strong>Current Iteration:</strong> <span id="currentIteration">0</span></div>
+                    <div><strong>Elapsed Time:</strong> <span id="elapsedTime">0s</span></div>
+                    <div><strong>Memory Usage:</strong> <span id="memoryUsage">0 MB</span></div>
+                    <div><strong>ETA:</strong> <span id="eta">calculating...</span></div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button id="stopTest" class="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700 transition text-sm hidden">
+                    Stop Test
+                </button>
+                <button id="clearResults" class="bg-gray-600 text-white px-4 py-1 rounded hover:bg-gray-700 transition text-sm ml-2">
+                    Clear Results
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Test Results</h2>
+        <div id="results" class="text-sm text-gray-700 space-y-2">
+            <div class="text-gray-500">No tests run yet. Click "Start Stress Test" to begin performance analysis.</div>
+        </div>
+    </div>
+
+    <!-- External JavaScript Module -->
+    <script src="js/stress-test-manager.js"></script>
+
+    <!-- Initialize the stress test manager when DOM is ready -->
+    <script>
+        let stressTestManager;
+        
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Show selected tab content
+            if (tabName === 'testing') {
+                document.getElementById('testingContent').classList.remove('hidden');
+                document.getElementById('testingTab').classList.add('active', 'border-blue-500', 'text-blue-600');
+                document.getElementById('testingTab').classList.remove('border-transparent', 'text-gray-500');
+            } else if (tabName === 'rendering') {
+                document.getElementById('renderingContent').classList.remove('hidden');
+                document.getElementById('renderingTab').classList.add('active', 'border-blue-500', 'text-blue-600');
+                document.getElementById('renderingTab').classList.remove('border-transparent', 'text-gray-500');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            stressTestManager = new StressTestManager();
+            
+            // Setup tab event listeners
+            document.getElementById('testingTab').addEventListener('click', () => switchTab('testing'));
+            document.getElementById('renderingTab').addEventListener('click', () => switchTab('rendering'));
+        });
+    </script>
+</body>
+</html>
+</body>
+</html>

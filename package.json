@@ -1,0 +1,39 @@
+{
+  "name": "icon-performance-testing",
+  "version": "1.0.0",
+  "description": "Academic research tool for icon rendering performance analysis",
+  "private": true,
+  "scripts": {
+    "test": "playwright test --reporter=html,line",
+    "test:full": "playwright test --reporter=html,line",
+    "test:commit": "node scripts/commit-tests.js",
+    "test:quick": "playwright test tests/index.test.js tests/summary.test.js --reporter=html,line",
+    "test:browser:chrome": "playwright test --project=chromium --reporter=html,line",
+    "test:browser:firefox": "playwright test --project=firefox --reporter=html,line",
+    "test:browser:webkit": "playwright test --project=webkit --reporter=html,line",
+    "test:format:json": "playwright test tests/json.test.js tests/geojson.test.js --reporter=html,line",
+    "test:format:css": "playwright test tests/css.test.js tests/js.test.js --reporter=html,line",
+    "test:format:images": "playwright test tests/png.test.js tests/jpg.test.js tests/gif.test.js --reporter=html,line",
+    "test:format:vector": "playwright test tests/svg.test.js tests/avif.test.js tests/webp.test.js --reporter=html,line",
+    "test:headed": "playwright test --headed --reporter=line",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "test:install": "playwright install",
+    "serve": "npx http-server src -p 3000 --cors"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.0.0",
+    "http-server": "^14.1.1"
+  },
+  "keywords": [
+    "academic-research",
+    "icon-performance",
+    "playwright-testing"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:wjs4572/experiment-icon-rendering.git"
+  },
+  "license": "BSD-3-Clause"
+}

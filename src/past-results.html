@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Past Test Results - Icon Performance Testing</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-8 py-12">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Past Test Results Archive</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Complete historical record of icon performance tests with full reproducibility data.
+            </p>
+            <div class="mt-6 space-x-4">
+                <a href="summary.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    ← Back to Summary
+                </a>
+                <a href="css.html" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    Run New Test
+                </a>
+                <button id="clearHistory" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Clear History
+                </button>
+                <button id="exportHistory" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                    Export All Results
+                </button>
+            </div>
+        </header>
+
+        <!-- Filter Controls -->
+        <div class="bg-white p-6 rounded-lg shadow mb-8">
+            <h2 class="text-xl font-semibold mb-4">Filter Results</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Test Type:</label>
+                    <select id="filterTestType" class="w-full p-2 border rounded text-sm">
+                        <option value="">All Types</option>
+                        <option value="single">Single Icon Tests</option>
+                        <option value="bulk">Bulk Icon Tests</option>
+                        <option value="stress">Stress Tests</option>
+                        <option value="statistical">Statistical Power Tests</option>
+                        <option value="massive">Maximum Power Tests</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date Range:</label>
+                    <select id="filterDate" class="w-full p-2 border rounded text-sm">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">Past Week</option>
+                        <option value="month">Past Month</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Significance:</label>
+                    <select id="filterSignificance" class="w-full p-2 border rounded text-sm">
+                        <option value="">All Results</option>
+                        <option value="significant">Significant Only</option>
+                        <option value="not-significant">Not Significant Only</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button id="applyFilters" class="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div id="resultsSummary" class="bg-white p-6 rounded-lg shadow mb-8">
+            <h2 class="text-xl font-semibold mb-4">Test History Summary</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="p-4 bg-blue-50 rounded">
+                    <div class="text-2xl font-bold text-blue-600" id="totalTests">0</div>
+                    <div class="text-sm text-gray-600">Total Tests</div>
+                </div>
+                <div class="p-4 bg-green-50 rounded">
+                    <div class="text-2xl font-bold text-green-600" id="significantTests">0</div>
+                    <div class="text-sm text-gray-600">Significant Results</div>
+                </div>
+                <div class="p-4 bg-purple-50 rounded">
+                    <div class="text-2xl font-bold text-purple-600" id="totalIterations">0</div>
+                    <div class="text-sm text-gray-600">Total Iterations</div>
+                </div>
+                <div class="p-4 bg-yellow-50 rounded">
+                    <div class="text-2xl font-bold text-yellow-600" id="totalTestTime">0h 0m</div>
+                    <div class="text-sm text-gray-600">Total Test Time</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div id="testResults" class="space-y-8">
+            <!-- Test results will be populated here -->
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="text-center py-12 hidden">
+            <div class="text-gray-500 text-lg">No test results found.</div>
+            <div class="mt-4">
+                <a href="css.html" class="text-blue-600 hover:text-blue-800 underline">Run your first performance test</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class PastResultsManager {
+            constructor() {
+                this.pastResults = this.loadPastResults();
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.displayResults();
+                this.updateSummary();
+            }
+
+            setupEventListeners() {
+                document.getElementById('clearHistory').addEventListener('click', () => this.clearHistory());
+                document.getElementById('exportHistory').addEventListener('click', () => this.exportHistory());
+                document.getElementById('applyFilters').addEventListener('click', () => this.applyFilters());
+            }
+
+            loadPastResults() {
+                try {
+                    const results = localStorage.getItem('iconTestHistory');
+                    return results ? JSON.parse(results) : [];
+                } catch (error) {
+                    console.error('Error loading past results:', error);
+                    return [];
+                }
+            }
+
+            savePastResults() {
+                try {
+                    localStorage.setItem('iconTestHistory', JSON.stringify(this.pastResults));
+                } catch (error) {
+                    console.error('Error saving past results:', error);
+                }
+            }
+
+            addResult(testResult) {
+                // Add comprehensive test result to history
+                const historyEntry = {
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString(),
+                    testDate: testResult.testDate,
+                    
+                    // Test Configuration - Critical for reproducibility
+                    testConfiguration: {
+                        testType: testResult.testType || 'unknown',
+                        testTypeDescription: this.getTestTypeDescription(testResult.testType),
+                        iterations: testResult.iterations,
+                        testDuration: testResult.testDuration,
+                        iterationsPerSecond: testResult.iterationsPerSecond || (testResult.iterations / testResult.testDuration),
+                        method: testResult.method || 'straight' // batched vs straight
+                    },
+
+                    // System Environment - For reproducibility
+                    systemInfo: {
+                        userAgent: testResult.testMetadata?.userAgent || navigator.userAgent,
+                        timestamp: testResult.testMetadata?.timestamp || performance.now(),
+                        screenResolution: `${screen.width}x${screen.height}`,
+                        colorDepth: screen.colorDepth,
+                        platform: navigator.platform,
+                        memory: performance.memory ? {
+                            jsHeapSizeLimit: performance.memory.jsHeapSizeLimit,
+                            totalJSHeapSize: performance.memory.totalJSHeapSize,
+                            usedJSHeapSize: performance.memory.usedJSHeapSize
+                        } : null
+                    },
+
+                    // Complete Performance Results
+                    results: testResult.results,
+                    
+                    // Statistical Analysis
+                    statisticalAnalysis: testResult.statisticalAnalysis || {},
+                    performanceRanking: testResult.performanceRanking || [],
+                    
+                    // Summary Statistics
+                    summary: {
+                        fastestIconType: this.getFastestIcon(testResult.performanceRanking),
+                        slowestIconType: this.getSlowestIcon(testResult.performanceRanking),
+                        significantDifferences: this.getSignificantCount(testResult.statisticalAnalysis),
+                        averageRenderTime: this.getAverageRenderTime(testResult.results),
+                        performanceSpread: this.getPerformanceSpread(testResult.performanceRanking)
+                    }
+                };
+
+                this.pastResults.unshift(historyEntry); // Add to beginning
+                this.savePastResults();
+                return historyEntry.id;
+            }
+
+            getTestTypeDescription(testType) {
+                const descriptions = {
+                    'single': 'Single Icon Test (2,000 iterations)',
+                    'bulk': 'Bulk Icon Test (100 icons × 50 iterations)',
+                    'stress': 'Stress Test (500 icons × 200 iterations)',
+                    'statistical': 'Statistical Power Test (100 icons × 200 iterations)',
+                    'massive': 'Maximum Power Test (100 icons × 1,000 iterations)'
+                };
+                return descriptions[testType] || 'Unknown Test Type';
+            }
+
+            getFastestIcon(ranking) {
+                return ranking && ranking.length > 0 ? ranking[0].iconType : 'Unknown';
+            }
+
+            getSlowestIcon(ranking) {
+                return ranking && ranking.length > 0 ? ranking[ranking.length - 1].iconType : 'Unknown';
+            }
+
+            getSignificantCount(analysis) {
+                if (!analysis) return 0;
+                return Object.values(analysis).filter(stat => stat.isSignificant).length;
+            }
+
+            getAverageRenderTime(results) {
+                if (!results) return 0;
+                const times = Object.values(results).map(r => r.renderTime?.average || 0);
+                return times.reduce((a, b) => a + b, 0) / times.length;
+            }
+
+            getPerformanceSpread(ranking) {
+                if (!ranking || ranking.length < 2) return 0;
+                const fastest = ranking[0].averageTime;
+                const slowest = ranking[ranking.length - 1].averageTime;
+                return ((slowest - fastest) / fastest * 100);
+            }
+
+            displayResults() {
+                const container = document.getElementById('testResults');
+                const noResults = document.getElementById('noResults');
+                
+                if (this.pastResults.length === 0) {
+                    container.innerHTML = '';
+                    noResults.classList.remove('hidden');
+                    return;
+                }
+
+                noResults.classList.add('hidden');
+                container.innerHTML = this.pastResults.map(result => this.createResultCard(result)).join('');
+            }
+
+            createResultCard(result) {
+                const date = new Date(result.timestamp).toLocaleString();
+                const config = result.testConfiguration;
+                const summary = result.summary;
+                
+                return `
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-xl font-semibold">${config.testTypeDescription}</h3>
+                                    <p class="text-blue-100 mt-1">${date}</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold">${config.iterationsPerSecond.toFixed(1)}</div>
+                                    <div class="text-blue-100 text-sm">iterations/sec</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <!-- Test Configuration -->
+                            <div class="mb-6">
+                                <h4 class="font-semibold text-gray-800 mb-3">Test Configuration</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                    <div class="bg-gray-50 p-3 rounded">
+                                        <div class="font-medium text-gray-600">Total Iterations</div>
+                                        <div class="text-lg font-bold text-gray-800">${config.iterations.toLocaleString()}</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded">
+                                        <div class="font-medium text-gray-600">Duration</div>
+                                        <div class="text-lg font-bold text-gray-800">${config.testDuration.toFixed(1)}s</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded">
+                                        <div class="font-medium text-gray-600">Method</div>
+                                        <div class="text-lg font-bold text-gray-800">${config.method === 'straight' ? 'Straight' : 'Batched'}</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded">
+                                        <div class="font-medium text-gray-600">Significant Results</div>
+                                        <div class="text-lg font-bold ${summary.significantDifferences > 0 ? 'text-green-600' : 'text-gray-800'}">${summary.significantDifferences}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Performance Results -->
+                            <div class="mb-6">
+                                <h4 class="font-semibold text-gray-800 mb-3">Performance Summary</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="bg-green-50 border border-green-200 p-4 rounded">
+                                        <div class="text-green-600 font-medium">🏆 Fastest</div>
+                                        <div class="text-lg font-bold text-gray-800">${summary.fastestIconType}</div>
+                                    </div>
+                                    <div class="bg-red-50 border border-red-200 p-4 rounded">
+                                        <div class="text-red-600 font-medium">🐌 Slowest</div>
+                                        <div class="text-lg font-bold text-gray-800">${summary.slowestIconType}</div>
+                                    </div>
+                                    <div class="bg-blue-50 border border-blue-200 p-4 rounded">
+                                        <div class="text-blue-600 font-medium">📊 Performance Spread</div>
+                                        <div class="text-lg font-bold text-gray-800">${summary.performanceSpread.toFixed(1)}%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Statistical Details -->
+                            <div class="mb-6">
+                                <h4 class="font-semibold text-gray-800 mb-3">Statistical Analysis</h4>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm">
+                                        <thead>
+                                            <tr class="bg-gray-50 border-b">
+                                                <th class="text-left p-2">Comparison</th>
+                                                <th class="text-center p-2">P-Value</th>
+                                                <th class="text-center p-2">Significance</th>
+                                                <th class="text-center p-2">Power</th>
+                                                <th class="text-center p-2">Effect Size</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${Object.entries(result.statisticalAnalysis).map(([comparison, stats]) => `
+                                                <tr class="border-b">
+                                                    <td class="p-2 font-medium">${comparison}</td>
+                                                    <td class="p-2 text-center">${stats.pValue < 0.001 ? '<0.001' : stats.pValue.toFixed(3)}</td>
+                                                    <td class="p-2 text-center">
+                                                        <span class="${stats.isSignificant ? 'text-green-600' : 'text-red-600'}">
+                                                            ${stats.isSignificant ? '✓ Significant' : '✗ Not Significant'}
+                                                        </span>
+                                                    </td>
+                                                    <td class="p-2 text-center">${stats.power.toFixed(2)}</td>
+                                                    <td class="p-2 text-center">${stats.effectSize.toFixed(2)}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- System Information -->
+                            <details class="mb-4">
+                                <summary class="font-semibold text-gray-800 cursor-pointer hover:text-blue-600">
+                                    System Environment (Click to expand)
+                                </summary>
+                                <div class="mt-3 text-sm bg-gray-50 p-4 rounded">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <strong>Browser:</strong> ${this.getBrowserName(result.systemInfo.userAgent)}
+                                        </div>
+                                        <div>
+                                            <strong>Platform:</strong> ${result.systemInfo.platform}
+                                        </div>
+                                        <div>
+                                            <strong>Screen:</strong> ${result.systemInfo.screenResolution}
+                                        </div>
+                                        <div>
+                                            <strong>Color Depth:</strong> ${result.systemInfo.colorDepth}-bit
+                                        </div>
+                                        ${result.systemInfo.memory ? `
+                                            <div class="col-span-full">
+                                                <strong>Memory:</strong> ${(result.systemInfo.memory.usedJSHeapSize / (1024*1024)).toFixed(1)} MB used / ${(result.systemInfo.memory.jsHeapSizeLimit / (1024*1024)).toFixed(1)} MB limit
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Actions -->
+                            <div class="flex space-x-2">
+                                <button onclick="pastResultsManager.exportSingleResult('${result.id}')" 
+                                        class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                                    Export This Result
+                                </button>
+                                <button onclick="pastResultsManager.deleteResult('${result.id}')" 
+                                        class="px-4 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getBrowserName(userAgent) {
+                if (userAgent.includes('Chrome')) return 'Chrome';
+                if (userAgent.includes('Firefox')) return 'Firefox';
+                if (userAgent.includes('Safari')) return 'Safari';
+                if (userAgent.includes('Edge')) return 'Edge';
+                return 'Unknown Browser';
+            }
+
+            updateSummary() {
+                const totalTests = this.pastResults.length;
+                const significantTests = this.pastResults.filter(r => r.summary.significantDifferences > 0).length;
+                const totalIterations = this.pastResults.reduce((sum, r) => sum + r.testConfiguration.iterations, 0);
+                const totalTime = this.pastResults.reduce((sum, r) => sum + r.testConfiguration.testDuration, 0);
+
+                document.getElementById('totalTests').textContent = totalTests.toLocaleString();
+                document.getElementById('significantTests').textContent = significantTests.toLocaleString();
+                document.getElementById('totalIterations').textContent = totalIterations.toLocaleString();
+                
+                const hours = Math.floor(totalTime / 3600);
+                const minutes = Math.floor((totalTime % 3600) / 60);
+                document.getElementById('totalTestTime').textContent = `${hours}h ${minutes}m`;
+            }
+
+            clearHistory() {
+                if (confirm('Are you sure you want to clear all test history? This cannot be undone.')) {
+                    this.pastResults = [];
+                    this.savePastResults();
+                    this.displayResults();
+                    this.updateSummary();
+                }
+            }
+
+            deleteResult(id) {
+                if (confirm('Delete this test result?')) {
+                    this.pastResults = this.pastResults.filter(r => r.id !== id);
+                    this.savePastResults();
+                    this.displayResults();
+                    this.updateSummary();
+                }
+            }
+
+            exportHistory() {
+                const dataStr = JSON.stringify(this.pastResults, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `icon-test-history-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+
+            exportSingleResult(id) {
+                const result = this.pastResults.find(r => r.id === id);
+                if (result) {
+                    const dataStr = JSON.stringify(result, null, 2);
+                    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `icon-test-${result.id}.json`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                }
+            }
+
+            applyFilters() {
+                // Implementation for filtering would go here
+                // For now, just display all results
+                this.displayResults();
+            }
+        }
+
+        // Initialize the past results manager
+        let pastResultsManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            pastResultsManager = new PastResultsManager();
+            
+            // Check if there's a new result to add from the current test session
+            const currentResult = localStorage.getItem('iconTestResults_css');
+            if (currentResult) {
+                try {
+                    const parsedResult = JSON.parse(currentResult);
+                    const existingId = localStorage.getItem('lastSavedResultId');
+                    
+                    // Only add if this is a new result (different timestamp)
+                    if (!existingId || existingId !== parsedResult.testMetadata?.timestamp?.toString()) {
+                        pastResultsManager.addResult(parsedResult);
+                        localStorage.setItem('lastSavedResultId', parsedResult.testMetadata?.timestamp?.toString());
+                        pastResultsManager.displayResults();
+                        pastResultsManager.updateSummary();
+                    }
+                } catch (error) {
+                    console.error('Error processing current test result:', error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Performance Summary Dashboard - Icon Rendering Tests</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-8 py-12">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Performance Summary Dashboard</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Comprehensive analysis and comparison of icon rendering performance across all tested formats.
+            </p>
+            <div class="mt-6 space-x-4">
+                <a href="index.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    ← Back to Test Suite
+                </a>
+                <a href="past-results.html" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                    📊 View Past Results
+                </a>
+            </div>
+        </header>
+
+        <!-- Data Export & Controls -->
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex space-x-4">
+                <button id="exportCsv" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    Export CSV
+                </button>
+                <button id="exportJson" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    Export JSON
+                </button>
+                <button id="clearData" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Clear All Data
+                </button>
+            </div>
+            <div class="text-sm text-gray-500">
+                Last updated: <span id="lastUpdated">Never</span>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div id="summaryCards" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <!-- Cards will be populated dynamically -->
+        </div>
+
+        <!-- Error/No Data Message -->
+        <div id="noDataMessage" class="hidden bg-yellow-50 border border-yellow-200 p-6 rounded-lg text-center">
+            <h3 class="text-lg font-semibold text-yellow-800 mb-2">No Test Data Available</h3>
+            <p class="text-yellow-700 mb-4">
+                No performance test results found. Run some tests to see comparative analysis here.
+            </p>
+            <a href="index.html" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
+                Go Back to Run Tests
+            </a>
+        </div>
+
+        <!-- Performance Comparison Chart -->
+        <div id="comparisonSection" class="hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Cross-Format Performance Comparison</h2>
+                <div class="h-96">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Detailed Results Table -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Detailed Test Results</h2>
+                <div class="overflow-x-auto">
+                    <table id="resultsTable" class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-gray-50 border-b">
+                                <th class="p-3 text-left">Format</th>
+                                <th class="p-3 text-center">Test Date</th>
+                                <th class="p-3 text-center">Iterations</th>
+                                <th class="p-3 text-center">Best Performance</th>
+                                <th class="p-3 text-center">Avg ± CI (ms)</th>
+                                <th class="p-3 text-center">Test Duration</th>
+                                <th class="p-3 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            <!-- Table rows will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Statistical Analysis -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Statistical Analysis Overview</h2>
+                <div id="statisticalAnalysis" class="space-y-4">
+                    <!-- Statistical analysis will be populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Test Environment Information -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Test Environment</h2>
+                <div id="testEnvironment" class="grid md:grid-cols-2 gap-4 text-sm">
+                    <!-- Environment info will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SummaryDashboard {
+            constructor() {
+                this.testFormats = ['css', 'svg', 'png', 'gif', 'jpeg', 'webp', 'avif'];
+                this.results = {};
+                this.loadResults();
+                this.setupEventListeners();
+                this.render();
+            }
+
+            loadResults() {
+                this.results = {};
+                let hasData = false;
+
+                this.testFormats.forEach(format => {
+                    try {
+                        const data = localStorage.getItem(`iconTestResults_${format}`);
+                        if (data) {
+                            this.results[format] = JSON.parse(data);
+                            hasData = true;
+                        }
+                    } catch (error) {
+                        console.error(`Error loading ${format} results:`, error);
+                    }
+                });
+
+                if (hasData) {
+                    this.updateLastUpdated();
+                }
+
+                return hasData;
+            }
+
+            updateLastUpdated() {
+                const lastUpdatedElement = document.getElementById('lastUpdated');
+                const dates = Object.values(this.results)
+                    .map(r => new Date(r.testDate))
+                    .filter(d => !isNaN(d));
+                
+                if (dates.length > 0) {
+                    const latest = new Date(Math.max(...dates));
+                    lastUpdatedElement.textContent = latest.toLocaleString();
+                } else {
+                    lastUpdatedElement.textContent = 'Never';
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('exportCsv').addEventListener('click', () => this.exportCsv());
+                document.getElementById('exportJson').addEventListener('click', () => this.exportJson());
+                document.getElementById('clearData').addEventListener('click', () => this.clearAllData());
+            }
+
+            render() {
+                const hasData = Object.keys(this.results).length > 0;
+                
+                if (!hasData) {
+                    document.getElementById('noDataMessage').classList.remove('hidden');
+                    document.getElementById('comparisonSection').classList.add('hidden');
+                    return;
+                }
+
+                document.getElementById('noDataMessage').classList.add('hidden');
+                document.getElementById('comparisonSection').classList.remove('hidden');
+
+                this.renderSummaryCards();
+                this.renderPerformanceChart();
+                this.renderResultsTable();
+                this.renderStatisticalAnalysis();
+                this.renderTestEnvironment();
+            }
+
+            renderSummaryCards() {
+                const container = document.getElementById('summaryCards');
+                
+                if (Object.keys(this.results).length === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                // Calculate overall statistics
+                const allResults = Object.values(this.results);
+                const totalIterations = allResults.reduce((sum, r) => sum + r.iterations, 0);
+                const totalDuration = allResults.reduce((sum, r) => sum + r.testDuration, 0);
+                
+                const bestFormat = this.getBestPerformingFormat();
+                const worstFormat = this.getWorstPerformingFormat();
+                const testCoverage = `${Object.keys(this.results).length}/${this.testFormats.length}`;
+
+                container.innerHTML = `
+                    <div class="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-2">Best Performance</h3>
+                        <div class="text-2xl font-bold">${bestFormat.format.toUpperCase()}</div>
+                        <div class="text-sm opacity-90">${bestFormat.time.toFixed(3)}ms average</div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-2">Test Coverage</h3>
+                        <div class="text-2xl font-bold">${testCoverage}</div>
+                        <div class="text-sm opacity-90">Formats tested</div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-2">Total Analysis</h3>
+                        <div class="text-2xl font-bold">${totalIterations.toLocaleString()}</div>
+                        <div class="text-sm opacity-90">Iterations completed</div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-purple-500 to-pink-600 text-white rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-2">Testing Time</h3>
+                        <div class="text-2xl font-bold">${totalDuration.toFixed(1)}s</div>
+                        <div class="text-sm opacity-90">Total duration</div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-2">Slowest Format</h3>
+                        <div class="text-2xl font-bold">${worstFormat.format.toUpperCase()}</div>
+                        <div class="text-sm opacity-90">${worstFormat.time.toFixed(3)}ms average</div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-xl p-6">
+                        <h3 class="text-lg font-semibold mb-2">Performance Spread</h3>
+                        <div class="text-2xl font-bold">${((worstFormat.time / bestFormat.time - 1) * 100).toFixed(1)}%</div>
+                        <div class="text-sm opacity-90">Worst vs best</div>
+                    </div>
+                `;
+            }
+
+            getBestPerformingFormat() {
+                let best = { format: 'none', time: Infinity };
+                
+                Object.entries(this.results).forEach(([format, data]) => {
+                    if (data.performanceRanking && data.performanceRanking.length > 0) {
+                        const bestResult = data.performanceRanking.find(r => r.rank === 1);
+                        if (bestResult && bestResult.averageTime < best.time) {
+                            best = { format, time: bestResult.averageTime };
+                        }
+                    }
+                });
+
+                return best;
+            }
+
+            getWorstPerformingFormat() {
+                let worst = { format: 'none', time: 0 };
+                
+                Object.entries(this.results).forEach(([format, data]) => {
+                    if (data.performanceRanking && data.performanceRanking.length > 0) {
+                        const worstResult = data.performanceRanking[data.performanceRanking.length - 1];
+                        if (worstResult && worstResult.averageTime > worst.time) {
+                            worst = { format, time: worstResult.averageTime };
+                        }
+                    }
+                });
+
+                return worst;
+            }
+
+            renderPerformanceChart() {
+                const ctx = document.getElementById('performanceChart').getContext('2d');
+                
+                // Prepare data for chart
+                const datasets = [];
+                const labels = [];
+                const colors = {
+                    css: '#3B82F6',
+                    svg: '#10B981',
+                    png: '#8B5CF6',
+                    gif: '#F59E0B',
+                    jpeg: '#EF4444',
+                    webp: '#6366F1',
+                    avif: '#6B7280'
+                };
+
+                Object.entries(this.results).forEach(([format, data]) => {
+                    if (data.performanceRanking && data.performanceRanking.length > 0) {
+                        data.performanceRanking.forEach(result => {
+                            if (!labels.includes(result.iconType)) {
+                                labels.push(result.iconType);
+                            }
+                        });
+                    }
+                });
+
+                Object.entries(this.results).forEach(([format, data]) => {
+                    if (data.performanceRanking && data.performanceRanking.length > 0) {
+                        const chartData = labels.map(label => {
+                            const result = data.performanceRanking.find(r => r.iconType === label);
+                            return result ? result.averageTime : null;
+                        });
+
+                        datasets.push({
+                            label: format.toUpperCase(),
+                            data: chartData,
+                            backgroundColor: colors[format] || '#6B7280',
+                            borderColor: colors[format] || '#6B7280',
+                            borderWidth: 2
+                        });
+                    }
+                });
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Average Rendering Time by Format and Implementation'
+                            },
+                            legend: { display: true }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Render Time (ms)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Implementation Type'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderResultsTable() {
+                const tbody = document.getElementById('resultsTableBody');
+                let html = '';
+
+                Object.entries(this.results).forEach(([format, data]) => {
+                    const statusClass = data.iterations > 1000 ? 'text-green-600' : 'text-yellow-600';
+                    const status = data.iterations > 1000 ? '✓ Complete' : '⚠ Partial';
+                    
+                    const bestResult = data.performanceRanking?.find(r => r.rank === 1);
+                    const bestPerformance = bestResult ? `${bestResult.iconType} (${bestResult.averageTime.toFixed(3)}ms)` : 'N/A';
+                    
+                    const avgWithCI = bestResult ? 
+                        `${bestResult.averageTime.toFixed(3)} ± [${bestResult.confidenceInterval.lower.toFixed(3)}, ${bestResult.confidenceInterval.upper.toFixed(3)}]` :
+                        'N/A';
+
+                    html += `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-3 font-medium uppercase">${format}</td>
+                            <td class="p-3 text-center text-sm">${new Date(data.testDate).toLocaleString()}</td>
+                            <td class="p-3 text-center">${data.iterations.toLocaleString()}</td>
+                            <td class="p-3 text-center text-sm">${bestPerformance}</td>
+                            <td class="p-3 text-center">${avgWithCI}</td>
+                            <td class="p-3 text-center">${data.testDuration.toFixed(1)}s</td>
+                            <td class="p-3 text-center ${statusClass}">${status}</td>
+                        </tr>
+                    `;
+                });
+
+                tbody.innerHTML = html;
+            }
+
+            renderStatisticalAnalysis() {
+                const container = document.getElementById('statisticalAnalysis');
+                let html = '';
+
+                Object.entries(this.results).forEach(([format, data]) => {
+                    if (data.statisticalAnalysis && Object.keys(data.statisticalAnalysis).length > 0) {
+                        html += `
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h3 class="font-semibold text-lg text-gray-800 mb-3">${format.toUpperCase()} Statistical Analysis</h3>
+                                <div class="grid md:grid-cols-2 gap-4 text-sm">
+                        `;
+
+                        Object.entries(data.statisticalAnalysis).forEach(([comparison, stats]) => {
+                            const significanceColor = stats.isSignificant ? 'text-green-600' : 'text-red-600';
+                            const powerColor = stats.power > 0.8 ? 'text-green-600' : stats.power > 0.5 ? 'text-yellow-600' : 'text-red-600';
+                            
+                            html += `
+                                <div class="bg-gray-50 p-3 rounded">
+                                    <div class="font-medium mb-1">${comparison}</div>
+                                    <div class="space-y-1">
+                                        <div>P-value: ${stats.pValue < 0.001 ? '<0.001' : stats.pValue.toFixed(3)} <span class="${significanceColor}">(${stats.isSignificant ? stats.significanceLevel : 'not significant'})</span></div>
+                                        <div>Power: <span class="${powerColor}">${stats.power.toFixed(2)}</span></div>
+                                        <div>Effect size: ${stats.effectSize.toFixed(2)}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        html += `</div></div>`;
+                    }
+                });
+
+                if (html === '') {
+                    html = '<div class="text-gray-500 text-center">No statistical analysis data available. Run tests with multiple implementations to see statistical comparisons.</div>';
+                }
+
+                container.innerHTML = html;
+            }
+
+            renderTestEnvironment() {
+                const container = document.getElementById('testEnvironment');
+                
+                // Use the first available result for environment info
+                const firstResult = Object.values(this.results)[0];
+                if (!firstResult || !firstResult.testMetadata) {
+                    container.innerHTML = '<div class="text-gray-500">No environment information available.</div>';
+                    return;
+                }
+
+                const metadata = firstResult.testMetadata;
+                container.innerHTML = `
+                    <div class="space-y-2">
+                        <h4 class="font-medium text-gray-800">Browser Information</h4>
+                        <div class="text-gray-600">${metadata.userAgent}</div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <h4 class="font-medium text-gray-800">Performance Metrics</h4>
+                        <div class="space-y-1 text-gray-600">
+                            <div>High-resolution timer: ${performance.timeOrigin ? '✓ Available' : '✗ Unavailable'}</div>
+                            <div>Memory API: ${performance.memory ? '✓ Available' : '✗ Unavailable'}</div>
+                            <div>Navigation timing: ${performance.navigation ? '✓ Available' : '✗ Unavailable'}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            exportCsv() {
+                if (Object.keys(this.results).length === 0) {
+                    alert('No data available to export.');
+                    return;
+                }
+
+                const rows = [
+                    ['Format', 'Test Date', 'Iterations', 'Implementation', 'Rank', 'Average Time (ms)', 'CI Lower', 'CI Upper', 'Std Dev', 'Sample Size']
+                ];
+
+                Object.entries(this.results).forEach(([format, data]) => {
+                    if (data.performanceRanking) {
+                        data.performanceRanking.forEach(result => {
+                            rows.push([
+                                format.toUpperCase(),
+                                new Date(data.testDate).toISOString(),
+                                data.iterations,
+                                result.iconType,
+                                result.rank,
+                                result.averageTime.toFixed(6),
+                                result.confidenceInterval.lower.toFixed(6),
+                                result.confidenceInterval.upper.toFixed(6),
+                                result.standardDeviation.toFixed(6),
+                                result.sampleSize
+                            ]);
+                        });
+                    }
+                });
+
+                const csvContent = rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\\n');
+                this.downloadFile('icon_performance_results.csv', csvContent, 'text/csv');
+            }
+
+            exportJson() {
+                if (Object.keys(this.results).length === 0) {
+                    alert('No data available to export.');
+                    return;
+                }
+
+                const jsonContent = JSON.stringify(this.results, null, 2);
+                this.downloadFile('icon_performance_results.json', jsonContent, 'application/json');
+            }
+
+            downloadFile(filename, content, contentType) {
+                const blob = new Blob([content], { type: contentType });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            }
+
+            clearAllData() {
+                if (confirm('Are you sure you want to clear all test data? This action cannot be undone.')) {
+                    this.testFormats.forEach(format => {
+                        localStorage.removeItem(`iconTestResults_${format}`);
+                    });
+                    this.results = {};
+                    this.render();
+                    alert('All test data has been cleared.');
+                }
+            }
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            new SummaryDashboard();
+        });
+    </script>
+</body>
+</html>
