@@ -6,46 +6,75 @@
     <title>AVIF Implementation Tests - Icon Rendering Performance</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Internationalization System -->
+    <script src="js/i18n.js"></script>
 </head>
 <body class="p-8 bg-gray-100">
+    <!-- Language Selector -->
+    <div class="text-right mb-4">
+        <select id="languageSelector" class="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="en">English</option>
+            <option value="en-us">English (United States)</option>
+            <option value="en-gb">English (United Kingdom)</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="ja">日本語</option>
+            <option value="zh">中文</option>
+            <option value="zh-tw">中文 (繁體)</option>
+            <option value="pt">Português</option>
+            <option value="pt-br">Português (Brasil)</option>
+            <option value="pt-pt">Português (Portugal)</option>
+        </select>
+    </div>
+    
     <header class="mb-8">
-        <a href="index.html" class="text-blue-600 hover:underline text-sm">&larr; Back to Test Suite</a>
-        <h1 class="text-3xl font-bold mt-4 mb-2">AVIF Implementation Tests</h1>
-        <p class="text-gray-600">Testing next-generation AVIF format with superior compression efficiency</p>
+        <a href="index.html" class="text-blue-600 hover:underline text-sm" data-i18n="nav.back_to_suite">&larr; Back to Test Suite</a>
+        <h1 class="text-3xl font-bold mt-4 mb-2" data-i18n="format.avif.title">AVIF Implementation Tests</h1>
+        <p class="text-gray-600" data-i18n="format.avif.description">Testing next-generation AVIF format with superior compression efficiency</p>
     </header>
     
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
         <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Standard AVIF</h2>
+            <h2 class="text-xl font-semibold mb-4" data-i18n="format.avif.features.standard">Standard AVIF</h2>
             <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-4">
                 <div class="text-white text-xs">AVIF</div>
             </div>
-            <p class="text-gray-600 text-sm">Coming soon...</p>
+            <p class="text-gray-600 text-sm" data-i18n="coming_soon">Coming soon...</p>
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">High Compression</h2>
+            <h2 class="text-xl font-semibold mb-4" data-i18n="format.avif.features.high_compression">High Compression</h2>
             <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-4">
                 <div class="text-white text-xs">AVIF</div>
             </div>
-            <p class="text-gray-600 text-sm">Coming soon...</p>
+            <p class="text-gray-600 text-sm" data-i18n="coming_soon">Coming soon...</p>
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Quality Variants</h2>
+            <h2 class="text-xl font-semibold mb-4" data-i18n="format.avif.features.lossless">Quality Variants</h2>
             <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-4">
                 <div class="text-white text-xs">AVIF</div>
             </div>
-            <p class="text-gray-600 text-sm">Coming soon...</p>
+            <p class="text-gray-600 text-sm" data-i18n="coming_soon">Coming soon...</p>
         </div>
     </div>
 
     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <h3 class="font-semibold text-yellow-800 mb-2">Implementation Status</h3>
+        <h3 class="font-semibold text-yellow-800 mb-2" data-i18n="implementation_status">Implementation Status</h3>
         <p class="text-yellow-700 text-sm">
             AVIF implementations are in development. These will test AV1 Image File Format 
             performance with next-generation compression technology and various quality settings.
         </p>
     </div>
+    
+    <script>
+        // Initialize internationalization
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof I18n !== 'undefined') {
+                const i18n = new I18n();
+            }
+        });
+    </script>
 </body>
 </html>

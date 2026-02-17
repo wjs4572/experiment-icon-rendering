@@ -1,0 +1,3 @@
+- Follow relevant files in .github/instructions/.
+- Apply Playwright rules when modifying UI behavior.
+- Apply security rules when handling user input or authentication.

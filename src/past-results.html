@@ -11,15 +11,47 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js for visualizations -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Internationalization System -->
+    <script src="js/i18n.js"></script>
 </head>
 <body class="min-h-screen bg-gray-50">
     <div class="container mx-auto px-8 py-12">
+        <!-- Language Selector -->
+        <div class="text-right mb-4">
+            <select id="languageSelector" class="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="en">English</option>
+                <option value="en-us">English (United States)</option>
+                <option value="en-gb">English (United Kingdom)</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="ja">日本語</option>
+                <option value="zh">中文</option>
+                <option value="zh-tw">中文 (繁體)</option>
+                <option value="pt">Português</option>
+                <option value="pt-br">Português (Brasil)</option>
+                <option value="pt-pt">Português (Portugal)</option>
+            </select>
+        </div>
+        
         <!-- Header -->
         <header class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-4">Past Test Results Archive</h1>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4" data-i18n="past.title">Past Test Results Archive</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto" data-i18n="past.subtitle">
                 Complete historical record of icon performance tests with full reproducibility data.
             </p>
+            
+            <!-- Browser-specific notice -->
+            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg text-sm max-w-4xl mx-auto">
+                <div class="flex items-center justify-center">
+                    <span class="mr-2 text-yellow-600">🌐</span>
+                    <div>
+                        <strong class="text-yellow-800" data-i18n="past.browser_notice">Browser-Specific Archives:</strong>
+                        <span class="text-yellow-700 ml-1" data-i18n="past.browser_notice_desc">Each archived result includes browser identification and is specific to its execution environment</span>
+                    </div>
+                </div>
+            </div>
+            
             <div class="mt-6 space-x-4">
                 <a href="summary.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     ← Back to Summary
@@ -27,49 +59,79 @@
                 <a href="css.html" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                     Run New Test
                 </a>
-                <button id="clearHistory" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                <button id="clearHistory" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors" data-i18n="past.clear_history">
                     Clear History
                 </button>
-                <button id="exportHistory" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                <button id="exportHistory" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors" data-i18n="past.export_history">
                     Export All Results
                 </button>
+            </div>
+            
+            <!-- System Specifications Info -->
+            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+                <div class="flex items-start">
+                    <span class="mr-2 text-blue-600">📋</span>
+                    <div>
+                        <strong class="text-blue-800" data-i18n="past.system_specs_title">System Specifications for Reproducibility:</strong>
+                        <span class="text-blue-700 ml-1" data-i18n="past.system_specs_desc">
+                            Test results now include comprehensive system information in exports.
+                        </span>
+                        <div class="text-xs text-blue-600 mt-1" data-i18n="past.system_specs_note">
+                            Configure system specs in the main testing interface to ensure your exported results include hardware details for scientific reproducibility.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Future CLI multi-browser testing note -->
+            <div class="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm">
+                <div class="flex items-start">
+                    <span class="mr-2 text-purple-600">🛠</span>
+                    <div>
+                        <strong class="text-purple-800">Future Development:</strong>
+                        <span class="text-purple-700 ml-1">
+                            A future project version may provide CLI tools for automated multi-browser testing and comparison. 
+                            The current version focuses on accurate, reproducible results within individual browser environments.
+                        </span>
+                    </div>
+                </div>
             </div>
         </header>
 
         <!-- Filter Controls -->
         <div class="bg-white p-6 rounded-lg shadow mb-8">
-            <h2 class="text-xl font-semibold mb-4">Filter Results</h2>
+            <h2 class="text-xl font-semibold mb-4" data-i18n="past.filter_title">Filter Results</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Test Type:</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="past.filter.test_type">Test Type:</label>
                     <select id="filterTestType" class="w-full p-2 border rounded text-sm">
-                        <option value="">All Types</option>
-                        <option value="single">Single Icon Tests</option>
-                        <option value="bulk">Bulk Icon Tests</option>
-                        <option value="stress">Stress Tests</option>
-                        <option value="statistical">Statistical Power Tests</option>
-                        <option value="massive">Maximum Power Tests</option>
+                        <option value="" data-i18n="past.filter.all_types">All Types</option>
+                        <option value="single" data-i18n="past.filter.single">Single Icon Tests</option>
+                        <option value="bulk" data-i18n="past.filter.bulk">Bulk Icon Tests</option>
+                        <option value="stress" data-i18n="past.filter.stress">Stress Tests</option>
+                        <option value="statistical" data-i18n="past.filter.statistical">Statistical Power Tests</option>
+                        <option value="massive" data-i18n="past.filter.massive">Maximum Power Tests</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Date Range:</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="past.filter.date_range">Date Range:</label>
                     <select id="filterDate" class="w-full p-2 border rounded text-sm">
-                        <option value="">All Time</option>
-                        <option value="today">Today</option>
-                        <option value="week">Past Week</option>
-                        <option value="month">Past Month</option>
+                        <option value="" data-i18n="past.filter.all_time">All Time</option>
+                        <option value="today" data-i18n="past.filter.today">Today</option>
+                        <option value="week" data-i18n="past.filter.week">Past Week</option>
+                        <option value="month" data-i18n="past.filter.month">Past Month</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Significance:</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="past.filter.significance">Significance:</label>
                     <select id="filterSignificance" class="w-full p-2 border rounded text-sm">
-                        <option value="">All Results</option>
-                        <option value="significant">Significant Only</option>
-                        <option value="not-significant">Not Significant Only</option>
+                        <option value="" data-i18n="past.filter.all_results">All Results</option>
+                        <option value="significant" data-i18n="past.filter.significant">Significant Only</option>
+                        <option value="not-significant" data-i18n="past.filter.not_significant">Not Significant Only</option>
                     </select>
                 </div>
                 <div class="flex items-end">
-                    <button id="applyFilters" class="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                    <button id="applyFilters" class="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm" data-i18n="past.apply_filters">
                         Apply Filters
                     </button>
                 </div>
@@ -78,23 +140,23 @@
 
         <!-- Results Summary -->
         <div id="resultsSummary" class="bg-white p-6 rounded-lg shadow mb-8">
-            <h2 class="text-xl font-semibold mb-4">Test History Summary</h2>
+            <h2 class="text-xl font-semibold mb-4" data-i18n="past.summary_title">Test History Summary</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div class="p-4 bg-blue-50 rounded">
                     <div class="text-2xl font-bold text-blue-600" id="totalTests">0</div>
-                    <div class="text-sm text-gray-600">Total Tests</div>
+                    <div class="text-sm text-gray-600" data-i18n="past.total_tests">Total Tests</div>
                 </div>
                 <div class="p-4 bg-green-50 rounded">
                     <div class="text-2xl font-bold text-green-600" id="significantTests">0</div>
-                    <div class="text-sm text-gray-600">Significant Results</div>
+                    <div class="text-sm text-gray-600" data-i18n="past.significant_tests">Significant Results</div>
                 </div>
                 <div class="p-4 bg-purple-50 rounded">
                     <div class="text-2xl font-bold text-purple-600" id="totalIterations">0</div>
-                    <div class="text-sm text-gray-600">Total Iterations</div>
+                    <div class="text-sm text-gray-600" data-i18n="past.total_iterations">Total Iterations</div>
                 </div>
                 <div class="p-4 bg-yellow-50 rounded">
                     <div class="text-2xl font-bold text-yellow-600" id="totalTestTime">0h 0m</div>
-                    <div class="text-sm text-gray-600">Total Test Time</div>
+                    <div class="text-sm text-gray-600" data-i18n="past.total_test_time">Total Test Time</div>
                 </div>
             </div>
         </div>

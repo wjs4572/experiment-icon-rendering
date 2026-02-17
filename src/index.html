@@ -6,16 +6,36 @@
     <title>Icon Rendering Performance Test Suite</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Internationalization System -->
+    <script src="js/i18n.js"></script>
 </head>
 <body class="min-h-screen bg-gray-100">
     <div class="container mx-auto px-8 py-12">
+        <!-- Language Selector -->
+        <div class="text-right mb-4">
+            <select id="languageSelector" class="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="en">English</option>
+                <option value="en-us">English (United States)</option>
+                <option value="en-gb">English (United Kingdom)</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="ja">日本語</option>
+                <option value="zh">中文</option>
+                <option value="zh-tw">中文 (繁體)</option>
+                <option value="pt">Português</option>
+                <option value="pt-br">Português (Brasil)</option>
+                <option value="pt-pt">Português (Portugal)</option>
+            </select>
+        </div>
+        
         <header class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-4">Icon Rendering Performance Test Suite</h1>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4" data-i18n="app.title">Icon Rendering Performance Test Suite</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto" data-i18n="app.subtitle">
                 Comprehensive testing platform for comparing rendering performance across different icon formats: 
                 CSS, SVG, PNG, GIF, JPEG, WebP, and AVIF.
             </p>
-            <div class="mt-6 text-sm text-gray-500">
+            <div class="mt-6 text-sm text-gray-500" data-i18n="app.description">
                 Test the same icon implementation across multiple formats to measure load times, memory usage, and rendering performance.
             </div>
         </header>
@@ -26,181 +46,181 @@
                 <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
                     <span class="text-white text-sm font-mono">&lt;/&gt;</span>
                 </div>
-                <h2 class="text-xl font-semibold text-gray-800 mb-2">CSS Implementation</h2>
-                <p class="text-gray-600 text-sm mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="format.css.title">CSS Implementation</h2>
+                <p class="text-gray-600 text-sm mb-4" data-i18n="format.css.description">
                     Icon font, pure CSS with transforms, and minimal CSS implementations. 
                     Statistical analysis with 2,000 iterations including p-values, confidence intervals, and power analysis.
                 </p>
                 <div class="space-y-2 text-xs text-gray-500 mb-4">
-                    <div>• Remix Icon Font (square + circular)</div>
-                    <div>• Pure CSS with transforms</div>
-                    <div>• Minimal CSS implementation</div>
-                    <div>• Circular CSS implementation</div>
-                    <div class="text-green-600 font-medium">✓ Statistical analysis (p < 0.05, power > 0.8, 95% CI)</div>
+                    <div data-i18n="format.css.features.icon_font">• Remix Icon Font (square + circular)</div>
+                    <div data-i18n="format.css.features.pure_css">• Pure CSS with transforms</div>
+                    <div data-i18n="format.css.features.minimal">• Minimal CSS implementation</div>
+                    <div data-i18n="format.css.features.circular">• Circular CSS implementation</div>
+                    <div class="text-green-600 font-medium" data-i18n="format.css.features.statistical">✓ Statistical analysis (p < 0.05, power > 0.8, 95% CI)</div>
                 </div>
-                <a href="css.html" class="block w-full bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <a href="css.html" class="block w-full bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors" data-i18n="format.css.test_button">
                     Test CSS Implementations
                 </a>
             </div>
 
             <!-- SVG Tests -->
-            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow flex flex-col h-full">
                 <div class="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
                     <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M4 4a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V4zM4 10a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-2zM10 4a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V4zM10 10a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1v-2z"/>
                     </svg>
                 </div>
-                <h2 class="text-xl font-semibold text-gray-800 mb-2">SVG Implementation</h2>
-                <p class="text-gray-600 text-sm mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="format.svg.title">SVG Implementation</h2>
+                <p class="text-gray-600 text-sm mb-4" data-i18n="format.svg.description">
                     Scalable Vector Graphics implementations - inline, external, and optimized variants.
                 </p>
-                <div class="space-y-2 text-xs text-gray-500 mb-4">
-                    <div>• Inline SVG</div>
-                    <div>• External SVG files</div>
-                    <div>• Optimized SVG</div>
+                <div class="space-y-2 text-xs text-gray-500 mb-4 flex-grow">
+                    <div data-i18n="format.svg.features.inline">• Inline SVG</div>
+                    <div data-i18n="format.svg.features.external">• External SVG files</div>
+                    <div data-i18n="format.svg.features.optimized">• Optimized SVG</div>
                 </div>
-                <a href="svg.html" class="block w-full bg-green-600 text-white text-center py-2 rounded-lg hover:bg-green-700 transition-colors">
+                <a href="svg.html" class="block w-full bg-green-600 text-white text-center py-2 rounded-lg hover:bg-green-700 transition-colors" data-i18n="format.svg.test_button">
                     Test SVG Implementations
                 </a>
             </div>
 
             <!-- PNG Tests -->
-            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow flex flex-col h-full">
                 <div class="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
                     <div class="w-6 h-6 bg-white rounded opacity-90"></div>
                 </div>
-                <h2 class="text-xl font-semibold text-gray-800 mb-2">PNG Implementation</h2>
-                <p class="text-gray-600 text-sm mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="format.png.title">PNG Implementation</h2>
+                <p class="text-gray-600 text-sm mb-4" data-i18n="format.png.description">
                     PNG raster images at various resolutions and optimization levels.
                 </p>
-                <div class="space-y-2 text-xs text-gray-500 mb-4">
-                    <div>• Standard PNG</div>
-                    <div>• High DPI variants</div>
-                    <div>• Compressed PNG</div>
+                <div class="space-y-2 text-xs text-gray-500 mb-4 flex-grow">
+                    <div data-i18n="format.png.features.standard">• Standard PNG</div>
+                    <div data-i18n="format.png.features.high_dpi">• High DPI variants</div>
+                    <div data-i18n="format.png.features.compressed">• Compressed PNG</div>
                 </div>
-                <a href="png.html" class="block w-full bg-purple-600 text-white text-center py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                <a href="png.html" class="block w-full bg-purple-600 text-white text-center py-2 rounded-lg hover:bg-purple-700 transition-colors" data-i18n="format.png.test_button">
                     Test PNG Implementations
                 </a>
             </div>
 
             <!-- GIF Tests -->
-            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow flex flex-col h-full">
                 <div class="w-16 h-16 bg-gradient-to-br from-yellow-600 to-orange-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
                     <div class="w-6 h-6 border-2 border-white rounded"></div>
                 </div>
-                <h2 class="text-xl font-semibold text-gray-800 mb-2">GIF Implementation</h2>
-                <p class="text-gray-600 text-sm mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="format.gif.title">GIF Implementation</h2>
+                <p class="text-gray-600 text-sm mb-4" data-i18n="format.gif.description">
                     GIF format variations including standard and optimized versions.
                 </p>
-                <div class="space-y-2 text-xs text-gray-500 mb-4">
-                    <div>• Standard GIF</div>
-                    <div>• Optimized palette</div>
-                    <div>• Transparency variants</div>
+                <div class="space-y-2 text-xs text-gray-500 mb-4 flex-grow">
+                    <div data-i18n="format.gif.features.standard">• Standard GIF</div>
+                    <div data-i18n="format.gif.features.optimized">• Optimized palette</div>
+                    <div data-i18n="format.gif.features.transparency">• Transparency variants</div>
                 </div>
-                <a href="gif.html" class="block w-full bg-yellow-600 text-white text-center py-2 rounded-lg hover:bg-yellow-700 transition-colors">
+                <a href="gif.html" class="block w-full bg-yellow-600 text-white text-center py-2 rounded-lg hover:bg-yellow-700 transition-colors" data-i18n="format.gif.test_button">
                     Test GIF Implementations
                 </a>
             </div>
 
             <!-- JPEG Tests -->
-            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow flex flex-col h-full">
                 <div class="w-16 h-16 bg-gradient-to-br from-red-600 to-rose-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
                     <div class="w-6 h-6 bg-white rounded-full opacity-90"></div>
                 </div>
-                <h2 class="text-xl font-semibold text-gray-800 mb-2">JPEG Implementation</h2>
-                <p class="text-gray-600 text-sm mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="format.jpeg.title">JPEG Implementation</h2>
+                <p class="text-gray-600 text-sm mb-4" data-i18n="format.jpeg.description">
                     JPEG variants with different quality and compression settings.
                 </p>
-                <div class="space-y-2 text-xs text-gray-500 mb-4">
-                    <div>• High quality JPEG</div>
-                    <div>• Medium compression</div>
-                    <div>• Heavily compressed</div>
+                <div class="space-y-2 text-xs text-gray-500 mb-4 flex-grow">
+                    <div data-i18n="format.jpeg.features.high_quality">• High quality JPEG</div>
+                    <div data-i18n="format.jpeg.features.medium">• Medium compression</div>
+                    <div data-i18n="format.jpeg.features.compressed">• Heavily compressed</div>
                 </div>
-                <a href="jpeg.html" class="block w-full bg-red-600 text-white text-center py-2 rounded-lg hover:bg-red-700 transition-colors">
+                <a href="jpeg.html" class="block w-full bg-red-600 text-white text-center py-2 rounded-lg hover:bg-red-700 transition-colors" data-i18n="format.jpeg.test_button">
                     Test JPEG Implementations
                 </a>
             </div>
 
             <!-- WebP Tests -->
-            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow flex flex-col h-full">
                 <div class="w-16 h-16 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
                     <div class="w-6 h-6 bg-white rounded-lg opacity-90 transform rotate-45"></div>
                 </div>
-                <h2 class="text-xl font-semibold text-gray-800 mb-2">WebP Implementation</h2>
-                <p class="text-gray-600 text-sm mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="format.webp.title">WebP Implementation</h2>
+                <p class="text-gray-600 text-sm mb-4" data-i18n="format.webp.description">
                     Modern WebP format with lossy and lossless compression options.
                 </p>
-                <div class="space-y-2 text-xs text-gray-500 mb-4">
-                    <div>• Lossless WebP</div>
-                    <div>• Lossy WebP</div>
-                    <div>• Optimized WebP</div>
+                <div class="space-y-2 text-xs text-gray-500 mb-4 flex-grow">
+                    <div data-i18n="format.webp.features.lossless">• Lossless WebP</div>
+                    <div data-i18n="format.webp.features.lossy">• Lossy WebP</div>
+                    <div data-i18n="format.webp.features.optimized">• Optimized WebP</div>
                 </div>
-                <a href="webp.html" class="block w-full bg-indigo-600 text-white text-center py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                <a href="webp.html" class="block w-full bg-indigo-600 text-white text-center py-2 rounded-lg hover:bg-indigo-700 transition-colors" data-i18n="format.webp.test_button">
                     Test WebP Implementations
                 </a>
             </div>
 
             <!-- AVIF Tests -->
-            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow flex flex-col h-full">
                 <div class="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
                     <div class="w-6 h-6 bg-white rounded-sm opacity-90 transform -rotate-12"></div>
                 </div>
-                <h2 class="text-xl font-semibold text-gray-800 mb-2">AVIF Implementation</h2>
-                <p class="text-gray-600 text-sm mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="format.avif.title">AVIF Implementation</h2>
+                <p class="text-gray-600 text-sm mb-4" data-i18n="format.avif.description">
                     Next-generation AVIF format with superior compression efficiency.
                 </p>
-                <div class="space-y-2 text-xs text-gray-500 mb-4">
-                    <div>• Standard AVIF</div>
-                    <div>• High compression</div>
-                    <div>• Quality variants</div>
+                <div class="space-y-2 text-xs text-gray-500 mb-4 flex-grow">
+                    <div data-i18n="format.avif.features.standard">• Standard AVIF</div>
+                    <div data-i18n="format.avif.features.high_compression">• High compression</div>
+                    <div data-i18n="format.avif.features.quality">• Quality variants</div>
                 </div>
-                <a href="avif.html" class="block w-full bg-gray-700 text-white text-center py-2 rounded-lg hover:bg-gray-800 transition-colors">
+                <a href="avif.html" class="block w-full bg-gray-700 text-white text-center py-2 rounded-lg hover:bg-gray-800 transition-colors" data-i18n="format.avif.test_button">
                     Test AVIF Implementations
                 </a>
             </div>
 
             <!-- Performance Summary Dashboard -->
-            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border-2 border-amber-200">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border-2 border-amber-200 flex flex-col h-full">
                 <div class="w-16 h-16 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
                     <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
-                <h2 class="text-xl font-semibold text-gray-800 mb-2">Performance Summary</h2>
-                <p class="text-gray-600 text-sm mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="dashboard.title">Performance Summary</h2>
+                <p class="text-gray-600 text-sm mb-4" data-i18n="dashboard.description">
                     Comprehensive dashboard with cross-format performance analysis, statistical comparisons, and data export.
                 </p>
-                <div class="space-y-2 text-xs text-gray-500 mb-4">
-                    <div>• Cross-format comparison charts</div>
-                    <div>• Statistical significance analysis</div>
-                    <div>• Performance ranking & metrics</div>
-                    <div>• CSV/JSON export functionality</div>
-                    <div class="text-amber-600 font-medium">✓ Aggregates results from all test formats</div>
+                <div class="space-y-2 text-xs text-gray-500 mb-4 flex-grow">
+                    <div data-i18n="dashboard.features.comparison">• Cross-format comparison charts</div>
+                    <div data-i18n="dashboard.features.statistical">• Statistical significance analysis</div>
+                    <div data-i18n="dashboard.features.ranking">• Performance ranking & metrics</div>
+                    <div data-i18n="dashboard.features.export">• CSV/JSON export functionality</div>
+                    <div class="text-amber-600 font-medium" data-i18n="dashboard.features.aggregates">✓ Aggregates results from all test formats</div>
                 </div>
-                <a href="summary.html" class="block w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white text-center py-2 rounded-lg hover:from-amber-600 hover:to-yellow-700 transition-all">
+                <a href="summary.html" class="block w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white text-center py-2 rounded-lg hover:from-amber-600 hover:to-yellow-700 transition-all" data-i18n="dashboard.view_button">
                     View Performance Dashboard
                 </a>
             </div>
 
             <!-- Past Results Archive -->
-            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border-2 border-purple-200">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border-2 border-purple-200 flex flex-col h-full">
                 <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
                     <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M8 2v2H7a3 3 0 00-3 3v8a3 3 0 003 3h6a3 3 0 003-3V7a3 3 0 00-3-3h-1V2H8zm0 2h4v2H8V4zm-1 4h6v8H7V8z"/>
                     </svg>
                 </div>
-                <h2 class="text-xl font-semibold text-gray-800 mb-2">Past Results Archive</h2>
-                <p class="text-gray-600 text-sm mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="archive.title">Past Results Archive</h2>
+                <p class="text-gray-600 text-sm mb-4" data-i18n="archive.description">
                     Complete historical record of all performance tests with full reproducibility data and system information.
                 </p>
-                <div class="space-y-2 text-xs text-gray-500 mb-4">
-                    <div>• Complete test configuration history</div>
-                    <div>• System environment tracking</div>
-                    <div>• Reproducibility metadata</div>
-                    <div>• Export individual or batch results</div>
-                    <div class="text-purple-600 font-medium">✓ Full test recreation capability</div>
+                <div class="space-y-2 text-xs text-gray-500 mb-4 flex-grow">
+                    <div data-i18n="archive.features.history">• Complete test configuration history</div>
+                    <div data-i18n="archive.features.environment">• System environment tracking</div>
+                    <div data-i18n="archive.features.reproducibility">• Reproducibility metadata</div>
+                    <div data-i18n="archive.features.export">• Export individual or batch results</div>
+                    <div class="text-purple-600 font-medium" data-i18n="archive.features.recreation">✓ Full test recreation capability</div>
                 </div>
-                <a href="past-results.html" class="block w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-center py-2 rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all">
+                <a href="past-results.html" class="block w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-center py-2 rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all" data-i18n="archive.view_button">
                     View Past Results Archive
                 </a>
             </div>
@@ -208,40 +228,60 @@
         </div>
 
         <div class="mt-16 text-center">
-            <h3 class="text-2xl font-semibold text-gray-800 mb-4">Test Methodology</h3>
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4" data-i18n="methodology.title">Test Methodology</h3>
             <div class="max-w-4xl mx-auto text-gray-600 space-y-4 text-sm">
-                <p>
+                <p data-i18n="methodology.description" data-i18n-html>
                     Each format implementation tests the same icon design - a code slash symbol (<code>&lt;/&gt;</code>) 
                     within a blue-to-teal gradient container. This ensures consistent visual comparison across formats.
                 </p>
-                <p>
+                <p data-i18n="methodology.metrics">
                     Performance metrics include load times, memory usage, rendering performance, file sizes, 
                     and browser compatibility. All tests use the same 48×48 pixel container for standardization.
                 </p>
                 <div class="grid md:grid-cols-3 gap-4 mt-6 text-xs">
                     <div class="bg-blue-50 p-3 rounded">
-                        <div class="font-medium text-blue-800">Vector Formats</div>
-                        <div class="text-blue-600">CSS, SVG - Scalable</div>
+                        <div class="font-medium text-blue-800" data-i18n="methodology.vector.title">Vector Formats</div>
+                        <div class="text-blue-600" data-i18n="methodology.vector.description">CSS, SVG - Scalable</div>
                     </div>
                     <div class="bg-green-50 p-3 rounded">
-                        <div class="font-medium text-green-800">Raster Formats</div>
-                        <div class="text-green-600">PNG, GIF, JPEG, WebP, AVIF</div>
+                        <div class="font-medium text-green-800" data-i18n="methodology.raster.title">Raster Formats</div>
+                        <div class="text-green-600" data-i18n="methodology.raster.description">PNG, GIF, JPEG, WebP, AVIF</div>
                     </div>
                     <div class="bg-purple-50 p-3 rounded">
-                        <div class="font-medium text-purple-800">Metrics</div>
-                        <div class="text-purple-600">Load time, memory, file size</div>
+                        <div class="font-medium text-purple-800" data-i18n="methodology.metrics.title">Metrics</div>
+                        <div class="text-purple-600" data-i18n="methodology.metrics.description">Load time, memory, file size</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <footer class="mt-16 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
-            <p>Icon Rendering Performance Test Suite</p>
+            <p data-i18n="footer.copyright">Icon Rendering Performance Test Suite</p>
             <p class="mt-1">
-                <a href="https://github.com/wjs4572/experiment-icon-rendering" class="text-blue-600 hover:underline">
+                <a href="https://github.com/wjs4572/experiment-icon-rendering" class="text-blue-600 hover:underline" data-i18n="footer.github">
                     View source on GitHub
                 </a>
             </p>
+            
+            <!-- Browser-specific testing notice -->
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-left max-w-4xl mx-auto">
+                <div class="flex items-start">
+                    <span class="mr-3 text-blue-600 text-lg">🌐</span>
+                    <div>
+                        <h4 class="font-semibold text-blue-800 mb-2" data-i18n="notice.browser_notice">Browser-Specific Testing Notice</h4>
+                        <p class="text-blue-700 mb-2">
+                            <strong data-i18n="notice.current_version">Current Version:</strong> <span data-i18n="notice.current_description">This performance testing suite is designed for <strong>in-browser testing only</strong>. 
+                            All experimental test results are specific to the browser environment in which they are executed 
+                            (Chrome, Firefox, Safari, Edge, etc.) and include comprehensive browser identification in exported data.</span>
+                        </p>
+                        <p class="text-blue-600 text-sm">
+                            <strong data-i18n="notice.future_development">Future Development:</strong> <span data-i18n="notice.future_description">A future project version may provide CLI tools for automated 
+                            multi-browser testing and comparison. The current version focuses on providing accurate, 
+                            reproducible results within a single browser environment for scientific validity.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
         </footer>
     </div>
 </body>

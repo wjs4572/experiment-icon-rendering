@@ -11,20 +11,52 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js for visualizations -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Internationalization System -->
+    <script src="js/i18n.js"></script>
 </head>
 <body class="min-h-screen bg-gray-50">
     <div class="container mx-auto px-8 py-12">
+        <!-- Language Selector -->
+        <div class="text-right mb-4">
+            <select id="languageSelector" class="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="en">English</option>
+                <option value="en-us">English (United States)</option>
+                <option value="en-gb">English (United Kingdom)</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="ja">日本語</option>
+                <option value="zh">中文</option>
+                <option value="zh-tw">中文 (繁體)</option>
+                <option value="pt">Português</option>
+                <option value="pt-br">Português (Brasil)</option>
+                <option value="pt-pt">Português (Portugal)</option>
+            </select>
+        </div>
+        
         <!-- Header -->
         <header class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-4">Performance Summary Dashboard</h1>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4" data-i18n="summary.title">Performance Summary Dashboard</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto" data-i18n="summary.subtitle">
                 Comprehensive analysis and comparison of icon rendering performance across all tested formats.
             </p>
+            
+            <!-- Browser-specific notice -->
+            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg text-sm max-w-4xl mx-auto">
+                <div class="flex items-center justify-center">
+                    <span class="mr-2 text-yellow-600">🌐</span>
+                    <div>
+                        <strong class="text-yellow-800" data-i18n="summary.browser_notice">Browser-Specific Results:</strong>
+                        <span class="text-yellow-700 ml-1" data-i18n="summary.browser_notice_desc">All performance data shown is specific to the browser environment where tests were executed</span>
+                    </div>
+                </div>
+            </div>
+            
             <div class="mt-6 space-x-4">
-                <a href="index.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <a href="index.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" data-i18n="summary.back_to_tests">
                     ← Back to Test Suite
                 </a>
-                <a href="past-results.html" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                <a href="past-results.html" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors" data-i18n="summary.view_past_results">
                     📊 View Past Results
                 </a>
             </div>
@@ -33,18 +65,18 @@
         <!-- Data Export & Controls -->
         <div class="flex justify-between items-center mb-8">
             <div class="flex space-x-4">
-                <button id="exportCsv" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <button id="exportCsv" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors" data-i18n="summary.export_csv">
                     Export CSV
                 </button>
-                <button id="exportJson" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button id="exportJson" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" data-i18n="summary.export_json">
                     Export JSON
                 </button>
-                <button id="clearData" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                <button id="clearData" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors" data-i18n="summary.clear_data">
                     Clear All Data
                 </button>
             </div>
             <div class="text-sm text-gray-500">
-                Last updated: <span id="lastUpdated">Never</span>
+                <span data-i18n="summary.last_updated">Last updated:</span> <span id="lastUpdated" data-i18n="summary.never">Never</span>
             </div>
         </div>
 
@@ -55,11 +87,11 @@
 
         <!-- Error/No Data Message -->
         <div id="noDataMessage" class="hidden bg-yellow-50 border border-yellow-200 p-6 rounded-lg text-center">
-            <h3 class="text-lg font-semibold text-yellow-800 mb-2">No Test Data Available</h3>
-            <p class="text-yellow-700 mb-4">
+            <h3 class="text-lg font-semibold text-yellow-800 mb-2" data-i18n="summary.no_data_title">No Test Data Available</h3>
+            <p class="text-yellow-700 mb-4" data-i18n="summary.no_data_desc">
                 No performance test results found. Run some tests to see comparative analysis here.
             </p>
-            <a href="index.html" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
+            <a href="index.html" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors" data-i18n="summary.run_tests">
                 Go Back to Run Tests
             </a>
         </div>
@@ -67,7 +99,7 @@
         <!-- Performance Comparison Chart -->
         <div id="comparisonSection" class="hidden">
             <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Cross-Format Performance Comparison</h2>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6" data-i18n="summary.chart_title">Cross-Format Performance Comparison</h2>
                 <div class="h-96">
                     <canvas id="performanceChart"></canvas>
                 </div>
@@ -75,18 +107,18 @@
 
             <!-- Detailed Results Table -->
             <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Detailed Test Results</h2>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6" data-i18n="summary.results_title">Detailed Test Results</h2>
                 <div class="overflow-x-auto">
                     <table id="resultsTable" class="w-full text-sm">
                         <thead>
                             <tr class="bg-gray-50 border-b">
-                                <th class="p-3 text-left">Format</th>
-                                <th class="p-3 text-center">Test Date</th>
-                                <th class="p-3 text-center">Iterations</th>
-                                <th class="p-3 text-center">Best Performance</th>
-                                <th class="p-3 text-center">Avg ± CI (ms)</th>
-                                <th class="p-3 text-center">Test Duration</th>
-                                <th class="p-3 text-center">Status</th>
+                                <th class="p-3 text-left" data-i18n="summary.table.format">Format</th>
+                                <th class="p-3 text-center" data-i18n="summary.table.date">Test Date</th>
+                                <th class="p-3 text-center" data-i18n="summary.table.iterations">Iterations</th>
+                                <th class="p-3 text-center" data-i18n="summary.table.best">Best Performance</th>
+                                <th class="p-3 text-center" data-i18n="summary.table.average">Avg ± CI (ms)</th>
+                                <th class="p-3 text-center" data-i18n="summary.table.duration">Test Duration</th>
+                                <th class="p-3 text-center" data-i18n="summary.table.status">Status</th>
                             </tr>
                         </thead>
                         <tbody id="resultsTableBody">
@@ -98,7 +130,7 @@
 
             <!-- Statistical Analysis -->
             <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Statistical Analysis Overview</h2>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6" data-i18n="summary.stats_title">Statistical Analysis Overview</h2>
                 <div id="statisticalAnalysis" class="space-y-4">
                     <!-- Statistical analysis will be populated dynamically -->
                 </div>
@@ -106,7 +138,7 @@
 
             <!-- Test Environment Information -->
             <div class="bg-white rounded-xl shadow-lg p-6">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Test Environment</h2>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6" data-i18n="summary.environment_title">Test Environment</h2>
                 <div id="testEnvironment" class="grid md:grid-cols-2 gap-4 text-sm">
                     <!-- Environment info will be populated dynamically -->
                 </div>
@@ -122,6 +154,10 @@
                 this.loadResults();
                 this.setupEventListeners();
                 this.render();
+            }
+
+            t(key) {
+                return window.i18n ? window.i18n.translate(key) : key;
             }
 
             loadResults() {
@@ -157,7 +193,7 @@
                     const latest = new Date(Math.max(...dates));
                     lastUpdatedElement.textContent = latest.toLocaleString();
                 } else {
-                    lastUpdatedElement.textContent = 'Never';
+                    lastUpdatedElement.textContent = this.t('summary.never');
                 }
             }
 
@@ -205,39 +241,39 @@
 
                 container.innerHTML = `
                     <div class="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl p-6">
-                        <h3 class="text-lg font-semibold mb-2">Best Performance</h3>
+                        <h3 class="text-lg font-semibold mb-2">${this.t('summary.card.best_performance')}</h3>
                         <div class="text-2xl font-bold">${bestFormat.format.toUpperCase()}</div>
-                        <div class="text-sm opacity-90">${bestFormat.time.toFixed(3)}ms average</div>
+                        <div class="text-sm opacity-90">${bestFormat.time.toFixed(3)}ms ${this.t('summary.card.ms_average')}</div>
                     </div>
 
                     <div class="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl p-6">
-                        <h3 class="text-lg font-semibold mb-2">Test Coverage</h3>
+                        <h3 class="text-lg font-semibold mb-2">${this.t('summary.card.test_coverage')}</h3>
                         <div class="text-2xl font-bold">${testCoverage}</div>
-                        <div class="text-sm opacity-90">Formats tested</div>
+                        <div class="text-sm opacity-90">${this.t('summary.card.formats_tested')}</div>
                     </div>
 
                     <div class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl p-6">
-                        <h3 class="text-lg font-semibold mb-2">Total Analysis</h3>
+                        <h3 class="text-lg font-semibold mb-2">${this.t('summary.card.total_analysis')}</h3>
                         <div class="text-2xl font-bold">${totalIterations.toLocaleString()}</div>
-                        <div class="text-sm opacity-90">Iterations completed</div>
+                        <div class="text-sm opacity-90">${this.t('summary.card.iterations_completed')}</div>
                     </div>
 
                     <div class="bg-gradient-to-br from-purple-500 to-pink-600 text-white rounded-xl p-6">
-                        <h3 class="text-lg font-semibold mb-2">Testing Time</h3>
+                        <h3 class="text-lg font-semibold mb-2">${this.t('summary.card.testing_time')}</h3>
                         <div class="text-2xl font-bold">${totalDuration.toFixed(1)}s</div>
-                        <div class="text-sm opacity-90">Total duration</div>
+                        <div class="text-sm opacity-90">${this.t('summary.card.total_duration')}</div>
                     </div>
 
                     <div class="bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-xl p-6">
-                        <h3 class="text-lg font-semibold mb-2">Slowest Format</h3>
+                        <h3 class="text-lg font-semibold mb-2">${this.t('summary.card.slowest_format')}</h3>
                         <div class="text-2xl font-bold">${worstFormat.format.toUpperCase()}</div>
-                        <div class="text-sm opacity-90">${worstFormat.time.toFixed(3)}ms average</div>
+                        <div class="text-sm opacity-90">${worstFormat.time.toFixed(3)}ms ${this.t('summary.card.ms_average')}</div>
                     </div>
 
                     <div class="bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-xl p-6">
-                        <h3 class="text-lg font-semibold mb-2">Performance Spread</h3>
+                        <h3 class="text-lg font-semibold mb-2">${this.t('summary.card.performance_spread')}</h3>
                         <div class="text-2xl font-bold">${((worstFormat.time / bestFormat.time - 1) * 100).toFixed(1)}%</div>
-                        <div class="text-sm opacity-90">Worst vs best</div>
+                        <div class="text-sm opacity-90">${this.t('summary.card.worst_vs_best')}</div>
                     </div>
                 `;
             }
@@ -324,7 +360,7 @@
                         plugins: {
                             title: {
                                 display: true,
-                                text: 'Average Rendering Time by Format and Implementation'
+                                text: this.t('summary.chart.render_title')
                             },
                             legend: { display: true }
                         },
@@ -333,13 +369,13 @@
                                 beginAtZero: true,
                                 title: {
                                     display: true,
-                                    text: 'Render Time (ms)'
+                                    text: this.t('summary.chart.y_axis')
                                 }
                             },
                             x: {
                                 title: {
                                     display: true,
-                                    text: 'Implementation Type'
+                                    text: this.t('summary.chart.x_axis')
                                 }
                             }
                         }
@@ -353,7 +389,7 @@
 
                 Object.entries(this.results).forEach(([format, data]) => {
                     const statusClass = data.iterations > 1000 ? 'text-green-600' : 'text-yellow-600';
-                    const status = data.iterations > 1000 ? '✓ Complete' : '⚠ Partial';
+                    const status = data.iterations > 1000 ? this.t('summary.status.complete') : this.t('summary.status.partial');
                     
                     const bestResult = data.performanceRanking?.find(r => r.rank === 1);
                     const bestPerformance = bestResult ? `${bestResult.iconType} (${bestResult.averageTime.toFixed(3)}ms)` : 'N/A';
@@ -386,7 +422,7 @@
                     if (data.statisticalAnalysis && Object.keys(data.statisticalAnalysis).length > 0) {
                         html += `
                             <div class="border border-gray-200 rounded-lg p-4">
-                                <h3 class="font-semibold text-lg text-gray-800 mb-3">${format.toUpperCase()} Statistical Analysis</h3>
+                                <h3 class="font-semibold text-lg text-gray-800 mb-3">${format.toUpperCase()} ${this.t('summary.stats.format_analysis')}</h3>
                                 <div class="grid md:grid-cols-2 gap-4 text-sm">
                         `;
 
@@ -398,9 +434,9 @@
                                 <div class="bg-gray-50 p-3 rounded">
                                     <div class="font-medium mb-1">${comparison}</div>
                                     <div class="space-y-1">
-                                        <div>P-value: ${stats.pValue < 0.001 ? '<0.001' : stats.pValue.toFixed(3)} <span class="${significanceColor}">(${stats.isSignificant ? stats.significanceLevel : 'not significant'})</span></div>
-                                        <div>Power: <span class="${powerColor}">${stats.power.toFixed(2)}</span></div>
-                                        <div>Effect size: ${stats.effectSize.toFixed(2)}</div>
+                                        <div>${this.t('summary.stats.p_value')} ${stats.pValue < 0.001 ? '<0.001' : stats.pValue.toFixed(3)} <span class="${significanceColor}">(${stats.isSignificant ? stats.significanceLevel : this.t('summary.stats.not_significant')})</span></div>
+                                        <div>${this.t('summary.stats.power')} <span class="${powerColor}">${stats.power.toFixed(2)}</span></div>
+                                        <div>${this.t('summary.stats.effect_size')} ${stats.effectSize.toFixed(2)}</div>
                                     </div>
                                 </div>
                             `;
@@ -411,7 +447,7 @@
                 });
 
                 if (html === '') {
-                    html = '<div class="text-gray-500 text-center">No statistical analysis data available. Run tests with multiple implementations to see statistical comparisons.</div>';
+                    html = '<div class="text-gray-500 text-center">' + this.t('summary.stats.no_data') + '</div>';
                 }
 
                 container.innerHTML = html;
@@ -423,23 +459,26 @@
                 // Use the first available result for environment info
                 const firstResult = Object.values(this.results)[0];
                 if (!firstResult || !firstResult.testMetadata) {
-                    container.innerHTML = '<div class="text-gray-500">No environment information available.</div>';
+                    container.innerHTML = '<div class="text-gray-500">' + this.t('summary.env.no_info') + '</div>';
                     return;
                 }
 
                 const metadata = firstResult.testMetadata;
+                const timerAvail = performance.timeOrigin ? this.t('summary.env.available') : this.t('summary.env.unavailable');
+                const memoryAvail = performance.memory ? this.t('summary.env.available') : this.t('summary.env.unavailable');
+                const navAvail = performance.navigation ? this.t('summary.env.available') : this.t('summary.env.unavailable');
                 container.innerHTML = `
                     <div class="space-y-2">
-                        <h4 class="font-medium text-gray-800">Browser Information</h4>
+                        <h4 class="font-medium text-gray-800">${this.t('summary.env.browser_info')}</h4>
                         <div class="text-gray-600">${metadata.userAgent}</div>
                     </div>
                     
                     <div class="space-y-2">
-                        <h4 class="font-medium text-gray-800">Performance Metrics</h4>
+                        <h4 class="font-medium text-gray-800">${this.t('summary.env.perf_metrics')}</h4>
                         <div class="space-y-1 text-gray-600">
-                            <div>High-resolution timer: ${performance.timeOrigin ? '✓ Available' : '✗ Unavailable'}</div>
-                            <div>Memory API: ${performance.memory ? '✓ Available' : '✗ Unavailable'}</div>
-                            <div>Navigation timing: ${performance.navigation ? '✓ Available' : '✗ Unavailable'}</div>
+                            <div>${this.t('summary.env.timer')} ${timerAvail}</div>
+                            <div>${this.t('summary.env.memory')} ${memoryAvail}</div>
+                            <div>${this.t('summary.env.navigation')} ${navAvail}</div>
                         </div>
                     </div>
                 `;
@@ -447,7 +486,7 @@
 
             exportCsv() {
                 if (Object.keys(this.results).length === 0) {
-                    alert('No data available to export.');
+                    alert(this.t('summary.no_export_data'));
                     return;
                 }
 
@@ -480,7 +519,7 @@
 
             exportJson() {
                 if (Object.keys(this.results).length === 0) {
-                    alert('No data available to export.');
+                    alert(this.t('summary.no_export_data'));
                     return;
                 }
 
@@ -501,13 +540,13 @@
             }
 
             clearAllData() {
-                if (confirm('Are you sure you want to clear all test data? This action cannot be undone.')) {
+                if (confirm(this.t('summary.clear_confirm'))) {
                     this.testFormats.forEach(format => {
                         localStorage.removeItem(`iconTestResults_${format}`);
                     });
                     this.results = {};
                     this.render();
-                    alert('All test data has been cleared.');
+                    alert(this.t('summary.clear_success'));
                 }
             }
         }

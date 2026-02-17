@@ -55,7 +55,7 @@ module.exports = defineConfig({
       name: 'webkit',
       use: { 
         ...devices['Desktop Safari'],
-        // WebKit stability improvements for parallel execution
+        // Enhanced WebKit stability for Windows with comprehensive crash prevention
         launchOptions: {
           args: [
             '--disable-accelerated-compositing',
@@ -64,9 +64,24 @@ module.exports = defineConfig({
             '--disable-renderer-backgrounding',
             '--disable-features=TranslateUI',
             '--disable-dev-shm-usage',
-            '--no-startup-window'
-          ]
-        }
+            '--no-startup-window',
+            '--disable-gpu',
+            '--disable-software-rasterizer',
+            '--disable-extensions',
+            '--disable-plugins',
+            '--no-sandbox',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--single-process',
+            '--disable-background-media-suspend'
+          ],
+          // Additional process management
+          handleSIGTERM: false,
+          handleSIGINT: false
+        },
+        // Increase timeouts for WebKit specifically
+        actionTimeout: 15000,
+        navigationTimeout: 45000,
       },
     },
   ],
