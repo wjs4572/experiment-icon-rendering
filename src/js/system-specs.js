@@ -830,3 +830,12 @@ document.addEventListener('languageChanged', () => {
         window.systemSpecsManager.updateStatusDisplay();
     }
 });
+
+// Re-render modal when i18n finishes initial async load
+// (modal may have been built before translations were available)
+document.addEventListener('i18nReady', () => {
+    if (window.systemSpecsManager && window.systemSpecsManager.modalInitialized) {
+        window.systemSpecsManager.refreshModal();
+        window.systemSpecsManager.updateStatusDisplay();
+    }
+});
