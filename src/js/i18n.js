@@ -33,6 +33,11 @@ class I18n {
         
         // Store language preference
         localStorage.setItem('preferredLanguage', this.currentLanguage);
+
+        // Dispatch ready event so pages can initialize after translations are loaded
+        document.dispatchEvent(new CustomEvent('i18nReady', {
+            detail: { language: this.currentLanguage }
+        }));
     }
 
     detectLanguage() {

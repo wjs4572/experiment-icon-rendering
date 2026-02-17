@@ -64,7 +64,7 @@
 
         <!-- Data Export & Controls -->
         <div class="flex justify-between items-center mb-8">
-            <div class="flex space-x-4">
+            <div class="flex space-x-4 flex-wrap gap-2">
                 <button id="exportCsv" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors" data-i18n="summary.export_csv">
                     Export CSV
                 </button>
@@ -89,11 +89,74 @@
         <div id="noDataMessage" class="hidden bg-yellow-50 border border-yellow-200 p-6 rounded-lg text-center">
             <h3 class="text-lg font-semibold text-yellow-800 mb-2" data-i18n="summary.no_data_title">No Test Data Available</h3>
             <p class="text-yellow-700 mb-4" data-i18n="summary.no_data_desc">
-                No performance test results found. Run some tests to see comparative analysis here.
+                No performance test results found. Run some tests or import previous results from the Past Results Archive.
             </p>
-            <a href="index.html" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors" data-i18n="summary.run_tests">
-                Go Back to Run Tests
-            </a>
+            <div class="space-x-4">
+                <a href="index.html" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors" data-i18n="summary.run_tests">
+                    Go Back to Run Tests
+                </a>
+                <a href="past-results.html" class="inline-block px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors" data-i18n="summary.view_past_results">
+                    📊 View Past Results
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div id="summaryFilterSection" class="bg-white p-6 rounded-xl shadow-lg mb-8 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-800" data-i18n="summary.filter_title">Filter Results</h2>
+                <div class="flex items-center gap-3">
+                    <span id="summaryFilterCount" class="text-sm text-gray-500"></span>
+                    <button id="summaryClearFilters" class="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors hidden" data-i18n="past.clear_filters">
+                        Clear Filters
+                    </button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1" for="summaryFilterTestType" data-i18n="past.filter.test_type">Test Type:</label>
+                    <select id="summaryFilterTestType" class="w-full p-1.5 border rounded text-sm">
+                        <option value="" data-i18n="past.filter.all_types">All Types</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1" for="summaryFilterDate" data-i18n="past.filter.date_range">Date Range:</label>
+                    <select id="summaryFilterDate" class="w-full p-1.5 border rounded text-sm">
+                        <option value="" data-i18n="past.filter.all_time">All Time</option>
+                        <option value="today" data-i18n="past.filter.today">Today</option>
+                        <option value="week" data-i18n="past.filter.week">Past Week</option>
+                        <option value="month" data-i18n="past.filter.month">Past Month</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1" for="summaryFilterSignificance" data-i18n="past.filter.significance">Significance:</label>
+                    <select id="summaryFilterSignificance" class="w-full p-1.5 border rounded text-sm">
+                        <option value="" data-i18n="past.filter.all_results">All Results</option>
+                        <option value="significant" data-i18n="past.filter.significant">Significant Only</option>
+                        <option value="not-significant" data-i18n="past.filter.not_significant">Not Significant Only</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1" for="summaryFilterOriginalSource" data-i18n="past.filter.original_source">Original Source:</label>
+                    <select id="summaryFilterOriginalSource" class="w-full p-1.5 border rounded text-sm">
+                        <option value="" data-i18n="past.filter.all_sources">All Sources</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1" for="summaryFilterInputSource" data-i18n="past.filter.input_source">Input Source:</label>
+                    <select id="summaryFilterInputSource" class="w-full p-1.5 border rounded text-sm">
+                        <option value="" data-i18n="past.filter.all_inputs">All Inputs</option>
+                        <option value="Current Data" data-i18n="past.filter.current_data">Current Data (Live Tests)</option>
+                        <option value="file" data-i18n="past.filter.imported_file">Imported File</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1" for="summaryFilterFileName" data-i18n="past.filter.file_name">File Name:</label>
+                    <select id="summaryFilterFileName" class="w-full p-1.5 border rounded text-sm">
+                        <option value="" data-i18n="past.filter.all_files">All Files</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <!-- Performance Comparison Chart -->
@@ -118,6 +181,9 @@
                                 <th class="p-3 text-center" data-i18n="summary.table.best">Best Performance</th>
                                 <th class="p-3 text-center" data-i18n="summary.table.average">Avg ± CI (ms)</th>
                                 <th class="p-3 text-center" data-i18n="summary.table.duration">Test Duration</th>
+                                <th class="p-3 text-center" data-i18n="summary.table.source_page">Source Page</th>
+                                <th class="p-3 text-center" data-i18n="summary.table.data_source">Data Source</th>
+                                <th class="p-3 text-center" data-i18n="summary.table.imported">Imported</th>
                                 <th class="p-3 text-center" data-i18n="summary.table.status">Status</th>
                             </tr>
                         </thead>
@@ -151,8 +217,13 @@
             constructor() {
                 this.testFormats = ['css', 'svg', 'png', 'gif', 'jpeg', 'webp', 'avif'];
                 this.results = {};
+                this.archiveHistory = [];
+                this.chartInstance = null;
+                this.loadArchiveHistory();
                 this.loadResults();
                 this.setupEventListeners();
+                this.populateFilterDropdowns();
+                this.restoreFilterState();
                 this.render();
             }
 
@@ -160,27 +231,188 @@
                 return window.i18n ? window.i18n.translate(key) : key;
             }
 
+            getLocale() {
+                return window.i18n?.currentLanguage || navigator.language || 'en';
+            }
+
+            formatDate(dateStr) {
+                if (!dateStr) return 'N/A';
+                const d = new Date(dateStr);
+                return isNaN(d) ? 'N/A' : d.toLocaleString(this.getLocale());
+            }
+
+            formatNumber(num) {
+                return typeof num === 'number' ? num.toLocaleString(this.getLocale()) : num;
+            }
+
+            inferFormatFromResults(results) {
+                if (!results || typeof results !== 'object') return null;
+                const keys = Object.keys(results);
+                if (keys.length === 0) return null;
+                const firstKey = keys[0].toLowerCase();
+                if (firstKey.includes('css'))   return 'css';
+                if (firstKey.includes('svg'))   return 'svg';
+                if (firstKey.includes('png'))   return 'png';
+                if (firstKey.includes('gif'))   return 'gif';
+                if (firstKey.includes('jpeg'))  return 'jpeg';
+                if (firstKey.includes('webp'))  return 'webp';
+                if (firstKey.includes('avif'))  return 'avif';
+                return null;
+            }
+
+            loadArchiveHistory() {
+                try {
+                    const raw = localStorage.getItem('iconTestHistory');
+                    this.archiveHistory = raw ? JSON.parse(raw) : [];
+                } catch (e) {
+                    console.error('Error loading archive history:', e);
+                    this.archiveHistory = [];
+                }
+            }
+
+            getFilterState() {
+                return {
+                    testType: document.getElementById('summaryFilterTestType')?.value || '',
+                    dateRange: document.getElementById('summaryFilterDate')?.value || '',
+                    significance: document.getElementById('summaryFilterSignificance')?.value || '',
+                    originalSource: document.getElementById('summaryFilterOriginalSource')?.value || '',
+                    inputSource: document.getElementById('summaryFilterInputSource')?.value || '',
+                    fileName: document.getElementById('summaryFilterFileName')?.value || ''
+                };
+            }
+
+            hasActiveFilters() {
+                const f = this.getFilterState();
+                return !!(f.testType || f.dateRange || f.significance || f.originalSource || f.inputSource || f.fileName);
+            }
+
+            filterArchiveEntries(entries) {
+                const f = this.getFilterState();
+                if (!f.testType && !f.dateRange && !f.significance && !f.originalSource && !f.inputSource && !f.fileName) {
+                    return entries;
+                }
+                let filtered = [...entries];
+                if (f.testType) {
+                    filtered = filtered.filter(r => r.testConfiguration?.testType === f.testType);
+                }
+                if (f.dateRange) {
+                    const now = new Date();
+                    let cutoff;
+                    if (f.dateRange === 'today') cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    else if (f.dateRange === 'week') cutoff = new Date(now.getTime() - 7*24*60*60*1000);
+                    else if (f.dateRange === 'month') cutoff = new Date(now.getTime() - 30*24*60*60*1000);
+                    if (cutoff) filtered = filtered.filter(r => new Date(r.timestamp) >= cutoff);
+                }
+                if (f.significance === 'significant') {
+                    filtered = filtered.filter(r => r.summary?.significantDifferences > 0);
+                } else if (f.significance === 'not-significant') {
+                    filtered = filtered.filter(r => !r.summary?.significantDifferences || r.summary.significantDifferences === 0);
+                }
+                if (f.originalSource) {
+                    filtered = filtered.filter(r => {
+                        const src = r.sourceInfo?.originalSource || (this.inferFormatFromResults(r.results) + '.html');
+                        return src === f.originalSource;
+                    });
+                }
+                if (f.inputSource === 'Current Data') {
+                    filtered = filtered.filter(r => !r.sourceInfo?.fileName || r.sourceInfo.fileName === 'Current Data');
+                } else if (f.inputSource === 'file') {
+                    filtered = filtered.filter(r => r.sourceInfo?.fileName && r.sourceInfo.fileName !== 'Current Data');
+                }
+                if (f.fileName) {
+                    filtered = filtered.filter(r => r.sourceInfo?.fileName === f.fileName);
+                }
+                return filtered;
+            }
+
             loadResults() {
                 this.results = {};
                 let hasData = false;
+                const f = this.getFilterState();
+                const inputFilter = f.inputSource;
+                const fileFilter = f.fileName;
 
-                this.testFormats.forEach(format => {
-                    try {
-                        const data = localStorage.getItem(`iconTestResults_${format}`);
-                        if (data) {
-                            this.results[format] = JSON.parse(data);
+                // 1. Load per-format keys (from live test sessions) — skip if filtering to imported only
+                if (inputFilter !== 'file' && !fileFilter) {
+                    this.testFormats.forEach(format => {
+                        try {
+                            const data = localStorage.getItem(`iconTestResults_${format}`);
+                            if (data) {
+                                const parsed = JSON.parse(data);
+                                // Apply source filter to live data
+                                if (f.originalSource && f.originalSource !== `${format}.html`) return;
+                                parsed._sourceInfo = {
+                                    originalSource: `${format}.html`,
+                                    fileName: 'Current Data',
+                                    importedAt: null
+                                };
+                                parsed._dataOrigin = 'live';
+                                this.results[format] = parsed;
+                                hasData = true;
+                            }
+                        } catch (error) {
+                            console.error(`Error loading ${format} results:`, error);
+                        }
+                    });
+                }
+
+                // 2. Load from iconTestHistory archive — apply filters, then pick latest per format
+                try {
+                    const filteredHistory = this.filterArchiveEntries(this.archiveHistory);
+                    const latestByFormat = {};
+                    filteredHistory.forEach(entry => {
+                        const format = this.inferFormatFromResults(entry.results);
+                        if (!format) return;
+                        if (!latestByFormat[format] || new Date(entry.timestamp) > new Date(latestByFormat[format].timestamp)) {
+                            latestByFormat[format] = entry;
+                        }
+                    });
+
+                    Object.entries(latestByFormat).forEach(([format, entry]) => {
+                        const converted = this.convertHistoryToResult(entry);
+                        const existing = this.results[format];
+                        if (!existing || (existing._dataOrigin !== 'live')) {
+                            this.results[format] = converted;
+                            hasData = true;
+                        } else if (existing && new Date(entry.timestamp) > new Date(existing.testDate)) {
+                            this.results[format] = converted;
                             hasData = true;
                         }
-                    } catch (error) {
-                        console.error(`Error loading ${format} results:`, error);
-                    }
-                });
+                    });
+                } catch (error) {
+                    console.error('Error loading archive results:', error);
+                }
 
                 if (hasData) {
                     this.updateLastUpdated();
                 }
 
                 return hasData;
+            }
+
+            convertHistoryToResult(entry) {
+                const sourceInfo = entry.sourceInfo || {};
+                return {
+                    testDate: entry.testDate || entry.timestamp,
+                    testType: entry.testConfiguration?.testType || 'unknown',
+                    iterations: entry.testConfiguration?.iterations || 0,
+                    testDuration: entry.testConfiguration?.testDuration || 0,
+                    results: entry.results,
+                    statisticalAnalysis: entry.statisticalAnalysis || {},
+                    performanceRanking: entry.performanceRanking || [],
+                    testMetadata: {
+                        userAgent: entry.systemInfo?.userAgent || 'Unknown',
+                        timestamp: entry.systemInfo?.timestamp || 0,
+                        testingEnvironment: 'Archive',
+                        browserSpecific: true
+                    },
+                    _sourceInfo: {
+                        originalSource: sourceInfo.originalSource || (this.inferFormatFromResults(entry.results) + '.html'),
+                        fileName: sourceInfo.fileName || 'Current Data',
+                        importedAt: sourceInfo.importedAt || null
+                    },
+                    _dataOrigin: 'archive'
+                };
             }
 
             updateLastUpdated() {
@@ -191,7 +423,7 @@
                 
                 if (dates.length > 0) {
                     const latest = new Date(Math.max(...dates));
-                    lastUpdatedElement.textContent = latest.toLocaleString();
+                    lastUpdatedElement.textContent = this.formatDate(latest);
                 } else {
                     lastUpdatedElement.textContent = this.t('summary.never');
                 }
@@ -201,11 +433,147 @@
                 document.getElementById('exportCsv').addEventListener('click', () => this.exportCsv());
                 document.getElementById('exportJson').addEventListener('click', () => this.exportJson());
                 document.getElementById('clearData').addEventListener('click', () => this.clearAllData());
+                document.getElementById('summaryClearFilters').addEventListener('click', () => this.clearFilters());
+
+                // Auto-apply filters on change
+                const filterIds = ['summaryFilterTestType', 'summaryFilterDate', 'summaryFilterSignificance', 'summaryFilterOriginalSource', 'summaryFilterInputSource', 'summaryFilterFileName'];
+                filterIds.forEach(id => {
+                    document.getElementById(id).addEventListener('change', () => this.onFilterChange());
+                });
+            }
+
+            populateFilterDropdowns() {
+                // Test type
+                const typeSelect = document.getElementById('summaryFilterTestType');
+                const types = new Set();
+                this.archiveHistory.forEach(r => {
+                    const t = r.testConfiguration?.testType;
+                    if (t) types.add(t);
+                });
+                const order = ['single', 'bulk', 'stress', 'statistical', 'massive', 'ultra', 'extreme', 'css'];
+                const descMap = {
+                    'css': 'CSS Test (legacy)', 'single': 'Single Icon Tests', 'bulk': 'Bulk Icon Tests',
+                    'stress': 'Stress Tests', 'statistical': 'Statistical Power Tests',
+                    'massive': 'Maximum Power Tests', 'ultra': 'Ultra Power Tests', 'extreme': 'Extreme Power Tests'
+                };
+                const ordered = order.filter(t => types.has(t));
+                types.forEach(t => { if (!ordered.includes(t)) ordered.push(t); });
+                ordered.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t;
+                    opt.textContent = descMap[t] || t;
+                    typeSelect.appendChild(opt);
+                });
+
+                // Original source
+                const srcSelect = document.getElementById('summaryFilterOriginalSource');
+                const sources = new Set();
+                this.archiveHistory.forEach(r => {
+                    const src = r.sourceInfo?.originalSource || (this.inferFormatFromResults(r.results) + '.html');
+                    if (src && src !== 'null.html' && src !== 'unknown') sources.add(src);
+                });
+                // Also add from live per-format keys
+                this.testFormats.forEach(f => {
+                    try {
+                        if (localStorage.getItem(`iconTestResults_${f}`)) sources.add(`${f}.html`);
+                    } catch(e) {}
+                });
+                Array.from(sources).sort().forEach(src => {
+                    const opt = document.createElement('option');
+                    opt.value = src;
+                    opt.textContent = src;
+                    srcSelect.appendChild(opt);
+                });
+
+                // File name
+                const fnSelect = document.getElementById('summaryFilterFileName');
+                const fnames = new Set();
+                this.archiveHistory.forEach(r => {
+                    const fn = r.sourceInfo?.fileName;
+                    if (fn && fn !== 'Current Data') fnames.add(fn);
+                });
+                Array.from(fnames).sort().forEach(fn => {
+                    const opt = document.createElement('option');
+                    opt.value = fn;
+                    opt.textContent = fn;
+                    fnSelect.appendChild(opt);
+                });
+            }
+
+            restoreFilterState() {
+                try {
+                    const raw = localStorage.getItem('iconTestFilters');
+                    if (!raw) return;
+                    const state = JSON.parse(raw);
+                    if (state.testType) document.getElementById('summaryFilterTestType').value = state.testType;
+                    if (state.dateRange) document.getElementById('summaryFilterDate').value = state.dateRange;
+                    if (state.significance) document.getElementById('summaryFilterSignificance').value = state.significance;
+                    if (state.originalSource) document.getElementById('summaryFilterOriginalSource').value = state.originalSource;
+                    if (state.inputSource) document.getElementById('summaryFilterInputSource').value = state.inputSource;
+                    if (state.fileName) document.getElementById('summaryFilterFileName').value = state.fileName;
+                    // Reload with restored filters
+                    if (this.hasActiveFilters()) {
+                        this.loadResults();
+                    }
+                } catch(e) {
+                    console.error('Error restoring filter state:', e);
+                }
+            }
+
+            saveFilterState() {
+                const state = this.getFilterState();
+                localStorage.setItem('iconTestFilters', JSON.stringify(state));
+            }
+
+            onFilterChange() {
+                this.saveFilterState();
+                this.loadResults();
+                this.render();
+                this.updateFilterUI();
+            }
+
+            clearFilters() {
+                document.getElementById('summaryFilterTestType').value = '';
+                document.getElementById('summaryFilterDate').value = '';
+                document.getElementById('summaryFilterSignificance').value = '';
+                document.getElementById('summaryFilterOriginalSource').value = '';
+                document.getElementById('summaryFilterInputSource').value = '';
+                document.getElementById('summaryFilterFileName').value = '';
+                this.saveFilterState();
+                this.loadResults();
+                this.render();
+                this.updateFilterUI();
+            }
+
+            updateFilterUI() {
+                const clearBtn = document.getElementById('summaryClearFilters');
+                const countEl = document.getElementById('summaryFilterCount');
+                const active = this.hasActiveFilters();
+
+                if (active) {
+                    clearBtn.classList.remove('hidden');
+                    countEl.textContent = `${Object.keys(this.results).length} formats shown`;
+                } else {
+                    clearBtn.classList.add('hidden');
+                    countEl.textContent = '';
+                }
             }
 
             render() {
                 const hasData = Object.keys(this.results).length > 0;
+                const filterSection = document.getElementById('summaryFilterSection');
+                // Show filters whenever there's any underlying data (archive or live), even if current filters yield nothing
+                const hasAnyData = this.archiveHistory.length > 0 || this.testFormats.some(f => { try { return !!localStorage.getItem(`iconTestResults_${f}`); } catch(e) { return false; } });
                 
+                if (filterSection) {
+                    if (hasAnyData) {
+                        filterSection.classList.remove('hidden');
+                    } else {
+                        filterSection.classList.add('hidden');
+                    }
+                }
+                this.updateFilterUI();
+
                 if (!hasData) {
                     document.getElementById('noDataMessage').classList.remove('hidden');
                     document.getElementById('comparisonSection').classList.add('hidden');
@@ -232,8 +600,10 @@
 
                 // Calculate overall statistics
                 const allResults = Object.values(this.results);
-                const totalIterations = allResults.reduce((sum, r) => sum + r.iterations, 0);
-                const totalDuration = allResults.reduce((sum, r) => sum + r.testDuration, 0);
+                const totalIterations = allResults.reduce((sum, r) => sum + (r.iterations || 0), 0);
+                const totalDuration = allResults.reduce((sum, r) => sum + (r.testDuration || 0), 0);
+                const archiveCount = allResults.filter(r => r._dataOrigin === 'archive').length;
+                const liveCount = allResults.filter(r => r._dataOrigin === 'live').length;
                 
                 const bestFormat = this.getBestPerformingFormat();
                 const worstFormat = this.getWorstPerformingFormat();
@@ -254,7 +624,7 @@
 
                     <div class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl p-6">
                         <h3 class="text-lg font-semibold mb-2">${this.t('summary.card.total_analysis')}</h3>
-                        <div class="text-2xl font-bold">${totalIterations.toLocaleString()}</div>
+                        <div class="text-2xl font-bold">${this.formatNumber(totalIterations)}</div>
                         <div class="text-sm opacity-90">${this.t('summary.card.iterations_completed')}</div>
                     </div>
 
@@ -271,9 +641,9 @@
                     </div>
 
                     <div class="bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-xl p-6">
-                        <h3 class="text-lg font-semibold mb-2">${this.t('summary.card.performance_spread')}</h3>
-                        <div class="text-2xl font-bold">${((worstFormat.time / bestFormat.time - 1) * 100).toFixed(1)}%</div>
-                        <div class="text-sm opacity-90">${this.t('summary.card.worst_vs_best')}</div>
+                        <h3 class="text-lg font-semibold mb-2">${this.t('summary.card.data_sources')}</h3>
+                        <div class="text-2xl font-bold">${liveCount + archiveCount}</div>
+                        <div class="text-sm opacity-90">${liveCount} ${this.t('summary.card.live')} / ${archiveCount} ${this.t('summary.card.archive')}</div>
                     </div>
                 `;
             }
@@ -341,8 +711,9 @@
                             return result ? result.averageTime : null;
                         });
 
+                        const labelSuffix = data._dataOrigin === 'archive' ? ' (Archive)' : '';
                         datasets.push({
-                            label: format.toUpperCase(),
+                            label: format.toUpperCase() + labelSuffix,
                             data: chartData,
                             backgroundColor: colors[format] || '#6B7280',
                             borderColor: colors[format] || '#6B7280',
@@ -351,7 +722,13 @@
                     }
                 });
 
-                new Chart(ctx, {
+                // Destroy previous chart instance to allow re-rendering
+                if (this.chartInstance) {
+                    this.chartInstance.destroy();
+                    this.chartInstance = null;
+                }
+
+                this.chartInstance = new Chart(ctx, {
                     type: 'bar',
                     data: { labels, datasets },
                     options: {
@@ -398,14 +775,26 @@
                         `${bestResult.averageTime.toFixed(3)} ± [${bestResult.confidenceInterval.lower.toFixed(3)}, ${bestResult.confidenceInterval.upper.toFixed(3)}]` :
                         'N/A';
 
+                    const source = data._sourceInfo || {};
+                    const originalSource = source.originalSource || `${format}.html`;
+                    const fileName = source.fileName || 'Current Data';
+                    const importedAt = source.importedAt ? this.formatDate(source.importedAt) : 'N/A';
+                    const isArchive = data._dataOrigin === 'archive';
+                    const sourceBadge = isArchive 
+                        ? '<span class="inline-block px-1.5 py-0.5 text-xs rounded bg-indigo-100 text-indigo-700">Archive</span>'
+                        : '<span class="inline-block px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Live</span>';
+
                     html += `
                         <tr class="border-b hover:bg-gray-50">
-                            <td class="p-3 font-medium uppercase">${format}</td>
-                            <td class="p-3 text-center text-sm">${new Date(data.testDate).toLocaleString()}</td>
-                            <td class="p-3 text-center">${data.iterations.toLocaleString()}</td>
+                            <td class="p-3 font-medium uppercase">${format} ${sourceBadge}</td>
+                            <td class="p-3 text-center text-sm">${this.formatDate(data.testDate)}</td>
+                            <td class="p-3 text-center">${this.formatNumber(data.iterations || 0)}</td>
                             <td class="p-3 text-center text-sm">${bestPerformance}</td>
                             <td class="p-3 text-center">${avgWithCI}</td>
-                            <td class="p-3 text-center">${data.testDuration.toFixed(1)}s</td>
+                            <td class="p-3 text-center">${(data.testDuration || 0).toFixed(1)}s</td>
+                            <td class="p-3 text-center text-xs">${originalSource}</td>
+                            <td class="p-3 text-center text-xs max-w-[150px] truncate" title="${fileName}">${fileName}</td>
+                            <td class="p-3 text-center text-xs">${importedAt}</td>
                             <td class="p-3 text-center ${statusClass}">${status}</td>
                         </tr>
                     `;
@@ -420,21 +809,25 @@
 
                 Object.entries(this.results).forEach(([format, data]) => {
                     if (data.statisticalAnalysis && Object.keys(data.statisticalAnalysis).length > 0) {
+                        const originLabel = data._dataOrigin === 'archive' ? ' (Archive)' : '';
                         html += `
                             <div class="border border-gray-200 rounded-lg p-4">
-                                <h3 class="font-semibold text-lg text-gray-800 mb-3">${format.toUpperCase()} ${this.t('summary.stats.format_analysis')}</h3>
+                                <h3 class="font-semibold text-lg text-gray-800 mb-3">${format.toUpperCase()}${originLabel} ${this.t('summary.stats.format_analysis')}</h3>
                                 <div class="grid md:grid-cols-2 gap-4 text-sm">
                         `;
 
                         Object.entries(data.statisticalAnalysis).forEach(([comparison, stats]) => {
                             const significanceColor = stats.isSignificant ? 'text-green-600' : 'text-red-600';
                             const powerColor = stats.power > 0.8 ? 'text-green-600' : stats.power > 0.5 ? 'text-yellow-600' : 'text-red-600';
+                            const sigLabel = stats.isSignificant 
+                                ? this.t('summary.stats.sig_' + stats.significanceLevel) 
+                                : this.t('summary.stats.not_significant');
                             
                             html += `
                                 <div class="bg-gray-50 p-3 rounded">
                                     <div class="font-medium mb-1">${comparison}</div>
                                     <div class="space-y-1">
-                                        <div>${this.t('summary.stats.p_value')} ${stats.pValue < 0.001 ? '<0.001' : stats.pValue.toFixed(3)} <span class="${significanceColor}">(${stats.isSignificant ? stats.significanceLevel : this.t('summary.stats.not_significant')})</span></div>
+                                        <div>${this.t('summary.stats.p_value')} ${stats.pValue < 0.001 ? '<0.001' : stats.pValue.toFixed(3)} <span class="${significanceColor}">(${sigLabel})</span></div>
                                         <div>${this.t('summary.stats.power')} <span class="${powerColor}">${stats.power.toFixed(2)}</span></div>
                                         <div>${this.t('summary.stats.effect_size')} ${stats.effectSize.toFixed(2)}</div>
                                     </div>
@@ -491,29 +884,33 @@
                 }
 
                 const rows = [
-                    ['Format', 'Test Date', 'Iterations', 'Implementation', 'Rank', 'Average Time (ms)', 'CI Lower', 'CI Upper', 'Std Dev', 'Sample Size']
+                    ['Format', 'Test Date', 'Iterations', 'Implementation', 'Rank', 'Average Time (ms)', 'CI Lower', 'CI Upper', 'Std Dev', 'Sample Size', 'Source Page', 'Data Source', 'Imported']
                 ];
 
                 Object.entries(this.results).forEach(([format, data]) => {
                     if (data.performanceRanking) {
+                        const source = data._sourceInfo || {};
                         data.performanceRanking.forEach(result => {
                             rows.push([
                                 format.toUpperCase(),
                                 new Date(data.testDate).toISOString(),
-                                data.iterations,
+                                data.iterations || 0,
                                 result.iconType,
                                 result.rank,
                                 result.averageTime.toFixed(6),
                                 result.confidenceInterval.lower.toFixed(6),
                                 result.confidenceInterval.upper.toFixed(6),
                                 result.standardDeviation.toFixed(6),
-                                result.sampleSize
+                                result.sampleSize,
+                                source.originalSource || `${format}.html`,
+                                source.fileName || 'Current Data',
+                                source.importedAt || 'N/A'
                             ]);
                         });
                     }
                 });
 
-                const csvContent = rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\\n');
+                const csvContent = rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
                 this.downloadFile('icon_performance_results.csv', csvContent, 'text/csv');
             }
 
@@ -551,9 +948,31 @@
             }
         }
 
-        // Initialize when DOM is ready
+        // Initialize after i18n is ready so translations are available for dynamic content
+        let dashboardInstance = null;
+        function initDashboard() {
+            if (!dashboardInstance) {
+                dashboardInstance = new SummaryDashboard();
+            } else {
+                // Re-render on language change
+                dashboardInstance.loadResults();
+                dashboardInstance.render();
+            }
+        }
+
+        document.addEventListener('i18nReady', initDashboard);
+        document.addEventListener('languageChanged', function() {
+            if (dashboardInstance) {
+                dashboardInstance.loadResults();
+                dashboardInstance.render();
+            }
+        });
+
+        // Fallback: if i18n was already ready before this listener was attached
         document.addEventListener('DOMContentLoaded', function() {
-            new SummaryDashboard();
+            setTimeout(function() {
+                if (!dashboardInstance) initDashboard();
+            }, 500);
         });
     </script>
 </body>

@@ -1218,6 +1218,13 @@ class StressTestManager {
                     significantDifferences: this.getSignificantCount(testResults.statisticalAnalysis),
                     averageRenderTime: this.getAverageRenderTime(testResults.results),
                     performanceSpread: this.getPerformanceSpread(testResults.performanceRanking)
+                },
+
+                // Source tracking for provenance
+                sourceInfo: {
+                    originalSource: this.detectOriginalSource(),
+                    fileName: 'Current Data',
+                    importedAt: null
                 }
             };
 
@@ -1240,13 +1247,23 @@ class StressTestManager {
 
     getTestTypeDescription(testType) {
         const descriptions = {
+            'css': 'CSS Test (legacy)',
             'single': 'Single Icon Test (2,000 iterations)',
             'bulk': 'Bulk Icon Test (100 icons × 50 iterations)', 
             'stress': 'Stress Test (500 icons × 200 iterations)',
             'statistical': 'Statistical Power Test (100 icons × 200 iterations)',
-            'massive': 'Maximum Power Test (100 icons × 1,000 iterations)'
+            'massive': 'Maximum Power Test (100 icons × 1,000 iterations)',
+            'ultra': 'Ultra Power Test (100 icons × 5,000 iterations)',
+            'extreme': 'Extreme Power Test (100 icons × 10,000 iterations)'
         };
         return descriptions[testType] || 'Unknown Test Type';
+    }
+
+    detectOriginalSource() {
+        // Determine which test page we are on based on the current URL
+        const path = window.location.pathname;
+        const fileName = path.split('/').pop() || 'unknown';
+        return fileName;
     }
 
     getFastestIcon(ranking) {
