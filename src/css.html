@@ -269,7 +269,7 @@
                         <div class="flex items-center">
                             <span class="mr-2">📊</span>
                             <span class="text-blue-800" data-i18n="css.system_status">System Information Status: </span>
-                            <span id="systemInfoStatus" class="ml-1">⚠️ <a href="#" onclick="window.stressTestManager.showSystemInfoModal()" class="text-blue-600 hover:underline" data-i18n="css.add_system_specs">Add system specs</a></span>
+                            <span id="systemInfoStatus" class="ml-1">⚠️ <a href="#" onclick="window.systemSpecsManager && window.systemSpecsManager.showModal()" class="text-blue-600 hover:underline" data-i18n="css.add_system_specs">Add system specs</a></span>
                         </div>
                         <div class="text-xs text-blue-600 mt-1">
                             <strong data-i18n="css.belarc_recommendation">Recommended: Use Belarc Advisor to collect comprehensive system specs for scientific reproducibility</strong>
@@ -298,6 +298,8 @@
         </div>
     </div>
 
+    <!-- Shared System Specifications Module -->
+    <script src="js/system-specs.js"></script>
     <!-- External JavaScript Module -->
     <script src="js/stress-test-manager.js"></script>
 

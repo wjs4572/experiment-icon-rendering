@@ -52,11 +52,17 @@ class StressTestManager {
         this.setupEventListeners();
         this.updateMemoryDisplay();
         this.createTestContainer();
-        this.initializeSystemInfoModal();
+        
+        // Delegate system specs to shared module
+        if (window.systemSpecsManager) {
+            this.systemInfo = window.systemSpecsManager.systemInfo;
+            window.systemSpecsManager.initializeModal();
+        }
     }
 
-    // System Information Management
+    // System Information Management — thin wrappers around shared module
     loadSystemInfo() {
+        if (window.systemSpecsManager) return window.systemSpecsManager.loadSystemInfo();
         try {
             const stored = localStorage.getItem('systemSpecifications');
             return stored ? JSON.parse(stored) : this.getDefaultSystemInfo();
@@ -126,11 +132,11 @@ class StressTestManager {
     }
 
     saveSystemInfo(systemInfo) {
+        if (window.systemSpecsManager) return window.systemSpecsManager.saveSystemInfo(systemInfo);
         try {
             systemInfo.lastUpdated = new Date().toISOString();
             this.systemInfo = systemInfo;
             localStorage.setItem('systemSpecifications', JSON.stringify(systemInfo));
-            console.log('System information saved successfully');
             return true;
         } catch (error) {
             console.error('Failed to save system info:', error);
@@ -138,289 +144,27 @@ class StressTestManager {
         }
     }
 
-    initializeSystemInfoModal() {
-        // Create system info modal if it doesn't exist
-        if (document.getElementById('systemInfoModal')) return;
-
-        const modal = document.createElement('div');
-        modal.id = 'systemInfoModal';
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden';
-        
-        modal.innerHTML = `
-            <div class="bg-white rounded-lg p-6 max-w-4xl max-h-[90vh] overflow-y-auto w-full mx-4">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-gray-800">System Information for Reproducible Results</h2>
-                    <button id="closeSystemModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-                </div>
-                
-                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h3 class="font-semibold text-blue-800 mb-2">📋 Recommended: Use Belarc Advisor</h3>
-                    <p class="text-sm text-blue-700 mb-3">
-                        For comprehensive system information, we recommend using <strong>Belarc Advisor</strong> (free tool) 
-                        to generate a detailed system report. This ensures accurate hardware specifications for scientific reproducibility.
-                    </p>
-                    <div class="text-xs text-blue-600">
-                        <p><strong>Steps:</strong></p>
-                        <ol class="list-decimal list-inside ml-2 space-y-1">
-                            <li>Download Belarc Advisor from belarc.com/free_download.html</li>
-                            <li>Run the tool to generate your system report</li>
-                            <li>Copy relevant information into the fields below</li>
-                            <li>Click "Save System Info" to include it in your test results</li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="grid md:grid-cols-2 gap-4 mb-6">
-                    <!-- System Configuration -->
-                    <div class="space-y-3">
-                        <h3 class="font-semibold text-gray-800">System Configuration</h3>
-                        <input type="text" id="systemModel" placeholder="e.g., MSI GE72 6QF Rev 1.0 Gaming Laptop" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="operatingSystem" placeholder="e.g., Windows 10 Home x64 Version 2009 (Build 19045.6937)" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="bootMode" placeholder="e.g., UEFI with Secure Boot enabled" 
-                               class="w-full p-2 border rounded text-sm" />
-                    </div>
-
-                    <!-- Processor -->
-                    <div class="space-y-3">
-                        <h3 class="font-semibold text-gray-800">Processor</h3>
-                        <input type="text" id="cpu" placeholder="e.g., Intel Core i7-6700HQ @ 2.60 GHz" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="architecture" placeholder="e.g., 64-bit, 4 physical cores, 8 logical processors" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="cache" placeholder="e.g., 256KB L1, 1MB L2, 6MB L3" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="generation" placeholder="e.g., 6th Gen Intel Core (Skylake, 14nm)" 
-                               class="w-full p-2 border rounded text-sm" />
-                    </div>
-
-                    <!-- Memory -->
-                    <div class="space-y-3">
-                        <h3 class="font-semibold text-gray-800">Memory System</h3>
-                        <input type="text" id="totalRAM" placeholder="e.g., 16GB DDR4 (2x 8GB modules)" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="memoryConfig" placeholder="e.g., Dual-channel, ChannelA-DIMM0 (8GB), ChannelB-DIMM0 (8GB)" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="memorySpeed" placeholder="e.g., Standard DDR4 specifications" 
-                               class="w-full p-2 border rounded text-sm" />
-                    </div>
-
-                    <!-- Graphics -->
-                    <div class="space-y-3">
-                        <h3 class="font-semibold text-gray-800">Graphics Hardware</h3>
-                        <input type="text" id="integratedGPU" placeholder="e.g., Intel HD Graphics 530 (shares system memory)" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="discreteGPU" placeholder="e.g., NVIDIA GeForce GTX 970M (dedicated GPU)" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="driverVersion" placeholder="e.g., NVIDIA Driver 472.12, Intel Graphics Driver 27.20.100.9466" 
-                               class="w-full p-2 border rounded text-sm" />
-                    </div>
-
-                    <!-- Storage -->
-                    <div class="space-y-3">
-                        <h3 class="font-semibold text-gray-800">Storage Subsystem</h3>
-                        <input type="text" id="systemDrive" placeholder="e.g., 128GB Toshiba THNSNJ128G8NY SSD (Boot drive C:)" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="additionalDrives" placeholder="e.g., 1TB HGST HTS721010A9E630 HDD (Storage drives D:, F:)" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="performanceNotes" placeholder="e.g., SSD system drive ensures consistent load times" 
-                               class="w-full p-2 border rounded text-sm" />
-                    </div>
-
-                    <!-- Network -->
-                    <div class="space-y-3">
-                        <h3 class="font-semibold text-gray-800">Network Environment</h3>
-                        <input type="text" id="networkConnection" placeholder="e.g., Intel Dual Band Wireless-AC 3165 @ 72 Mbps" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="router" placeholder="e.g., Cisco CGM4140COM at 10.0.0.1" 
-                               class="w-full p-2 border rounded text-sm" />
-                        <input type="text" id="networkSpeed" placeholder="e.g., 72 Mbps download, 10 Mbps upload" 
-                               class="w-full p-2 border rounded text-sm" />
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <h3 class="font-semibold text-gray-800 mb-2">Report Generated By</h3>
-                    <select id="reportTool" class="w-full p-2 border rounded text-sm">
-                        <option value="">Select system information tool used...</option>
-                        <option value="Belarc Advisor">Belarc Advisor (Recommended)</option>
-                        <option value="Windows System Information (msinfo32)">Windows System Information (msinfo32)</option>
-                        <option value="Device Manager">Windows Device Manager</option>
-                        <option value="PowerShell Commands">PowerShell Hardware Commands</option>
-                        <option value="macOS System Information">macOS System Information</option>
-                        <option value="Linux lshw/lscpu">Linux lshw/lscpu/dmidecode</option>
-                        <option value="Manual Entry">Manual Entry</option>
-                        <option value="Other">Other Tool</option>
-                    </select>
-                </div>
-
-                <div class="mb-6 p-3 bg-gray-50 border rounded">
-                    <h4 class="font-semibold text-gray-700 mb-2">Auto-Detected Information (Read-Only)</h4>
-                    <div class="text-xs text-gray-600 space-y-1">
-                        <div><strong>Browser:</strong> <span id="detectedUserAgent"></span></div>
-                        <div><strong>Platform:</strong> <span id="detectedPlatform"></span></div>
-                        <div><strong>CPU Cores (Logical):</strong> <span id="detectedCores"></span></div>
-                        <div><strong>Device Memory:</strong> <span id="detectedMemory"></span></div>
-                        <div><strong>Screen Resolution:</strong> <span id="detectedScreen"></span></div>
-                    </div>
-                </div>
-
-                <div class="flex justify-end space-x-3">
-                    <button id="clearSystemInfo" class="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50">
-                        Clear All Fields
-                    </button>
-                    <button id="saveSystemInfo" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        Save System Information
-                    </button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-        this.setupSystemInfoModalEvents();
-    }
-
-    setupSystemInfoModalEvents() {
-        const modal = document.getElementById('systemInfoModal');
-        const closeBtn = document.getElementById('closeSystemModal');
-        const saveBtn = document.getElementById('saveSystemInfo');
-        const clearBtn = document.getElementById('clearSystemInfo');
-
-        closeBtn.addEventListener('click', () => this.hideSystemInfoModal());
-        saveBtn.addEventListener('click', () => this.saveSystemInfoFromModal());
-        clearBtn.addEventListener('click', () => this.clearSystemInfoModal());
-
-        // Close modal when clicking outside
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) this.hideSystemInfoModal();
-        });
-    }
-
+    // Delegate modal operations to shared SystemSpecsManager
     showSystemInfoModal() {
-        const modal = document.getElementById('systemInfoModal');
-        
-        // Populate auto-detected info
-        document.getElementById('detectedUserAgent').textContent = navigator.userAgent.substring(0, 100) + '...';
-        document.getElementById('detectedPlatform').textContent = navigator.platform;
-        document.getElementById('detectedCores').textContent = navigator.hardwareConcurrency || 'Unknown';
-        document.getElementById('detectedMemory').textContent = navigator.deviceMemory ? `${navigator.deviceMemory}GB` : 'Unknown';
-        document.getElementById('detectedScreen').textContent = `${screen.width}×${screen.height} (${window.devicePixelRatio}x DPI)`;
-
-        // Populate existing manual data
-        if (this.systemInfo.manual) {
-            const manual = this.systemInfo.manual;
-            document.getElementById('systemModel').value = manual.systemConfiguration.model || '';
-            document.getElementById('operatingSystem').value = manual.systemConfiguration.operatingSystem || '';
-            document.getElementById('bootMode').value = manual.systemConfiguration.bootMode || '';
-            document.getElementById('cpu').value = manual.processor.cpu || '';
-            document.getElementById('architecture').value = manual.processor.architecture || '';
-            document.getElementById('cache').value = manual.processor.cache || '';
-            document.getElementById('generation').value = manual.processor.generation || '';
-            document.getElementById('totalRAM').value = manual.memory.totalRAM || '';
-            document.getElementById('memoryConfig').value = manual.memory.configuration || '';
-            document.getElementById('memorySpeed').value = manual.memory.speed || '';
-            document.getElementById('integratedGPU').value = manual.graphics.integrated || '';
-            document.getElementById('discreteGPU').value = manual.graphics.discrete || '';
-            document.getElementById('driverVersion').value = manual.graphics.driverVersion || '';
-            document.getElementById('systemDrive').value = manual.storage.systemDrive || '';
-            document.getElementById('additionalDrives').value = manual.storage.additionalDrives || '';
-            document.getElementById('performanceNotes').value = manual.storage.performance || '';
-            document.getElementById('networkConnection').value = manual.network.connection || '';
-            document.getElementById('router').value = manual.network.router || '';
-            document.getElementById('networkSpeed').value = manual.network.speed || '';
-            document.getElementById('reportTool').value = manual.reportGeneratedBy || '';
-        }
-
-        modal.classList.remove('hidden');
+        if (window.systemSpecsManager) window.systemSpecsManager.showModal();
     }
 
     hideSystemInfoModal() {
-        const modal = document.getElementById('systemInfoModal');
-        modal.classList.add('hidden');
-    }
-
-    clearSystemInfoModal() {
-        if (confirm('Clear all system information fields? This will reset to default values.')) {
-            // Clear all input fields
-            const inputs = document.querySelectorAll('#systemInfoModal input, #systemInfoModal select');
-            inputs.forEach(input => input.value = '');
-        }
-    }
-
-    saveSystemInfoFromModal() {
-        const systemInfo = this.getDefaultSystemInfo(); // Start with auto-detected info
-        
-        // Update manual entries
-        systemInfo.manual = {
-            systemConfiguration: {
-                model: document.getElementById('systemModel').value,
-                operatingSystem: document.getElementById('operatingSystem').value,
-                bootMode: document.getElementById('bootMode').value
-            },
-            processor: {
-                cpu: document.getElementById('cpu').value,
-                architecture: document.getElementById('architecture').value,
-                cores: document.getElementById('architecture').value, // Used for both
-                cache: document.getElementById('cache').value,
-                generation: document.getElementById('generation').value
-            },
-            memory: {
-                totalRAM: document.getElementById('totalRAM').value,
-                configuration: document.getElementById('memoryConfig').value,
-                speed: document.getElementById('memorySpeed').value
-            },
-            graphics: {
-                integrated: document.getElementById('integratedGPU').value,
-                discrete: document.getElementById('discreteGPU').value,
-                driverVersion: document.getElementById('driverVersion').value
-            },
-            storage: {
-                systemDrive: document.getElementById('systemDrive').value,
-                additionalDrives: document.getElementById('additionalDrives').value,
-                performance: document.getElementById('performanceNotes').value
-            },
-            network: {
-                connection: document.getElementById('networkConnection').value,
-                router: document.getElementById('router').value,
-                speed: document.getElementById('networkSpeed').value
-            },
-            reportGeneratedBy: document.getElementById('reportTool').value
-        };
-
-        if (this.saveSystemInfo(systemInfo)) {
-            alert('System information saved successfully! This will be included in your test result exports.');
-            this.hideSystemInfoModal();
-            
-            // Update any system info display on the main page
-            this.updateSystemInfoDisplay();
-        } else {
-            alert('Failed to save system information. Please try again.');
-        }
+        if (window.systemSpecsManager) window.systemSpecsManager.hideModal();
     }
 
     updateSystemInfoDisplay() {
-        // Update system info status in the main UI if there's a display element
-        const statusEl = document.getElementById('systemInfoStatus');
-        if (statusEl) {
-            const hasManualData = this.hasCompleteSystemInfo();
-            const addSpecsText = (window.i18n && window.i18n.translate('css.add_system_specs')) || 'Add system specs';
-            const configuredText = (window.i18n && window.i18n.translate('css.system_specs_configured')) || 'System specs configured';
-            statusEl.innerHTML = hasManualData 
-                ? `✅ ${configuredText}`
-                : `⚠️ <a href="#" onclick="stressTestManager.showSystemInfoModal()" class="text-blue-600 hover:underline" data-i18n="css.add_system_specs">${addSpecsText}</a>`;
-        }
+        if (window.systemSpecsManager) window.systemSpecsManager.updateStatusDisplay();
     }
 
     hasCompleteSystemInfo() {
+        if (window.systemSpecsManager) return window.systemSpecsManager.hasCompleteSystemInfo();
         const manual = this.systemInfo.manual;
         if (!manual) return false;
-        
-        // Check if key fields are populated
-        return manual.systemConfiguration.model && 
-               manual.processor.cpu && 
-               manual.memory.totalRAM && 
-               manual.reportGeneratedBy;
+        return !!(manual.systemConfiguration.model &&
+               manual.processor.cpu &&
+               manual.memory.totalRAM &&
+               manual.reportGeneratedBy);
     }
 
     getTestConfig(testType) {
