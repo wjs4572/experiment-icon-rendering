@@ -107,10 +107,23 @@ class SystemSpecsManager {
     hasCompleteSystemInfo() {
         const manual = this.systemInfo.manual;
         if (!manual) return false;
-        return !!(manual.systemConfiguration.model &&
-               manual.processor.cpu &&
-               manual.memory.totalRAM &&
-               manual.reportGeneratedBy);
+        // Treat specs as provided when any manual field has been filled in
+        const sections = [
+            manual.systemConfiguration,
+            manual.processor,
+            manual.memory,
+            manual.graphics,
+            manual.storage,
+            manual.network
+        ];
+        for (const section of sections) {
+            if (section && typeof section === 'object') {
+                for (const val of Object.values(section)) {
+                    if (val && typeof val === 'string' && val.trim()) return true;
+                }
+            }
+        }
+        return !!(manual.reportGeneratedBy && manual.reportGeneratedBy.trim());
     }
 
     // ─── Modal creation ──────────────────────────────────────────
@@ -509,11 +522,14 @@ class SystemSpecsManager {
         const statusEl = document.getElementById('systemInfoStatus');
         if (!statusEl) return;
         const hasData = this.hasCompleteSystemInfo();
-        const addText = this.t('sysspec.add_specs', 'Add system specs');
-        const configuredText = this.t('sysspec.configured', 'System specs configured');
-        statusEl.innerHTML = hasData
-            ? `✅ ${configuredText}`
-            : `⚠️ <a href="#" onclick="window.systemSpecsManager.showModal()" class="text-blue-600 hover:underline">${addText}</a>`;
+        if (hasData) {
+            statusEl.classList.add('hidden');
+            statusEl.innerHTML = '';
+        } else {
+            statusEl.classList.remove('hidden');
+            const addText = this.t('sysspec.add_specs', 'Add system specs');
+            statusEl.innerHTML = `⚠️ <a href="#" onclick="window.systemSpecsManager.showModal()" class="text-blue-600 hover:underline">${addText}</a>`;
+        }
     }
 
     // ─── Belarc Advisor Import ───────────────────────────────────
@@ -573,8 +589,8 @@ class SystemSpecsManager {
 
     /**
      * Parse a Belarc Advisor HTML report.
-     * Belarc reports have a fairly consistent structure with tables
-     * containing bolded category headings and text content.
+     * Uses DOM-based section extraction via <caption> elements
+     * for reliable field mapping instead of regex on flattened text.
      */
     parseBelarcHTML(html) {
         const parser = new DOMParser();
@@ -582,7 +598,6 @@ class SystemSpecsManager {
         const body = doc.body;
         if (!body) return null;
 
-        const text = body.innerText || body.textContent || '';
         const result = {
             model: '',
             operatingSystem: '',
@@ -605,159 +620,230 @@ class SystemSpecsManager {
 
         let fieldsFound = 0;
 
-        // --- System Model / Computer ---
-        const modelPatterns = [
-            /System Model[:\s]*([^\n\r]+)/i,
-            /Computer Name[:\s]*[^\n]*\n\s*([^\n\r]+)/i,
-            /(?:System|Computer)[:\s]*([^\n\r]+)/i
-        ];
-        for (const p of modelPatterns) {
-            const m = text.match(p);
-            if (m && m[1].trim()) { result.model = m[1].trim(); fieldsFound++; break; }
+        /**
+         * Extract text content from a Belarc table section identified by its caption.
+         * Converts <br> and </tr> to newlines and strips all other tags.
+         */
+        const getSectionText = (captionPattern) => {
+            for (const cap of doc.querySelectorAll('caption')) {
+                if (!captionPattern.test((cap.textContent || '').trim())) continue;
+                const table = cap.closest('table');
+                if (!table) continue;
+                const td = table.querySelector('td');
+                if (!td) continue;
+                return td.innerHTML
+                    .replace(/<br\s*\/?>/gi, '\n')
+                    .replace(/<\/tr\s*>/gi, '\n')
+                    .replace(/<\/td\s*>/gi, ' ')
+                    .replace(/<\/th\s*>/gi, ' ')
+                    .replace(/<[^>]*>/g, '')
+                    .replace(/&nbsp;/gi, ' ')
+                    .replace(/&amp;/g, '&')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&#39;/g, "'")
+                    .replace(/[ \t]+/g, ' ')
+                    .replace(/\n /g, '\n')
+                    .replace(/ \n/g, '\n')
+                    .replace(/\n{3,}/g, '\n\n')
+                    .trim();
+            }
+            return '';
+        };
+
+        // --- System Model ---
+        const modelText = getSectionText(/^System Model/i);
+        if (modelText) {
+            const firstLine = modelText.split('\n')[0].trim();
+            if (firstLine) { result.model = firstLine; fieldsFound++; }
         }
 
         // --- Operating System ---
-        const osPatterns = [
-            /Operating System[:\s]*([^\n\r]+)/i,
-            /Microsoft Windows[^\n\r]*/i
-        ];
-        for (const p of osPatterns) {
-            const m = text.match(p);
-            if (m) {
-                result.operatingSystem = (m[1] || m[0]).trim();
+        const osText = getSectionText(/^Operating System$/i);
+        if (osText) {
+            const firstLine = osText.split('\n')[0].trim();
+            if (firstLine) { result.operatingSystem = firstLine; fieldsFound++; }
+            const bootMatch = osText.match(/Boot Mode[:\s]*(.+)/i);
+            if (bootMatch) { result.bootMode = bootMatch[1].trim(); fieldsFound++; }
+        }
+
+        // --- Processor (scoped to its section, avoiding "CpuJan2026" security-update false match) ---
+        const procText = getSectionText(/^Processor/i);
+        if (procText) {
+            const lines = procText.split('\n').map(l => l.trim()).filter(Boolean);
+            // First line is the CPU name (e.g. "2.60 gigahertz Intel Core i7-6700HQ")
+            if (lines[0]) { result.cpu = lines[0]; fieldsFound++; }
+
+            // Cache: only lines containing "cache"
+            const cacheLines = lines.filter(l => /cache/i.test(l));
+            if (cacheLines.length > 0) {
+                result.cache = cacheLines.join('; ');
                 fieldsFound++;
-                break;
+            }
+
+            // Architecture from processor section
+            const bits = procText.match(/(\d+)-bit/);
+            const cores = procText.match(/Multi-core\s*\((\d+)\s*total\)/i);
+            const threads = procText.match(/Hyper-threaded\s*\((\d+)\s*total\)/i);
+            if (bits || cores || threads) {
+                const parts = [];
+                if (bits) parts.push(`${bits[1]}-bit`);
+                if (cores) parts.push(`${cores[1]} cores`);
+                if (threads) parts.push(`${threads[1]} threads`);
+                result.architecture = parts.join(', ');
+                fieldsFound++;
             }
         }
 
-        // --- Boot Mode ---
-        const bootMatch = text.match(/Boot Mode[:\s]*([^\n\r]+)/i);
-        if (bootMatch) { result.bootMode = bootMatch[1].trim(); fieldsFound++; }
-
-        // --- Processor ---
-        const cpuPatterns = [
-            /Processor[:\s]*([^\n\r]+)/i,
-            /CPU[:\s]*([^\n\r]+)/i,
-            /(Intel[^\n\r]*(?:Core|Xeon|Celeron|Pentium)[^\n\r]*)/i,
-            /(AMD[^\n\r]*(?:Ryzen|EPYC|Athlon|Phenom)[^\n\r]*)/i,
-            /(Apple M\d[^\n\r]*)/i
-        ];
-        for (const p of cpuPatterns) {
-            const m = text.match(p);
-            if (m && (m[1] || m[0]).trim().length > 5) {
-                result.cpu = (m[1] || m[0]).trim();
+        // --- Memory Modules ---
+        const memText = getSectionText(/^Memory Modules/i);
+        if (memText) {
+            // Total RAM: "16268 Megabytes Usable Installed Memory"
+            const totalMatch = memText.match(/(\d[\d,]*)\s*Megabytes?\s+(?:Usable\s+)?(?:Installed\s+)?Memory/i);
+            if (totalMatch) {
+                const mb = parseInt(totalMatch[1].replace(/,/g, ''), 10);
+                const gb = Math.round(mb / 1024);
+                // Count populated slots and their sizes
+                const slotHasRegex = /Slot\s+'[^']*'\s+has\s+(\d+)\s*MB/gi;
+                const slotSizes = [];
+                let slotMatch;
+                while ((slotMatch = slotHasRegex.exec(memText)) !== null) {
+                    slotSizes.push(Math.round(parseInt(slotMatch[1], 10) / 1024));
+                }
+                const emptyCount = (memText.match(/Slot\s+'[^']*'\s+is\s+Empty/gi) || []).length;
+                const totalSlots = slotSizes.length + emptyCount;
+                let ramStr = `${gb}GB`;
+                if (slotSizes.length > 0) {
+                    ramStr += ` (${slotSizes.map(s => s + 'GB').join(' + ')}, ${slotSizes.length}/${totalSlots} slots)`;
+                }
+                result.totalRAM = ramStr;
                 fieldsFound++;
-                break;
+            }
+
+            // Memory configuration - all slot lines
+            const slotLines = memText.split('\n')
+                .map(l => l.trim())
+                .filter(l => /^Slot\s/i.test(l));
+            if (slotLines.length > 0) {
+                result.memoryConfig = slotLines.join('; ');
+                fieldsFound++;
             }
         }
 
-        // Architecture
-        const archMatch = text.match(/(\d+)[- ]?bit/i);
-        const coreMatch = text.match(/(\d+)\s*(?:physical\s*)?core/i);
-        const logicalMatch = text.match(/(\d+)\s*logical\s*processor/i);
-        if (archMatch || coreMatch || logicalMatch) {
-            const parts = [];
-            if (archMatch) parts.push(`${archMatch[1]}-bit`);
-            if (coreMatch) parts.push(`${coreMatch[1]} cores`);
-            if (logicalMatch) parts.push(`${logicalMatch[1]} logical processors`);
-            result.architecture = parts.join(', ');
+        // --- Display/Graphics (only [Display adapter] lines, not monitors) ---
+        const displayText = getSectionText(/^Display$/i);
+        if (displayText) {
+            const lines = displayText.split('\n').map(l => l.trim()).filter(Boolean);
+            for (const line of lines) {
+                if (!/\[Display adapter\]/i.test(line)) continue;
+                if (/Intel|Apple/i.test(line) && !result.integratedGPU) {
+                    result.integratedGPU = line; fieldsFound++;
+                } else if (/NVIDIA|AMD|Radeon/i.test(line) && !result.discreteGPU) {
+                    result.discreteGPU = line; fieldsFound++;
+                }
+            }
+            if (!result.integratedGPU && !result.discreteGPU) {
+                const firstAdapter = lines.find(l => /\[Display adapter\]/i.test(l));
+                if (firstAdapter) { result.integratedGPU = firstAdapter; fieldsFound++; }
+            }
+        }
+
+        // driverVersion: Belarc does not report GPU driver versions in its summary.
+        // (The "Advisor Version" header is NOT a driver version — leave empty for manual entry.)
+
+        // --- Drives ---
+        const drivesText = getSectionText(/^Drives$/i);
+        if (drivesText) {
+            result.systemDrive = drivesText;
             fieldsFound++;
         }
 
-        // Cache
-        const cachePatterns = [
-            /Cache[:\s]*([^\n\r]+)/i,
-            /(L1[:\s]*\d+\s*[KMG]B[^\n\r]*)/i
-        ];
-        for (const p of cachePatterns) {
-            const m = text.match(p);
-            if (m) { result.cache = (m[1] || m[0]).trim(); fieldsFound++; break; }
-        }
-
-        // --- Memory ---
-        const ramPatterns = [
-            /(?:Total\s+)?(?:Physical\s+)?Memory[:\s]*(\d+\s*[GM]B[^\n\r]*)/i,
-            /(?:Installed\s+)?RAM[:\s]*(\d+\s*[GM]B[^\n\r]*)/i,
-            /(\d+\s*GB\s+DDR\d[^\n\r]*)/i
-        ];
-        for (const p of ramPatterns) {
-            const m = text.match(p);
-            if (m) { result.totalRAM = (m[1] || m[0]).trim(); fieldsFound++; break; }
-        }
-
-        // Memory slots / config
-        const memSlotMatch = text.match(/((?:Channel|DIMM|Slot)[^\n\r]{5,80})/i);
-        if (memSlotMatch) { result.memoryConfig = memSlotMatch[1].trim(); fieldsFound++; }
-
-        // Memory speed
-        const memSpeedMatch = text.match(/(\d+\s*MHz[^\n\r]*)/i);
-        if (memSpeedMatch) { result.memorySpeed = memSpeedMatch[1].trim(); fieldsFound++; }
-
-        // --- Graphics ---
-        const gpuPatterns = [
-            /(NVIDIA[^\n\r]+)/i,
-            /(AMD Radeon[^\n\r]+)/i,
-            /(Intel[^\n\r]*(?:HD|UHD|Iris|Arc)[^\n\r]*)/i,
-            /(Apple[^\n\r]*GPU[^\n\r]*)/i
-        ];
-        const gpuResults = [];
-        for (const p of gpuPatterns) {
-            const m = text.match(p);
-            if (m) gpuResults.push(m[1].trim());
-        }
-        if (gpuResults.length > 0) {
-            // Heuristic: integrated = Intel/Apple, discrete = NVIDIA/AMD
-            for (const g of gpuResults) {
-                if (/Intel|Apple/i.test(g) && !result.integratedGPU) {
-                    result.integratedGPU = g; fieldsFound++;
-                } else if (/NVIDIA|AMD|Radeon/i.test(g) && !result.discreteGPU) {
-                    result.discreteGPU = g; fieldsFound++;
-                }
-            }
-            // If only one GPU found, put it in integrated
-            if (!result.integratedGPU && !result.discreteGPU && gpuResults[0]) {
-                result.integratedGPU = gpuResults[0]; fieldsFound++;
-            }
-        }
-
-        // Driver version
-        const driverMatch = text.match(/(?:Driver|Version)[:\s]*(\d+\.\d+[.\d]*)/i);
-        if (driverMatch) { result.driverVersion = driverMatch[1].trim(); fieldsFound++; }
-
-        // --- Storage ---
-        const drivePatterns = [
-            /((?:\d+\s*[GT]B)[^\n\r]*(?:SSD|HDD|NVMe|SATA)[^\n\r]*)/i,
-            /(?:Hard Drive|Disk Drive)[:\s]*([^\n\r]+)/i
-        ];
-        const driveResults = [];
-        for (const p of drivePatterns) {
-            let m;
-            const re = new RegExp(p.source, 'gi');
-            while ((m = re.exec(text)) !== null) {
-                driveResults.push((m[1] || m[0]).trim());
-            }
-        }
-        if (driveResults.length > 0) {
-            result.systemDrive = driveResults[0]; fieldsFound++;
-            if (driveResults.length > 1) {
-                result.additionalDrives = driveResults.slice(1).join('; ');
+        // --- Local Drive Volumes (additional drive info) ---
+        const volumesText = getSectionText(/^Local Drive Volumes$/i);
+        if (volumesText) {
+            const volumeLines = volumesText.split('\n')
+                .map(l => l.trim())
+                .filter(l => /^[a-z]:/i.test(l));
+            if (volumeLines.length > 0) {
+                result.additionalDrives = volumeLines.join('; ');
                 fieldsFound++;
             }
         }
 
-        // --- Network ---
-        const netPatterns = [
-            /(?:Network Adapter|Wi-Fi|Ethernet)[:\s]*([^\n\r]+)/i,
-            /(Intel[^\n\r]*Wireless[^\n\r]*)/i,
-            /(Realtek[^\n\r]*Ethernet[^\n\r]*)/i
-        ];
-        for (const p of netPatterns) {
-            const m = text.match(p);
-            if (m) { result.networkConnection = (m[1] || m[0]).trim(); fieldsFound++; break; }
+        // --- Communications / Network ---
+        const netText = getSectionText(/^Communications$/i);
+        if (netText) {
+            const lines = netText.split('\n').map(l => l.trim());
+            let primaryAdapter = '';
+            let gateway = '';
+            let speed = '';
+            let inPrimarySection = false;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                // The "primary" label marks the main active adapter
+                if (/primary/i.test(line) && !primaryAdapter) {
+                    inPrimarySection = true;
+                    // Walk backwards to find the adapter name (line with ↑)
+                    for (let j = i - 1; j >= 0; j--) {
+                        if (/^[\u2191]/.test(lines[j])) {
+                            primaryAdapter = lines[j].replace(/^[\u2191]\s*/, '').trim();
+                            break;
+                        }
+                    }
+                }
+                if (inPrimarySection) {
+                    if (!gateway) {
+                        const gw = line.match(/Gateway[:\s]*(\d+\.\d+\.\d+\.\d+)/i);
+                        if (gw) gateway = gw[1];
+                    }
+                    if (!speed) {
+                        const sp = line.match(/Connection\s*Speed[:\s]*([\d.]+\s*[GMgm]bps)/i);
+                        if (sp) { speed = sp[1]; inPrimarySection = false; }
+                    }
+                }
+            }
+
+            // Fallback: first active adapter (↑)
+            if (!primaryAdapter) {
+                const m = netText.match(/[\u2191]\s*([^\n]+)/);
+                if (m) primaryAdapter = m[1].trim();
+            }
+            if (!gateway) {
+                const m = netText.match(/Gateway[:\s]*(\d+\.\d+\.\d+\.\d+)/i);
+                if (m) gateway = m[1];
+            }
+
+            if (primaryAdapter) { result.networkConnection = primaryAdapter; fieldsFound++; }
+            if (gateway) { result.router = gateway; fieldsFound++; }
+            if (speed) { result.networkSpeed = speed; fieldsFound++; }
         }
 
-        const gatewayMatch = text.match(/(?:Default Gateway|Gateway)[:\s]*(\d+\.\d+\.\d+\.\d+[^\n\r]*)/i);
-        if (gatewayMatch) { result.router = gatewayMatch[1].trim(); fieldsFound++; }
+        // --- Router fallback from Network Map section ---
+        if (!result.router) {
+            const mapText = getSectionText(/^Network Map/i);
+            if (mapText) {
+                const m = mapText.match(/(\d+\.\d+\.\d+\.\d+)[^\n]*Router/i);
+                if (m) { result.router = m[1].trim(); fieldsFound++; }
+            }
+        }
+
+        // --- Fallback: use full-text regex if DOM section parsing missed key fields ---
+        if (!result.model || !result.cpu || !result.operatingSystem) {
+            const text = body.textContent || '';
+            if (!result.model) {
+                const m = text.match(/System Model[\s\S]*?([A-Z][^\n\r]{5,})/i);
+                if (m) { result.model = m[1].trim(); fieldsFound++; }
+            }
+            if (!result.cpu) {
+                const m = text.match(/(\d+(?:\.\d+)?\s*gigahertz\s+[^\n\r]+)/i);
+                if (m) { result.cpu = m[1].trim(); fieldsFound++; }
+            }
+            if (!result.operatingSystem) {
+                const m = text.match(/((?:Windows|macOS|Linux)[^\n\r]+)/i);
+                if (m) { result.operatingSystem = m[1].trim(); fieldsFound++; }
+            }
+        }
 
         return fieldsFound > 0 ? result : null;
     }

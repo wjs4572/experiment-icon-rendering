@@ -19,22 +19,67 @@ test.describe('Performance Summary Dashboard', () => {
     await expect(page.locator('text=Comprehensive analysis and comparison')).toBeVisible();
   });
 
-  test('navigation links are present and functional', async ({ page }) => {
-    // Verify navigation buttons
-    const backToSuiteLink = page.locator('a:has-text("Back to Test Suite")');
-    const pastResultsLink = page.locator('a:has-text("View Past Results")');
-    
+  test('header navigation links are present and functional', async ({ page }) => {
+    // Header links are always visible regardless of data state
+    const header = page.locator('header');
+    const backToSuiteLink = header.locator('a[href="index.html"]');
+    const pastResultsLink = header.locator('a[href="past-results.html"]');
+
     await expect(backToSuiteLink).toBeVisible();
     await expect(pastResultsLink).toBeVisible();
-    
+
     // Test navigation functionality
     await backToSuiteLink.click();
     await expect(page).toHaveURL(/index\.html$/);
     await page.goBack();
-    
+
     await pastResultsLink.click();
     await expect(page).toHaveURL(/past-results\.html$/);
     await page.goBack();
+  });
+
+  test('no-data message links are visible when no test data exists', async ({ page }) => {
+    // With no localStorage data, #noDataMessage should be visible with its own links
+    const noDataMsg = page.locator('#noDataMessage');
+    await expect(noDataMsg).toBeVisible();
+
+    const runTestsLink = noDataMsg.locator('a[href="index.html"]');
+    const pastResultsLink = noDataMsg.locator('a[href="past-results.html"]');
+
+    await expect(runTestsLink).toBeVisible();
+    await expect(pastResultsLink).toBeVisible();
+
+    // Test navigation from no-data links
+    await runTestsLink.click();
+    await expect(page).toHaveURL(/index\.html$/);
+    await page.goBack();
+
+    await pastResultsLink.click();
+    await expect(page).toHaveURL(/past-results\.html$/);
+    await page.goBack();
+  });
+
+  test('no-data message is hidden when test data exists', async ({ page }) => {
+    // Inject minimal mock data into localStorage before navigating
+    await page.evaluate(() => {
+      const mockData = {
+        css_font_square: { mean: 1.5, stdDev: 0.2, iterations: 100 }
+      };
+      localStorage.setItem('iconTestResults_css', JSON.stringify(mockData));
+    });
+    await page.goto('summary.html');
+    await page.waitForLoadState('networkidle');
+
+    // noDataMessage should be hidden when data exists
+    await expect(page.locator('#noDataMessage')).toBeHidden();
+
+    // Header links should still be visible
+    const header = page.locator('header');
+    await expect(header.locator('a[href="index.html"]')).toBeVisible();
+    await expect(header.locator('a[href="past-results.html"]')).toBeVisible();
+
+    // Clean up
+    await page.evaluate(() => localStorage.removeItem('iconTestResults_css'));
   });
 
   test('data export controls are available', async ({ page }) => {

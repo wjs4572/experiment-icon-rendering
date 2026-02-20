@@ -30,6 +30,8 @@ module.exports = defineConfig({
   use: {
     // Base URL for tests (local server instead of file://)
     baseURL: 'http://localhost:3000',
+    // Pin locale to en-US so text-based selectors match English content
+    locale: 'en-US',
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',
     // Take screenshot on failure
