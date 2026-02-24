@@ -1,0 +1,14 @@
+#!/bin/sh
+# Pre-commit hook: runs change-aware regression tests + rotation top-up
+# Install: copy or symlink to .git/hooks/pre-commit
+# Skip:    git commit --no-verify
+
+echo "🎯 Running commit tests..."
+node scripts/commit-tests.js
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Commit blocked — tests failed."
+  echo "   Fix failures or use: git commit --no-verify"
+  exit 1
+fi

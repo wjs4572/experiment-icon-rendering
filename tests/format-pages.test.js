@@ -9,12 +9,12 @@ const { test, expect } = require('@playwright/test');
 
 test.describe('Format Testing Pages Structure', () => {
   const formatPages = [
-    { file: 'svg.html', title: 'SVG Implementation Tests', format: 'SVG' },
-    { file: 'png.html', title: 'PNG Implementation Tests', format: 'PNG' },
-    { file: 'gif.html', title: 'GIF Implementation Tests', format: 'GIF' },
-    { file: 'jpeg.html', title: 'JPEG Implementation Tests', format: 'JPEG' },
-    { file: 'webp.html', title: 'WebP Implementation Tests', format: 'WebP' },
-    { file: 'avif.html', title: 'AVIF Implementation Tests', format: 'AVIF' }
+    { file: 'svg.html', title: 'SVG Implementation', format: 'SVG' },
+    { file: 'png.html', title: 'PNG Implementation', format: 'PNG' },
+    { file: 'gif.html', title: 'GIF Implementation', format: 'GIF' },
+    { file: 'jpeg.html', title: 'JPEG Implementation', format: 'JPEG' },
+    { file: 'webp.html', title: 'WebP Implementation', format: 'WebP' },
+    { file: 'avif.html', title: 'AVIF Implementation', format: 'AVIF' }
   ];
 
   formatPages.forEach(formatInfo => {
@@ -30,7 +30,7 @@ test.describe('Format Testing Pages Structure', () => {
       });
 
       test('navigation back link is present and functional', async ({ page }) => {
-        const backLink = page.locator('a:has-text(\"Back to Test Suite\")');
+        const backLink = page.locator('a[data-i18n="nav.back_to_suite"]');
         await expect(backLink).toBeVisible();
         await expect(backLink).toHaveAttribute('href', 'index.html');
         
@@ -41,10 +41,10 @@ test.describe('Format Testing Pages Structure', () => {
       });
 
       test('format description is present', async ({ page }) => {
-        // Verify descriptive text about format testing exists
-        const description = page.locator('p.text-gray-600').first();
+        // Verify descriptive text about format testing exists (use data-i18n for locale independence)
+        const description = page.locator(`p[data-i18n="format.${formatInfo.format.toLowerCase()}.description"]`);
         await expect(description).toBeVisible();
-        await expect(description).toContainText('Testing');
+        await expect(description).not.toBeEmpty();
       });
 
       test('implementation cards structure exists', async ({ page }) => {
@@ -55,8 +55,8 @@ test.describe('Format Testing Pages Structure', () => {
           return cards.length > 0 && window.getComputedStyle(cards[0]).backgroundColor !== 'rgba(0, 0, 0, 0)';
         });
         
-        // Verify card-based layout for different implementations
-        const cards = page.locator('.bg-white');
+        // Verify card-based layout for different implementations (use .shadow to skip languageSelector)
+        const cards = page.locator('.bg-white.shadow');
         const cardCount = await cards.count();
         expect(cardCount).toBeGreaterThanOrEqual(2);
         
@@ -133,7 +133,7 @@ test.describe('Format Testing Pages Structure', () => {
         expect(h2Count).toBeGreaterThanOrEqual(1);
         
         // Verify back link is keyboard accessible
-        const backLink = page.locator('a:has-text(\"Back to Test Suite\")');
+        const backLink = page.locator('a[data-i18n="nav.back_to_suite"]');
         await backLink.focus();
         await expect(backLink).toBeFocused();
       });
@@ -145,7 +145,7 @@ test.describe('Format Testing Pages Structure', () => {
           return backLink && window.getComputedStyle(backLink).color !== 'rgba(0, 0, 0, 0)';
         });
                 // Verify consistent blue color scheme
-        const backLink = page.locator('a:has-text(\"Back to Test Suite\")');
+        const backLink = page.locator('a[data-i18n="nav.back_to_suite"]');
         await expect(backLink).toHaveClass(/text-blue-600/);
         
         // Verify gradient containers use consistent color scheme
@@ -179,7 +179,7 @@ test.describe('Format Testing Pages Structure', () => {
           await expect(page).toHaveURL(new RegExp(formatInfo.file));
           
           // Navigate back
-          const backLink = page.locator('a:has-text(\"Back to Test Suite\")');
+          const backLink = page.locator('a[data-i18n="nav.back_to_suite"]');
           await backLink.click();
           await expect(page).toHaveURL(/.*index\.html$/);
         }
@@ -190,8 +190,8 @@ test.describe('Format Testing Pages Structure', () => {
       const structuralElements = [
         'header',
         'h1',
-        'a:has-text(\"Back to Test Suite\")',
-        '.bg-white'
+        'a[data-i18n="nav.back_to_suite"]',
+        '.bg-white.shadow'
       ];
 
       for (const formatInfo of formatPages.slice(0, 2)) { // Test first 2 for efficiency

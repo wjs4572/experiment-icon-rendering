@@ -24,8 +24,8 @@ test.describe('CSS Performance Testing Page', () => {
 
   test('page loads with correct title and structure', async ({ page }) => {
     await expect(page).toHaveTitle('CSS Icon Performance Testing');
-    await expect(page.locator('h1')).toContainText('CSS Implementation Tests');
-    await expect(page.locator('text=Back to Test Suite')).toBeVisible();
+    await expect(page.locator('h1')).toContainText('CSS Implementation');
+    await expect(page.locator('a[data-i18n="nav.back_to_suite"]')).toBeVisible();
   });
 
   test.describe('Tab Navigation System', () => {
