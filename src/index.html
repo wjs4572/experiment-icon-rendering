@@ -9,6 +9,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Internationalization System -->
     <script src="js/i18n.js"></script>
+    <!-- Foundation modules -->
+    <script src="js/icon-configs.js"></script>
+    <script src="js/run-id.js"></script>
+    <script src="js/run-record.js"></script>
+    <script src="js/reporters.js"></script>
+    <script src="js/run-state.js"></script>
+    <script src="js/run-handle.js"></script>
+    <script src="js/suite-runner.js"></script>
+    <!-- StressTestManager (engine) -->
+    <script src="js/stress-test-manager.js"></script>
 </head>
 <body class="min-h-screen bg-gray-100">
     <div class="container mx-auto px-8 py-12">
@@ -116,9 +126,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Iframe for running tests (shown during batch execution) -->
-        <iframe id="testRunnerFrame" class="hidden" style="width:100%;height:600px;border:1px solid #e5e7eb;border-radius:0.5rem;"></iframe>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             
@@ -365,19 +372,9 @@
         </footer>
     </div>
 
+    <!-- Batch Test Runner — wired through SuiteRunner (no iframes) -->
     <script>
     (function() {
-        // Batch Test Runner
-        const suitePages = {
-            css: 'css.html',
-            svg: 'svg.html',
-            png: 'png.html',
-            gif: 'gif.html',
-            jpeg: 'jpeg.html',
-            webp: 'webp.html',
-            avif: 'avif.html'
-        };
-
         const suiteLabels = {
             css: 'CSS', svg: 'SVG', png: 'PNG', gif: 'GIF',
             jpeg: 'JPEG', webp: 'WebP', avif: 'AVIF'
@@ -389,11 +386,11 @@
         let batchElapsedInterval = null;
         let selectedSuites = [];
         let completedSuiteCount = 0;
+        let currentHandle = null;
 
         const startBtn = document.getElementById('startBatchTest');
         const stopBtn = document.getElementById('stopBatchTest');
         const progressDiv = document.getElementById('batchProgress');
-        const frame = document.getElementById('testRunnerFrame');
 
         startBtn.addEventListener('click', startBatch);
         stopBtn.addEventListener('click', stopBatch);
@@ -403,7 +400,7 @@
             return Array.from(checkboxes).map(cb => cb.value);
         }
 
-        function startBatch() {
+        async function startBatch() {
             selectedSuites = getSelectedSuites();
             if (selectedSuites.length === 0) {
                 alert('Please select at least one test suite.');
@@ -413,11 +410,11 @@
             batchRunning = true;
             batchShouldStop = false;
             completedSuiteCount = 0;
+            currentHandle = null;
             batchStartTime = performance.now();
 
             // Show progress, disable start
             progressDiv.classList.remove('hidden');
-            frame.classList.remove('hidden');
             startBtn.disabled = true;
             startBtn.textContent = 'Running...';
             startBtn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -428,77 +425,68 @@
             // Update elapsed timer
             batchElapsedInterval = setInterval(updateBatchElapsed, 1000);
 
-            // Start sequential execution
-            runNextSuite(0);
+            // One shared runId for the entire batch
+            const runId = window.RunId.generateRunId();
+            const testType = document.getElementById('batchTestType').value;
+
+            // Run suites sequentially
+            for (let i = 0; i < selectedSuites.length; i++) {
+                if (batchShouldStop) break;
+
+                const format = selectedSuites[i];
+
+                // ── Update overall progress ──
+                document.getElementById('batchOverallLabel').textContent =
+                    `Suite ${i + 1} of ${selectedSuites.length}: ${suiteLabels[format]}`;
+                document.getElementById('batchOverallPercent').textContent =
+                    `${completedSuiteCount} / ${selectedSuites.length} suites`;
+                document.getElementById('batchOverallBar').style.width =
+                    `${(completedSuiteCount / selectedSuites.length) * 100}%`;
+
+                // ── Reset current suite progress ──
+                document.getElementById('batchCurrentLabel').textContent =
+                    `${suiteLabels[format]}: Starting...`;
+                document.getElementById('batchCurrentPercent').textContent = '0%';
+                document.getElementById('batchCurrentBar').style.width = '0%';
+
+                updateSuitePill(format, 'running');
+
+                // ── Launch suite via SuiteRunner ──
+                const handle = window.SuiteRunner.runSuite(format, testType, { runId: runId });
+                currentHandle = handle;
+
+                // Subscribe to progress from the handle
+                handle.onProgress(function(progress) {
+                    const pct = Math.min(100, progress.percentage).toFixed(0);
+                    document.getElementById('batchCurrentLabel').textContent =
+                        `${suiteLabels[format]}: ${progress.message || 'Running...'}`;
+                    document.getElementById('batchCurrentPercent').textContent = `${pct}%`;
+                    document.getElementById('batchCurrentBar').style.width = `${pct}%`;
+                    updateBatchEta(i, parseFloat(pct));
+                });
+
+                // Await completion
+                try {
+                    await handle.done;
+                } catch (e) {
+                    // cancelled or errored — stop loop if user cancelled
+                    if (batchShouldStop) break;
+                }
+
+                completedSuiteCount++;
+                updateSuitePill(format, 'done');
+                currentHandle = null;
+            }
+
+            finishBatch(batchShouldStop ? 'Stopped by user' : 'All tests complete!');
         }
 
         function stopBatch() {
             batchShouldStop = true;
-            // Try to stop the current test in the iframe
-            try {
-                const iframeWin = frame.contentWindow;
-                if (iframeWin && iframeWin.stressTestManager) {
-                    iframeWin.stressTestManager.stopTest();
-                }
-            } catch (e) { /* cross-origin safety */ }
-            finishBatch('Stopped by user');
-        }
-
-        function runNextSuite(index) {
-            if (batchShouldStop || index >= selectedSuites.length) {
-                if (!batchShouldStop) {
-                    finishBatch('All tests complete!');
-                }
-                return;
+            if (currentHandle) {
+                window.SuiteRunner.cancelSuite(currentHandle);
+                currentHandle = null;
             }
-
-            const format = selectedSuites[index];
-            const testType = document.getElementById('batchTestType').value;
-            const page = suitePages[format];
-
-            // Update overall progress
-            document.getElementById('batchOverallLabel').textContent =
-                `Suite ${index + 1} of ${selectedSuites.length}: ${suiteLabels[format]}`;
-            document.getElementById('batchOverallPercent').textContent =
-                `${completedSuiteCount} / ${selectedSuites.length} suites`;
-            document.getElementById('batchOverallBar').style.width =
-                `${(completedSuiteCount / selectedSuites.length) * 100}%`;
-
-            // Update current suite
-            document.getElementById('batchCurrentLabel').textContent =
-                `${suiteLabels[format]}: Loading...`;
-            document.getElementById('batchCurrentPercent').textContent = '0%';
-            document.getElementById('batchCurrentBar').style.width = '0%';
-
-            // Update suite pill
-            updateSuitePill(format, 'running');
-
-            // Set up message listener for this suite
-            const handler = function(event) {
-                if (!event.data || !event.data.type) return;
-
-                if (event.data.type === 'testProgress' && event.data.format === format) {
-                    const pct = Math.min(100, event.data.percentage).toFixed(0);
-                    document.getElementById('batchCurrentLabel').textContent =
-                        `${suiteLabels[format]}: ${event.data.message}`;
-                    document.getElementById('batchCurrentPercent').textContent = `${pct}%`;
-                    document.getElementById('batchCurrentBar').style.width = `${pct}%`;
-                    updateBatchEta(index, parseFloat(pct));
-                }
-
-                if (event.data.type === 'testComplete' && event.data.format === format) {
-                    window.removeEventListener('message', handler);
-                    completedSuiteCount++;
-                    updateSuitePill(format, 'done');
-
-                    // Brief pause between suites to let the browser settle
-                    setTimeout(() => runNextSuite(index + 1), 1000);
-                }
-            };
-            window.addEventListener('message', handler);
-
-            // Load the page with autorun parameter
-            frame.src = `${page}?autorun=${testType}`;
         }
 
         function finishBatch(message) {
@@ -511,10 +499,6 @@
                 `${completedSuiteCount} / ${selectedSuites.length} suites`;
             document.getElementById('batchOverallBar').style.width =
                 `${(completedSuiteCount / selectedSuites.length) * 100}%`;
-
-            // Clear iframe and hide it
-            frame.src = 'about:blank';
-            frame.classList.add('hidden');
 
             // Re-enable start button
             startBtn.disabled = false;
@@ -557,7 +541,6 @@
                 return;
             }
             const elapsed = (performance.now() - batchStartTime) / 1000;
-            // Total progress fraction: completed suites + current suite fraction
             const totalFraction = (completedSuiteCount + (currentPct / 100)) / selectedSuites.length;
             if (totalFraction > 0) {
                 const totalEstimated = elapsed / totalFraction;
