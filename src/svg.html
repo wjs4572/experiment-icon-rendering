@@ -216,126 +216,110 @@
 
     <!-- Shared System Specifications Module -->
     <script src="js/system-specs.js"></script>
-    <!-- Signal that this page handles its own StressTestManager initialization -->
-    <script>window.__stressTestManagerInit = true;</script>
-    <!-- External JavaScript Module -->
+    <!-- Foundation modules -->
+    <script src="js/icon-configs.js"></script>
+    <script src="js/run-id.js"></script>
+    <script src="js/run-record.js"></script>
+    <script src="js/reporters.js"></script>
+    <script src="js/run-state.js"></script>
+    <script src="js/run-handle.js"></script>
+    <script src="js/suite-runner.js"></script>
+    <!-- StressTestManager (engine) -->
     <script src="js/stress-test-manager.js"></script>
 
     <!-- Tab switching functionality (global scope for onclick) -->
     <script>
-        let stressTestManager;
-
         // Global tab switching function for onclick handlers
         function switchTab(tabName) {
-            console.log('Switching to tab:', tabName);
-
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(b => {
+                b.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                b.classList.add('border-transparent', 'text-gray-500');
             });
 
-            // Remove active class from all tab buttons
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active', 'border-blue-500', 'text-blue-600');
-                button.classList.add('border-transparent', 'text-gray-500');
-            });
-
-            // Show selected tab content
-            if (tabName === 'testing') {
-                document.getElementById('testingContent').classList.remove('hidden');
-                const testingTab = document.getElementById('testingTab');
-                testingTab.classList.add('active', 'border-blue-500', 'text-blue-600');
-                testingTab.classList.remove('border-transparent', 'text-gray-500');
-            } else if (tabName === 'rendering') {
-                document.getElementById('renderingContent').classList.remove('hidden');
-                const renderingTab = document.getElementById('renderingTab');
-                renderingTab.classList.add('active', 'border-blue-500', 'text-blue-600');
-                renderingTab.classList.remove('border-transparent', 'text-gray-500');
-            }
-
-            console.log('Tab switch completed');
+            const id = tabName === 'testing' ? 'testingContent' : 'renderingContent';
+            const tab = tabName === 'testing' ? 'testingTab' : 'renderingTab';
+            document.getElementById(id).classList.remove('hidden');
+            const btn = document.getElementById(tab);
+            btn.classList.add('active', 'border-blue-500', 'text-blue-600');
+            btn.classList.remove('border-transparent', 'text-gray-500');
         }
     </script>
 
-    <!-- Initialize the stress test manager when DOM is ready -->
+    <!-- Suite page initialisation — wired through SuiteRunner + DOMReporter -->
     <script>
-
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, setting up tabs');
+            const FORMAT = 'svg';
+            let currentHandle = null;
 
-            // Setup tab event listeners FIRST before StressTestManager
-            const testingTab = document.getElementById('testingTab');
+            // ── Tab listeners ──────────────────────────────────
+            const testingTab  = document.getElementById('testingTab');
             const renderingTab = document.getElementById('renderingTab');
+            if (testingTab)  testingTab.addEventListener('click',  function(e) { e.preventDefault(); switchTab('testing');  });
+            if (renderingTab) renderingTab.addEventListener('click', function(e) { e.preventDefault(); switchTab('rendering'); });
 
-            console.log('Found tabs:', { testingTab: !!testingTab, renderingTab: !!renderingTab });
+            // ── Browser info ───────────────────────────────────
+            const browserInfo = document.getElementById('currentBrowserInfo');
 
-            if (testingTab) {
-                testingTab.addEventListener('click', function(e) {
-                    console.log('Testing tab clicked');
-                    e.preventDefault();
-                    switchTab('testing');
+            // ── DOMReporter + StressTestManager (for HTML rendering) ──
+            const reporter = new window.Reporters.DOMReporter();
+            window.stressTestManager = new StressTestManager({
+                iconConfigs: window.IconConfigs.allIconConfigs[FORMAT],
+                format: FORMAT,
+                reporter: reporter
+            });
+            reporter.setManager(window.stressTestManager);
+
+            if (browserInfo) {
+                browserInfo.textContent = window.stressTestManager.parseBrowserName();
+            }
+
+            // ── Button wiring ──────────────────────────────────
+            const startBtn = document.getElementById('startTest');
+            const stopBtn  = document.getElementById('stopTest');
+            const clearBtn = document.getElementById('clearResults');
+
+            if (startBtn) {
+                startBtn.addEventListener('click', function() {
+                    const testTypeEl = document.getElementById('testType');
+                    const testType = testTypeEl ? testTypeEl.value : 'bulk';
+                    currentHandle = window.SuiteRunner.runSuite(FORMAT, testType, { reporter: reporter });
                 });
-                console.log('Testing tab listener added');
-            } else {
-                console.error('Testing tab not found!');
             }
 
-            if (renderingTab) {
-                renderingTab.addEventListener('click', function(e) {
-                    console.log('Rendering tab clicked');
-                    e.preventDefault();
-                    switchTab('rendering');
+            if (stopBtn) {
+                stopBtn.addEventListener('click', function() {
+                    if (currentHandle) {
+                        window.SuiteRunner.cancelSuite(currentHandle);
+                        currentHandle = null;
+                    } else {
+                        window.stressTestManager.stopTest();
+                    }
                 });
-                console.log('Rendering tab listener added');
-            } else {
-                console.error('Rendering tab not found!');
             }
 
-            // Initialize StressTestManager with SVG-specific icon configs
-            const inlineGradId = 'ig' + Math.random().toString(36).slice(2,6);
-            const optimizedGradId = 'og' + Math.random().toString(36).slice(2,6);
-            const svgIconConfigs = [
-                {
-                    name: 'Inline SVG',
-                    selector: '[aria-label="Inline SVG code icon"]',
-                    containerSelector: '[aria-label="Inline SVG code icon"]',
-                    renderType: 'inline-svg',
-                    hasNetworkOverhead: false,
-                    svgMarkup: '<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="' + inlineGradId + '" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" /><stop offset="100%" style="stop-color:#14b8a6;stop-opacity:1" /></linearGradient></defs><circle cx="24" cy="24" r="24" fill="url(#' + inlineGradId + ')" /><path d="M18.5 15.5L12 22L18.5 28.5L19.9 27.1L14.8 22L19.9 16.9L18.5 15.5ZM29.5 15.5L28.1 16.9L33.2 22L28.1 27.1L29.5 28.5L36 22L29.5 15.5ZM25.96 13L21.04 31H23.04L27.96 13H25.96Z" fill="white" /></svg>'
-                },
-                {
-                    name: 'External SVG',
-                    selector: 'img[alt="External SVG code icon"]',
-                    containerSelector: 'img[alt="External SVG code icon"]',
-                    renderType: 'external-svg',
-                    hasNetworkOverhead: true,
-                    src: 'img/remix_circle_icon.svg'
-                },
-                {
-                    name: 'Optimized SVG',
-                    selector: '[aria-label="Optimized SVG code icon"]',
-                    containerSelector: '[aria-label="Optimized SVG code icon"]',
-                    renderType: 'optimized-svg',
-                    hasNetworkOverhead: false,
-                    svgMarkup: '<svg width="48" height="48" viewBox="0 0 48 48"><defs><linearGradient id="' + optimizedGradId + '" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#14b8a6"/></linearGradient></defs><circle cx="24" cy="24" r="24" fill="url(#' + optimizedGradId + ')"/><path d="M18.5 15.5L12 22l6.5 6.5 1.4-1.4L14.8 22l5.1-5.1-1.4-1.4zm11 0l-1.4 1.4 5.1 5.1-5.1 5.1 1.4 1.4L36 22l-6.5-6.5zM25.96 13l-4.92 18h2l4.92-18h-2z" fill="#fff"/></svg>'
-                }
-            ];
-
-            try {
-                window.stressTestManager = new StressTestManager({ iconConfigs: svgIconConfigs });
-                console.log('StressTestManager initialized with SVG configs');
-
-                // Display current browser information
-                const browserInfo = document.getElementById('currentBrowserInfo');
-                if (browserInfo && window.stressTestManager) {
-                    const parsedBrowser = window.stressTestManager.parseBrowserName();
-                    browserInfo.textContent = parsedBrowser;
-                }
-            } catch (error) {
-                console.error('Error initializing StressTestManager:', error);
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function() {
+                    const resultsDiv = document.getElementById('results');
+                    if (resultsDiv) {
+                        resultsDiv.innerHTML = '<div class="text-gray-500" data-i18n="css.no_tests_message">No tests run yet. Click "Start Stress Test" to begin performance analysis.</div>';
+                    }
+                });
             }
 
-            console.log('Tab event listeners set up');
+            // ── Cross-tab: attach to active run from RunStateStore ──
+            const activeRun = window.RunStateStore.getActiveRun(FORMAT);
+            if (activeRun) {
+                reporter.onProgress(activeRun.progress.percentage, activeRun.progress.message,
+                    activeRun.progress.completedIterations, activeRun.progress.totalIterations);
+            }
+
+            window.RunStateStore.onProgressChange(FORMAT, function(runState) {
+                if (runState && runState.progress) {
+                    reporter.onProgress(runState.progress.percentage, runState.progress.message,
+                        runState.progress.completedIterations, runState.progress.totalIterations);
+                }
+            });
         });
     </script>
 </body>
