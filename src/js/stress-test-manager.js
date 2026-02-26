@@ -1,4 +1,10 @@
 class StressTestManager {
+    /**
+     * @param {Object}   options
+     * @param {Array}    options.iconConfigs – Icon config array (from icon-configs.js)
+     * @param {string}   [options.format]   – Format key (css, svg, png, …). Falls back to page detection.
+     * @param {Object}   [options.reporter] – Reporter instance (DOMReporter, StoreReporter, or NoopReporter)
+     */
     constructor(options = {}) {
         this.isRunning = false;
         this.shouldStop = false;
@@ -15,54 +21,29 @@ class StressTestManager {
         // System information storage
         this.systemInfo = this.loadSystemInfo();
         
-        this.iconConfigs = options.iconConfigs || [
-            {
-                name: 'Remix Icon (Square)',
-                selector: '.ri-code-s-slash-line',
-                containerSelector: '.ri-code-s-slash-line',
-                hasNetworkOverhead: true
-            },
-            {
-                name: 'Pure CSS Icon',
-                selector: '.code-slash-icon',
-                containerSelector: '.code-slash-icon',
-                hasNetworkOverhead: false
-            },
-            {
-                name: 'Minimal CSS Icon',
-                selector: '.simple-icon',
-                containerSelector: '.simple-icon',
-                hasNetworkOverhead: false
-            },
-            {
-                name: 'Circular CSS Icon',
-                selector: '.circular-icon',
-                containerSelector: '.circular-icon',
-                hasNetworkOverhead: false
-            },
-            {
-                name: 'Circular Remix Icon',
-                selector: '.ri-code-s-slash-line',
-                containerSelector: '.ri-code-s-slash-line',
-                hasNetworkOverhead: true,
-                isCircular: true
-            }
-        ];
+        // Icon configs — must be provided via options or IconConfigs global
+        this.iconConfigs = options.iconConfigs
+            || (window.IconConfigs && options.format && window.IconConfigs.allIconConfigs[options.format])
+            || (window.IconConfigs && window.IconConfigs.cssIconConfigs)
+            || [];
         
-        this.setupEventListeners();
-        this.updateMemoryDisplay();
-        this.createTestContainer();
+        // Format key — provided or auto-detected from page URL
+        this.format = options.format || this._detectPageFormat();
+        
+        // Reporter — defaults to NoopReporter if none provided
+        this.reporter = options.reporter
+            || (window.Reporters && new window.Reporters.NoopReporter())
+            || { onTestStart(){}, onProgress(){}, onIterationComplete(){}, onTestComplete(){}, onError(){} };
+        
+        // If the reporter is a DOMReporter, give it a back-reference to us
+        if (this.reporter.setManager) {
+            this.reporter.setManager(this);
+        }
         
         // Delegate system specs to shared module
         if (window.systemSpecsManager) {
             this.systemInfo = window.systemSpecsManager.systemInfo;
             window.systemSpecsManager.initializeModal();
-        }
-
-        // Load previously saved results if not auto-running (batch mode)
-        const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.get('autorun')) {
-            this.loadSavedResults();
         }
     }
 
@@ -219,44 +200,9 @@ class StressTestManager {
         }
     }
 
+    /** @deprecated Removed in refactor — wire buttons in suite page scripts instead. */
     setupEventListeners() {
-        document.getElementById('startTest').addEventListener('click', () => this.startStressTest());
-        document.getElementById('stopTest').addEventListener('click', () => this.stopTest());
-        document.getElementById('clearResults').addEventListener('click', () => this.clearResults());
-        
-        // System info button event listener
-        const systemInfoBtn = document.getElementById('systemInfoButton');
-        if (systemInfoBtn) {
-            systemInfoBtn.addEventListener('click', () => this.showSystemInfoModal());
-        }
-        
-        // Only update memory display when not testing to avoid performance interference
-        setInterval(() => {
-            if (!this.isRunning) {
-                this.updateMemoryDisplay();
-            }
-        }, 5000);
-        
-        // Update system info display on page load
-        setTimeout(() => this.updateSystemInfoDisplay(), 100);
-
-        // Auto-start support for batch runner (via URL parameter)
-        const urlParams = new URLSearchParams(window.location.search);
-        const autoTestType = urlParams.get('autorun');
-        if (autoTestType) {
-            // Set the test type dropdown and start after a brief delay for page setup
-            setTimeout(() => {
-                const testTypeSelect = document.getElementById('testType');
-                if (testTypeSelect) {
-                    testTypeSelect.value = autoTestType;
-                }
-                // Signal ready to parent, then start
-                if (window.parent !== window) {
-                    window.parent.postMessage({ type: 'testReady', format: this.detectPageFormat() }, '*');
-                }
-                this.startStressTest();
-            }, 500);
-        }
+        console.warn('StressTestManager.setupEventListeners() is deprecated. Wire buttons in your suite page script.');
     }
 
     updateMemoryDisplay() {
@@ -283,7 +229,8 @@ class StressTestManager {
         this.completedIterations = 0;
         
         // Get test parameters
-        const testType = document.getElementById('testType').value;
+        const testTypeEl = document.getElementById('testType');
+        const testType = testTypeEl ? testTypeEl.value : 'bulk';
         const testConfig = this.getTestConfig(testType);
         
         this.totalIterations = testConfig.iterations * this.iconConfigs.length;
@@ -308,6 +255,9 @@ class StressTestManager {
             // Log test parameters for user awareness
             console.log(`Starting stress test: ${testConfig.iterations} iterations × ${this.iconConfigs.length} icon types = ${this.totalIterations} total iterations`);
             this.updateProgress(`Test Configuration: ${this.totalIterations.toLocaleString()} total iterations`, 1);
+
+            // Notify reporter of test start
+            this.reporter.onTestStart(this.format, testConfig);
             
             // Run test for each icon configuration
             for (let configIndex = 0; configIndex < this.iconConfigs.length; configIndex++) {
@@ -325,6 +275,7 @@ class StressTestManager {
             }
         } catch (error) {
             console.error('Stress test error:', error);
+            this.reporter.onError(error);
             this.displayError(error.message);
         } finally {
             this.isRunning = false;
@@ -908,12 +859,20 @@ class StressTestManager {
         if (!fromSaved) {
             this.saveResultsToStorage(sortedResults, testDuration);
         }
+
+        // Notify reporter of completion
+        this.reporter.onTestComplete(this.results, testDuration, {
+            fromSaved,
+            savedDuration,
+            startedAt: this.testStartedAt,
+            sortedResults
+        });
     }
 
     saveResultsToStorage(sortedResults, testDuration) {
         try {
-            // Determine format from the current page
-            const pageFormat = this.detectPageFormat();
+            // Use injected format
+            const pageFormat = this.format;
 
             // Prepare statistical analysis data
             const statisticsData = {};
@@ -987,16 +946,6 @@ class StressTestManager {
             
             // Also save to past results history for archival
             this.saveToPastResults(testResults);
-
-            // Notify parent window if running inside an iframe (batch runner)
-            if (window.parent !== window) {
-                window.parent.postMessage({
-                    type: 'testComplete',
-                    format: pageFormat,
-                    duration: testDuration,
-                    iterations: this.completedIterations
-                }, '*');
-            }
             
         } catch (error) {
             console.error('Failed to save results to localStorage:', error);
@@ -1077,7 +1026,7 @@ class StressTestManager {
 
                 // Source tracking for provenance
                 sourceInfo: {
-                    originalSource: this.detectOriginalSource(),
+                    originalSource: this._detectOriginalSource(),
                     fileName: 'Current Data',
                     importedAt: null
                 }
@@ -1114,17 +1063,27 @@ class StressTestManager {
         return descriptions[testType] || 'Unknown Test Type';
     }
 
-    detectOriginalSource() {
+    _detectOriginalSource() {
         // Determine which test page we are on based on the current URL
         const path = window.location.pathname;
         const fileName = path.split('/').pop() || 'unknown';
         return fileName;
     }
 
-    detectPageFormat() {
+    /** @deprecated Use _detectOriginalSource instead */
+    detectOriginalSource() {
+        return this._detectOriginalSource();
+    }
+
+    _detectPageFormat() {
         // Derive the format key (css, svg, png, etc.) from the current page filename
-        const source = this.detectOriginalSource();
+        const source = this._detectOriginalSource();
         return source.replace(/\.html$/i, '') || 'css';
+    }
+
+    /** @deprecated Use this.format instead */
+    detectPageFormat() {
+        return this.format;
     }
 
     parseBrowserName() {
@@ -1368,6 +1327,9 @@ class StressTestManager {
             const remaining = totalEstimated - elapsed;
             document.getElementById('eta').textContent = remaining > 0 ? `${remaining.toFixed(0)}s` : 'Almost done';
         }
+
+        // Notify reporter
+        this.reporter.onProgress(percentage, message, this.completedIterations, this.totalIterations);
     }
 
     showProgress(show) {
@@ -1562,17 +1524,8 @@ class StressTestManager {
                 this.updateMemoryDisplay();
             }
 
-            // Broadcast progress to parent if running in iframe (batch runner)
-            if (window.parent !== window) {
-                window.parent.postMessage({
-                    type: 'testProgress',
-                    format: this.detectPageFormat(),
-                    percentage: percentage,
-                    completed: this.completedIterations,
-                    total: this.totalIterations,
-                    message: progressText
-                }, '*');
-            }
+            // Broadcast progress to reporter (replaces postMessage-based approach)
+            this.reporter.onProgress(percentage, progressText, this.completedIterations, this.totalIterations);
         }, 2000); // Update every 2 seconds without blocking performance measurement
         
         // Track interval for cleanup
@@ -1587,9 +1540,10 @@ class StressTestManager {
      * so users can see past results (including those from the batch runner)
      * without re-running tests.
      */
+    /** @deprecated Use RunStateStore to load saved results instead. */
     loadSavedResults() {
         try {
-            const pageFormat = this.detectPageFormat();
+            const pageFormat = this.format;
             const stored = localStorage.getItem(`iconTestResults_${pageFormat}`);
             if (!stored) return;
 
@@ -1617,7 +1571,7 @@ class StressTestManager {
     // Export functionality for test results
     exportResultsAsJSON() {
         try {
-            const pageFormat = this.detectPageFormat();
+            const pageFormat = this.format;
             const results = localStorage.getItem(`iconTestResults_${pageFormat}`);
             if (!results) {
                 alert('No test results found. Please run a test first.');
@@ -1669,11 +1623,5 @@ class StressTestManager {
     }
 }
 
-// Auto-initialize only if no page-specific initialization is expected.
-// Pages that pass custom options (e.g., svg.html) set window.__stressTestManagerInit = true
-// before this script loads, and handle initialization themselves.
-document.addEventListener('DOMContentLoaded', function() {
-    if (!window.__stressTestManagerInit) {
-        stressTestManager = new StressTestManager();
-    }
-});
+// ── Expose class globally ──────────────────────────────────────────────
+window.StressTestManager = StressTestManager;

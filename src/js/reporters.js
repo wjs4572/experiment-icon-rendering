@@ -78,22 +78,17 @@ class DOMReporter extends NoopReporter {
 
     /**
      * Called when the test finishes.
-     * Delegates heavy HTML generation back to StressTestManager methods.
+     * The manager has already rendered the results HTML by the time this fires,
+     * so we only need to toggle progress/results visibility.
      *
      * @param {Object}  results   – Aggregated results map
      * @param {number}  duration  – Total duration in seconds
      * @param {Object}  [extra]   – Additional context (startedAt, sortedResults, etc.)
      */
     onTestComplete(results, duration, extra = {}) {
-        // Hide progress, show results
+        // Hide progress section now that results are shown
         const progressSection = document.getElementById('progressSection');
         if (progressSection) progressSection.classList.add('hidden');
-
-        // If we have a manager reference, let it render the full results HTML
-        // (the manager owns generateStatisticalAnalysisTable, etc.)
-        if (this.manager && typeof this.manager.displayAggregatedResults === 'function') {
-            this.manager.displayAggregatedResults(extra);
-        }
     }
 
     onError(error) {
