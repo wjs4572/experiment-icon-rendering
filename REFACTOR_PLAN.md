@@ -8,12 +8,12 @@
 ## Design Decisions (Locked)
 
 | Decision | Choice |
-|---|---|
+| --- | --- |
 | Backward compat for old stored data | Not required. Additive fields for new runs only. Simplified read paths. |
 | Icon configs | Extracted to shared module `src/js/icon-configs.js`. Suite pages and batch import the same configs. |
 | Batch execution | No iframes. StressTestManager gets injected Reporter interface. `DOMReporter` for suite pages, `StoreReporter` for batch/cross-tab. Existing index.html batch progress UI preserved exactly. |
 | Results Library table | Tabulator (CDN). No custom table implementation. |
-| Run schema | All runs (local, batch, imported) normalize to a single `RunRecord` schema. `source` field (`local` | `imported`). `importedFileName` field for imports. |
+| Run schema | All runs (local, batch, imported) normalize to a single `RunRecord` schema. `source` field (`local` \| `imported`). `importedFileName` field for imports. |
 
 ---
 
@@ -54,18 +54,21 @@
 ### Phase 1: Foundation Modules (no UI changes)
 
 #### Todo 1 — ID Helper Module
+
 - **New file**: `src/js/run-id.js` (~30 lines)
 - Three functions: `generateRunId()`, `generateSuiteRunId()`, `generateTestResultId()`
 - Timestamp + random suffix based (no external deps)
 - Exported for use by suite runner, batch runner, and import logic
 
 #### Todo 2 — RunRecord Schema & Normalizer
+
 - **New file**: `src/js/run-record.js` (~60 lines)
 - `createRunRecord(fields)` — factory that fills defaults, validates shape
 - `normalizeImportedRecord(raw, fileName)` — takes imported JSON, maps to RunRecord, sets `source: "imported"`, sets `importedFileName`
 - Defines `SCHEMA_VERSION = 2`
 
 #### Todo 3 — Reporter Interface
+
 - **New file**: `src/js/reporters.js` (~120 lines)
 - Abstract contract:
   - `onTestStart(format, config)`
@@ -83,6 +86,7 @@
   - Used by batch runner on index.html
 
 #### Todo 4 — Run State Store
+
 - **New file**: `src/js/run-state.js` (~150 lines)
 - In-memory map of active runs keyed by `suiteRunId`
 - Methods:
@@ -102,6 +106,7 @@
 - Cross-tab sync via `storage` event on localStorage (no BroadcastChannel needed; storage events fire cross-tab natively)
 
 #### Todo 5 — Icon Configs Module
+
 - **New file**: `src/js/icon-configs.js` (~200 lines)
 - Exports config objects per format:
   - `cssIconConfigs` — 5 configs (Remix Square, Pure CSS, Minimal, Circular CSS, Circular Remix)
@@ -120,6 +125,7 @@
 ### Phase 2: Refactor StressTestManager
 
 #### Todo 6 — Inject Reporter into StressTestManager
+
 - **Modify**: `src/js/stress-test-manager.js`
 - Constructor accepts `options.reporter` (Reporter instance)
 - If no reporter provided, default to a no-op reporter (silent)
@@ -140,6 +146,7 @@
 - Accept `format` and `iconConfigs` in constructor options (from icon-configs module)
 
 #### Todo 7 — DOMReporter Implementation Detail
+
 - Lives in `src/js/reporters.js` (from Todo 3)
 - `onProgress(pct, msg)` → writes to `#progressBar`, `#progressText`, `#progressPercent` (existing IDs)
 - `onTestComplete(results, sortedResults, duration, startedAt)` → calls HTML-generation methods that currently live in StressTestManager (`generateStatisticalAnalysisTable`, `generateDetailedAnalysis`), writes to `#results`
@@ -151,6 +158,7 @@
 ### Phase 3: Suite Runner Wrapper
 
 #### Todo 8 — Suite Runner Module
+
 - **New file**: `src/js/suite-runner.js` (~120 lines)
 - `runSuite(format, testType, { runId, reporter })` → returns `RunHandle`
 - Steps:
@@ -164,6 +172,7 @@
 - `cancelSuite(handle)` → calls `manager.stopTest()`
 
 #### Todo 9 — Run Handle
+
 - **New file**: `src/js/run-handle.js` (~80 lines)
 - Properties: `runId`, `suiteRunId`, `format`, `startTime`, `status`
 - Methods:
@@ -178,6 +187,7 @@
 ### Phase 4: Wire Suite Pages
 
 #### Todo 10 — Update Suite Pages
+
 - **Modify**: `css.html`, `svg.html`, `png.html`, `gif.html`, `jpeg.html`, `webp.html`, `avif.html` (7 files)
 - Remove inline `iconConfigs` definitions → import from `icon-configs.js`
 - Remove `window.__stressTestManagerInit` flag pattern
@@ -192,6 +202,7 @@
 - ~40 lines changed per page
 
 #### Todo 11 — Handle ?autorun Removal
+
 - Remove `?autorun` URL parameter handling from `stress-test-manager.js` `setupEventListeners()`
 - Batch runner no longer loads suite pages — it calls `runSuite()` directly
 - Cross-tab visibility comes from Run State Store, not from the page being loaded
@@ -201,6 +212,7 @@
 ### Phase 5: Batch Runner (No Iframes)
 
 #### Todo 12 — Rewrite Index.html Batch Runner (Keep Existing UI)
+
 - **Modify**: `src/index.html`
 - **Remove**: iframe element, all iframe-related code, `postMessage` listeners
 - **Preserve exactly**: progress bars, ETA, elapsed timer, pills, status text, controls, and cards — no visual or behavioral changes to the batch progress UI
@@ -225,6 +237,7 @@
 ### Phase 6: Results Library
 
 #### Todo 13 — Results Library Page
+
 - **Rename**: `src/past-results.html` → `src/results-library.html`
 - **Major rewrite** using Tabulator (CDN: `https://cdn.jsdelivr.net/npm/tabulator-tables/dist/js/tabulator.min.js` + CSS)
 - Page structure:
@@ -235,6 +248,7 @@
   - Bulk action bar (Export Selected, Delete Selected, Toggle Active, Clear All)
 
 #### Todo 14 — Tabulator Table Configuration
+
 - Columns:
   - `active` — checkbox (editable, triggers `toggleActive` in Run State Store)
   - `format` — text, uppercase, filterable
@@ -251,6 +265,7 @@
 - Row click → populate details panel
 
 #### Todo 15 — Details Panel
+
 - Displays on row click:
   - Full run metadata (runId, suiteRunId, testResultId, format, source, importedFileName)
   - Test configuration details
@@ -262,6 +277,7 @@
 - Delete button
 
 #### Todo 16 — Bulk Operations
+
 - **Export Selected**: gather selected RunRecords, wrap in export envelope, download JSON
 - **Delete Selected**: remove from Run State Store, refresh table
 - **Toggle Active**: flip `active` on selected records, refresh table
@@ -273,12 +289,14 @@
 ### Phase 7: Summary Dashboard
 
 #### Todo 17 — Wire Active Runs into Summary
+
 - **Modify**: `src/summary.html` — `loadResults()` method
 - Change data source: `runStateStore.getActiveRecords()` instead of reading raw localStorage keys
 - Group by format, pick latest per format (or aggregate — keep current behavior)
 - All charts, tables, statistical analysis driven by active-only records
 
 #### Todo 18 — Update Summary Exports
+
 - JSON export: include `runId`, `suiteRunId`, `startTime`, `endTime`, `durationMs`, `testResultId` per format
 - Keep cross-format comparison logic (fastest per format, memory comparison vs CSS baseline)
 - CSV export: add columns for new fields
@@ -288,6 +306,7 @@
 ### Phase 8: Navigation & i18n
 
 #### Todo 19 — Update Navigation Links
+
 - All pages: "Past Results" → "Results Library"
 - Update `href` from `past-results.html` to `results-library.html`
 - Files to update: `index.html`, `summary.html`, `css.html`, `svg.html`, `png.html`, `gif.html`, `jpeg.html`, `webp.html`, `avif.html`
@@ -298,12 +317,14 @@
 ### Phase 9: Tests
 
 #### Todo 20 — New Module Tests
+
 - `tests/run-id.test.js` — uniqueness, format
 - `tests/run-state.test.js` — register, update, complete, persist, retrieve, delete, toggle active, import
 - `tests/suite-runner.test.js` — run lifecycle, RunHandle contract, cancel
 - `tests/reporters.test.js` — DOMReporter writes to DOM, StoreReporter publishes to store
 
 #### Todo 21 — Updated Page Tests
+
 - `tests/results-library.test.js` — replaces `past-results.test.js`: table renders, pagination, sort, filter, active toggle, details panel, bulk ops, import/export
 - Update `tests/index.test.js` — batch runner without iframe, nav link update
 - Update `tests/summary.test.js` — active-only filtering
@@ -311,6 +332,7 @@
 - Update `tests/css.test.js` and `tests/format-pages.test.js` — new init pattern
 
 #### Todo 22 — Remove Old Test Artifacts
+
 - Delete `tests/past-results.test.js` (replaced by `results-library.test.js`)
 
 ---
@@ -337,7 +359,7 @@
 ## New Files Summary
 
 | File | Purpose | Est. Lines |
-|---|---|---|
+| --- | --- | --- |
 | `src/js/run-id.js` | ID generation | ~30 |
 | `src/js/run-record.js` | RunRecord factory & normalizer | ~60 |
 | `src/js/reporters.js` | Reporter interface, DOMReporter, StoreReporter | ~120 |
@@ -350,7 +372,7 @@
 ## Modified Files Summary
 
 | File | Change Scope |
-|---|---|
+| --- | --- |
 | `src/js/stress-test-manager.js` | Major: inject reporter, remove DOM coupling, remove auto-init, accept format/configs |
 | `src/index.html` | Major: rewrite batch runner (remove iframe + postMessage, use suite-runner + StoreReporter, preserve existing batch progress UI exactly) |
 | `src/summary.html` | Medium: load from Run State Store active records, update exports |
@@ -366,7 +388,7 @@
 ## CDN Dependencies Added
 
 | Library | URL | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | Tabulator | `https://cdn.jsdelivr.net/npm/tabulator-tables/dist/js/tabulator.min.js` | Results Library table |
 | Tabulator CSS | `https://cdn.jsdelivr.net/npm/tabulator-tables/dist/css/tabulator.min.css` | Results Library table styles |
 

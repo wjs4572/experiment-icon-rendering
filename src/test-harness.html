@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Harness — Foundation Modules</title>
+</head>
+<body>
+    <!--
+        Minimal page that loads all Phase 1 foundation modules so Playwright
+        tests can exercise their APIs in a real browser context.
+
+        Not linked from navigation — used only by tests/*.test.js.
+    -->
+
+    <!-- DOM elements used by DOMReporter tests -->
+    <div id="progressSection" class="hidden">
+        <div id="progressBar" style="width: 0%"></div>
+        <div id="progressText"></div>
+        <div id="progressPercent"></div>
+    </div>
+
+    <!-- Foundation modules (order matters: run-id first, others depend on it) -->
+    <script src="js/run-id.js"></script>
+    <script src="js/run-record.js"></script>
+    <script src="js/run-state.js"></script>
+    <script src="js/reporters.js"></script>
+    <script src="js/icon-configs.js"></script>
+
+    <script>
+        // Signal that all modules are loaded
+        window.__harnessReady = true;
+    </script>
+</body>
+</html>
