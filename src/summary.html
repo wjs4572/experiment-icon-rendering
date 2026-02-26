@@ -7,6 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Performance Summary Dashboard - Icon Rendering Tests</title>
+    <link rel="icon" href="https://simpsonconcepts.com/img/favicon_io/favicon.ico" type="image/x-icon">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js for visualizations -->
@@ -157,6 +158,21 @@
                     </select>
                 </div>
             </div>
+
+            <!-- Test Exclusion Filter -->
+            <div class="mt-4 pt-4 border-t border-gray-200">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-xs font-medium text-gray-700">Exclude Specific Tests:</label>
+                    <div class="flex gap-2">
+                        <button id="excludeSelectAll" class="text-xs text-red-600 hover:underline" type="button">Exclude All</button>
+                        <button id="excludeDeselectAll" class="text-xs text-green-600 hover:underline" type="button">Include All</button>
+                    </div>
+                </div>
+                <div id="testExclusionList" class="max-h-60 overflow-y-auto p-2.5 border border-gray-100 rounded-lg bg-gray-50/50 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-3 items-start">
+                    <span class="text-xs text-gray-400">Loading tests...</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Check a test to exclude it from all charts, tables, and statistical analysis.</p>
+            </div>
         </div>
 
         <!-- Performance Comparison Chart -->
@@ -219,7 +235,9 @@
                 this.results = {};
                 this.archiveHistory = [];
                 this.chartInstance = null;
+                this.excludedTests = new Set();
                 this.loadArchiveHistory();
+                this.loadExcludedTests();
                 this.loadResults();
                 this.setupEventListeners();
                 this.populateFilterDropdowns();
@@ -283,7 +301,7 @@
 
             hasActiveFilters() {
                 const f = this.getFilterState();
-                return !!(f.testType || f.dateRange || f.significance || f.originalSource || f.inputSource || f.fileName);
+                return !!(f.testType || f.dateRange || f.significance || f.originalSource || f.inputSource || f.fileName || this.excludedTests.size > 0);
             }
 
             filterArchiveEntries(entries) {
@@ -434,6 +452,8 @@
                 document.getElementById('exportJson').addEventListener('click', () => this.exportJson());
                 document.getElementById('clearData').addEventListener('click', () => this.clearAllData());
                 document.getElementById('summaryClearFilters').addEventListener('click', () => this.clearFilters());
+                document.getElementById('excludeSelectAll')?.addEventListener('click', () => this.excludeAllTests());
+                document.getElementById('excludeDeselectAll')?.addEventListener('click', () => this.includeAllTests());
 
                 // Auto-apply filters on change
                 const filterIds = ['summaryFilterTestType', 'summaryFilterDate', 'summaryFilterSignificance', 'summaryFilterOriginalSource', 'summaryFilterInputSource', 'summaryFilterFileName'];
@@ -539,6 +559,8 @@
                 document.getElementById('summaryFilterOriginalSource').value = '';
                 document.getElementById('summaryFilterInputSource').value = '';
                 document.getElementById('summaryFilterFileName').value = '';
+                this.excludedTests.clear();
+                this.saveExcludedTests();
                 this.saveFilterState();
                 this.loadResults();
                 this.render();
@@ -552,11 +574,161 @@
 
                 if (active) {
                     clearBtn.classList.remove('hidden');
-                    countEl.textContent = `${Object.keys(this.results).length} formats shown`;
+                    const excludeNote = this.excludedTests.size > 0 ? ` \u00b7 ${this.excludedTests.size} test(s) excluded` : '';
+                    countEl.textContent = `${Object.keys(this.results).length} formats shown${excludeNote}`;
                 } else {
                     clearBtn.classList.add('hidden');
                     countEl.textContent = '';
                 }
+            }
+
+            // --- Test Exclusion Methods ---
+
+            loadExcludedTests() {
+                try {
+                    const raw = localStorage.getItem('iconTestExcludedTests');
+                    this.excludedTests = raw ? new Set(JSON.parse(raw)) : new Set();
+                } catch(e) {
+                    this.excludedTests = new Set();
+                }
+            }
+
+            saveExcludedTests() {
+                localStorage.setItem('iconTestExcludedTests', JSON.stringify([...this.excludedTests]));
+            }
+
+            collectAllIconTypes() {
+                // Returns Map<sourceFormat, Set<iconType>> grouped by source page
+                const groups = new Map();
+                const ensure = (fmt) => { if (!groups.has(fmt)) groups.set(fmt, new Set()); return groups.get(fmt); };
+
+                // Live results — keyed by format name directly
+                Object.entries(this.results).forEach(([format, data]) => {
+                    const grp = ensure(format);
+                    if (data.performanceRanking) {
+                        data.performanceRanking.forEach(r => grp.add(r.iconType));
+                    }
+                    if (data.results) {
+                        Object.keys(data.results).forEach(k => grp.add(k));
+                    }
+                });
+
+                // Archive — derive format from sourceInfo.originalSource (e.g. "css.html" → "css")
+                this.archiveHistory.forEach(entry => {
+                    const src = entry.sourceInfo?.originalSource || '';
+                    const format = src.replace(/\.html$/i, '') || this.inferFormatFromResults(entry.results);
+                    if (!format) return;
+                    const grp = ensure(format);
+                    if (entry.performanceRanking) {
+                        entry.performanceRanking.forEach(r => grp.add(r.iconType));
+                    }
+                    if (entry.results) {
+                        Object.keys(entry.results).forEach(k => grp.add(k));
+                    }
+                });
+                return groups;
+            }
+
+            collectAllIconTypesFlat() {
+                const all = new Set();
+                for (const s of this.collectAllIconTypes().values()) s.forEach(t => all.add(t));
+                return all;
+            }
+
+            renderTestExclusions() {
+                const container = document.getElementById('testExclusionList');
+                if (!container) return;
+                const groups = this.collectAllIconTypes();
+                if (groups.size === 0) {
+                    container.innerHTML = '<span class="text-xs text-gray-400">No tests available yet</span>';
+                    return;
+                }
+                // Clean up stale exclusions for tests that no longer exist
+                const allTypes = this.collectAllIconTypesFlat();
+                [...this.excludedTests].forEach(t => { if (!allTypes.has(t)) this.excludedTests.delete(t); });
+
+                container.innerHTML = '';
+                const formatOrder = this.testFormats.filter(f => groups.has(f));
+                // Add any extra keys not in testFormats
+                for (const k of groups.keys()) { if (!formatOrder.includes(k)) formatOrder.push(k); }
+
+                formatOrder.forEach((format) => {
+                    const types = groups.get(format);
+                    if (!types || types.size === 0) return;
+
+                    const section = document.createElement('div');
+
+                    // Column header
+                    const header = document.createElement('div');
+                    header.className = 'mb-1 pb-1 border-b border-gray-200/80';
+                    header.innerHTML = `<span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">${format.toUpperCase()}</span>`;
+                    section.appendChild(header);
+
+                    // Vertical checkbox list
+                    const list = document.createElement('div');
+                    list.className = 'flex flex-col gap-0.5 pl-1';
+
+                    Array.from(types).sort().forEach(type => {
+                        const isExcluded = this.excludedTests.has(type);
+                        const label = document.createElement('label');
+                        label.className = `inline-flex items-center gap-2 py-0.5 text-xs cursor-pointer select-none transition-colors ${
+                            isExcluded ? 'text-red-600 line-through opacity-70' : 'text-gray-700'
+                        } hover:opacity-80`;
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.checked = isExcluded;
+                        checkbox.className = 'rounded text-red-500 cursor-pointer';
+                        checkbox.addEventListener('change', () => {
+                            if (checkbox.checked) {
+                                this.excludedTests.add(type);
+                            } else {
+                                this.excludedTests.delete(type);
+                            }
+                            this.saveExcludedTests();
+                            this.render();
+                        });
+                        const span = document.createElement('span');
+                        span.textContent = type;
+                        label.appendChild(checkbox);
+                        label.appendChild(span);
+                        list.appendChild(label);
+                    });
+
+                    section.appendChild(list);
+                    container.appendChild(section);
+                });
+            }
+
+            excludeAllTests() {
+                const types = this.collectAllIconTypesFlat();
+                types.forEach(t => this.excludedTests.add(t));
+                this.saveExcludedTests();
+                this.render();
+            }
+
+            includeAllTests() {
+                this.excludedTests.clear();
+                this.saveExcludedTests();
+                this.render();
+            }
+
+            getFilteredRanking(data) {
+                if (!data?.performanceRanking) return [];
+                if (this.excludedTests.size === 0) return data.performanceRanking;
+                return data.performanceRanking.filter(r => !this.excludedTests.has(r.iconType));
+            }
+
+            getFilteredStatistics(data) {
+                if (!data?.statisticalAnalysis) return {};
+                if (this.excludedTests.size === 0) return data.statisticalAnalysis;
+                const filtered = {};
+                Object.entries(data.statisticalAnalysis).forEach(([comparison, stats]) => {
+                    const mentionsExcluded = [...this.excludedTests].some(test => comparison.includes(test));
+                    if (!mentionsExcluded) {
+                        filtered[comparison] = stats;
+                    }
+                });
+                return filtered;
             }
 
             render() {
@@ -573,6 +745,7 @@
                     }
                 }
                 this.updateFilterUI();
+                this.renderTestExclusions();
 
                 if (!hasData) {
                     document.getElementById('noDataMessage').classList.remove('hidden');
@@ -652,10 +825,11 @@
                 let best = { format: 'none', time: Infinity };
                 
                 Object.entries(this.results).forEach(([format, data]) => {
-                    if (data.performanceRanking && data.performanceRanking.length > 0) {
-                        const bestResult = data.performanceRanking.find(r => r.rank === 1);
-                        if (bestResult && bestResult.averageTime < best.time) {
-                            best = { format, time: bestResult.averageTime };
+                    const ranking = this.getFilteredRanking(data);
+                    if (ranking.length > 0) {
+                        const sorted = [...ranking].sort((a, b) => a.averageTime - b.averageTime);
+                        if (sorted[0].averageTime < best.time) {
+                            best = { format, time: sorted[0].averageTime };
                         }
                     }
                 });
@@ -667,10 +841,11 @@
                 let worst = { format: 'none', time: 0 };
                 
                 Object.entries(this.results).forEach(([format, data]) => {
-                    if (data.performanceRanking && data.performanceRanking.length > 0) {
-                        const worstResult = data.performanceRanking[data.performanceRanking.length - 1];
-                        if (worstResult && worstResult.averageTime > worst.time) {
-                            worst = { format, time: worstResult.averageTime };
+                    const ranking = this.getFilteredRanking(data);
+                    if (ranking.length > 0) {
+                        const sorted = [...ranking].sort((a, b) => b.averageTime - a.averageTime);
+                        if (sorted[0].averageTime > worst.time) {
+                            worst = { format, time: sorted[0].averageTime };
                         }
                     }
                 });
@@ -695,19 +870,19 @@
                 };
 
                 Object.entries(this.results).forEach(([format, data]) => {
-                    if (data.performanceRanking && data.performanceRanking.length > 0) {
-                        data.performanceRanking.forEach(result => {
-                            if (!labels.includes(result.iconType)) {
-                                labels.push(result.iconType);
-                            }
-                        });
-                    }
+                    const ranking = this.getFilteredRanking(data);
+                    ranking.forEach(result => {
+                        if (!labels.includes(result.iconType)) {
+                            labels.push(result.iconType);
+                        }
+                    });
                 });
 
                 Object.entries(this.results).forEach(([format, data]) => {
-                    if (data.performanceRanking && data.performanceRanking.length > 0) {
+                    const ranking = this.getFilteredRanking(data);
+                    if (ranking.length > 0) {
                         const chartData = labels.map(label => {
-                            const result = data.performanceRanking.find(r => r.iconType === label);
+                            const result = ranking.find(r => r.iconType === label);
                             return result ? result.averageTime : null;
                         });
 
@@ -768,7 +943,8 @@
                     const statusClass = data.iterations > 1000 ? 'text-green-600' : 'text-yellow-600';
                     const status = data.iterations > 1000 ? this.t('summary.status.complete') : this.t('summary.status.partial');
                     
-                    const bestResult = data.performanceRanking?.find(r => r.rank === 1);
+                    const filteredRanking = this.getFilteredRanking(data);
+                    const bestResult = filteredRanking.length > 0 ? [...filteredRanking].sort((a, b) => a.averageTime - b.averageTime)[0] : null;
                     const bestPerformance = bestResult ? `${bestResult.iconType} (${bestResult.averageTime.toFixed(3)}ms)` : 'N/A';
                     
                     const avgWithCI = bestResult ? 
@@ -808,7 +984,8 @@
                 let html = '';
 
                 Object.entries(this.results).forEach(([format, data]) => {
-                    if (data.statisticalAnalysis && Object.keys(data.statisticalAnalysis).length > 0) {
+                    const filteredStats = this.getFilteredStatistics(data);
+                    if (Object.keys(filteredStats).length > 0) {
                         const originLabel = data._dataOrigin === 'archive' ? ' (Archive)' : '';
                         html += `
                             <div class="border border-gray-200 rounded-lg p-4">
@@ -816,7 +993,7 @@
                                 <div class="grid md:grid-cols-2 gap-4 text-sm">
                         `;
 
-                        Object.entries(data.statisticalAnalysis).forEach(([comparison, stats]) => {
+                        Object.entries(filteredStats).forEach(([comparison, stats]) => {
                             const significanceColor = stats.isSignificant ? 'text-green-600' : 'text-red-600';
                             const powerColor = stats.power > 0.8 ? 'text-green-600' : stats.power > 0.5 ? 'text-yellow-600' : 'text-red-600';
                             const sigLabel = stats.isSignificant 
@@ -884,16 +1061,24 @@
                 }
 
                 const rows = [
-                    ['Format', 'Test Date', 'Iterations', 'Implementation', 'Rank', 'Average Time (ms)', 'CI Lower', 'CI Upper', 'Std Dev', 'Sample Size', 'Source Page', 'Data Source', 'Imported']
+                    ['Format', 'Test Started', 'Test Completed', 'Duration (s)', 'Iterations', 'Implementation', 'Rank', 'Average Time (ms)', 'CI Lower', 'CI Upper', 'Std Dev', 'Memory Used Avg (bytes)', 'Sample Size', 'Source Page', 'Data Source', 'Imported']
                 ];
 
                 Object.entries(this.results).forEach(([format, data]) => {
-                    if (data.performanceRanking) {
+                    const exportRanking = this.getFilteredRanking(data);
+                    if (exportRanking.length > 0) {
                         const source = data._sourceInfo || {};
-                        data.performanceRanking.forEach(result => {
+                        exportRanking.forEach(result => {
+                            // Look up memory for this icon type
+                            let memAvg = 'N/A';
+                            if (data.results?.[result.iconType]?.memoryUsage?.used?.average != null) {
+                                memAvg = data.results[result.iconType].memoryUsage.used.average.toFixed(0);
+                            }
                             rows.push([
                                 format.toUpperCase(),
+                                data.testStartedAt || 'N/A',
                                 new Date(data.testDate).toISOString(),
+                                (data.testDuration || 0).toFixed(1),
                                 data.iterations || 0,
                                 result.iconType,
                                 result.rank,
@@ -901,6 +1086,7 @@
                                 result.confidenceInterval.lower.toFixed(6),
                                 result.confidenceInterval.upper.toFixed(6),
                                 result.standardDeviation.toFixed(6),
+                                memAvg,
                                 result.sampleSize,
                                 source.originalSource || `${format}.html`,
                                 source.fileName || 'Current Data',
@@ -908,6 +1094,21 @@
                             ]);
                         });
                     }
+                });
+
+                // Append cross-format summary rows
+                rows.push([]);
+                rows.push(['--- Cross-Format Summary (fastest per format) ---']);
+                rows.push(['Format', 'Fastest Icon', 'Avg Time (ms)', 'Memory Used Avg (bytes)']);
+                Object.entries(this.results).forEach(([format, data]) => {
+                    const ranking = this.getFilteredRanking(data);
+                    if (ranking.length === 0) return;
+                    const fastest = [...ranking].sort((a, b) => a.averageTime - b.averageTime)[0];
+                    let memAvg = 'N/A';
+                    if (data.results?.[fastest.iconType]?.memoryUsage?.used?.average != null) {
+                        memAvg = data.results[fastest.iconType].memoryUsage.used.average.toFixed(0);
+                    }
+                    rows.push([format.toUpperCase(), fastest.iconType, fastest.averageTime.toFixed(6), memAvg]);
                 });
 
                 const csvContent = rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
@@ -920,7 +1121,100 @@
                     return;
                 }
 
-                const jsonContent = JSON.stringify(this.results, null, 2);
+                // Build comprehensive export with summary, cross-format comparisons, and source data
+                const bestFormat = this.getBestPerformingFormat();
+                const worstFormat = this.getWorstPerformingFormat();
+                const totalIterations = Object.values(this.results).reduce((s, d) => s + (d.iterations || 0), 0);
+                const totalDuration = Object.values(this.results).reduce((s, d) => s + (d.testDuration || 0), 0);
+
+                // --- Cross-format comparison ---
+                // For each format, find the fastest icon (lowest avg render time).
+                // Also collect memory usage for that icon where available.
+                const perFormatBest = {};
+                Object.entries(this.results).forEach(([format, data]) => {
+                    const ranking = this.getFilteredRanking(data);
+                    if (ranking.length === 0) return;
+                    const sorted = [...ranking].sort((a, b) => a.averageTime - b.averageTime);
+                    const fastest = sorted[0];
+
+                    // Locate full result entry for memory data
+                    let memoryUsed = null;
+                    if (data.results) {
+                        const fullEntry = data.results[fastest.iconType];
+                        if (fullEntry?.memoryUsage?.used?.average != null) {
+                            memoryUsed = fullEntry.memoryUsage.used;
+                        }
+                    }
+
+                    perFormatBest[format] = {
+                        iconType: fastest.iconType,
+                        averageTime: fastest.averageTime,
+                        confidenceInterval: fastest.confidenceInterval,
+                        standardDeviation: fastest.standardDeviation,
+                        sampleSize: fastest.sampleSize,
+                        memoryUsage: memoryUsed
+                    };
+                });
+
+                // Build pair-wise comparisons with CSS (the baseline) as reference
+                const crossFormatComparisons = [];
+                const cssBaseline = perFormatBest['css'];
+                if (cssBaseline) {
+                    Object.entries(perFormatBest).forEach(([format, entry]) => {
+                        if (format === 'css') return;
+                        const speedRatio = entry.averageTime / cssBaseline.averageTime;
+                        const comparison = {
+                            baselineFormat: 'css',
+                            baselineIcon: cssBaseline.iconType,
+                            baselineAvgTime: cssBaseline.averageTime,
+                            comparedFormat: format,
+                            comparedIcon: entry.iconType,
+                            comparedAvgTime: entry.averageTime,
+                            speedRatio: parseFloat(speedRatio.toFixed(4)),
+                            note: speedRatio < 1 ? `${format} is ${(1/speedRatio).toFixed(2)}x faster than CSS` :
+                                  speedRatio > 1 ? `CSS is ${speedRatio.toFixed(2)}x faster than ${format}` :
+                                  'Equivalent performance'
+                        };
+                        // Memory comparison when both sides have data
+                        if (cssBaseline.memoryUsage?.average != null && entry.memoryUsage?.average != null) {
+                            comparison.baselineMemory = cssBaseline.memoryUsage;
+                            comparison.comparedMemory = entry.memoryUsage;
+                            const memRatio = entry.memoryUsage.average / cssBaseline.memoryUsage.average;
+                            comparison.memoryRatio = parseFloat(memRatio.toFixed(4));
+                        }
+                        crossFormatComparisons.push(comparison);
+                    });
+                }
+
+                // Environment info from first available result
+                const firstResult = Object.values(this.results)[0];
+                const envInfo = firstResult?.testMetadata || {};
+
+                const exportData = {
+                    exportInfo: {
+                        exportDate: new Date().toISOString(),
+                        exportType: 'Combined Performance Summary',
+                        formatsIncluded: Object.keys(this.results),
+                        totalFormats: Object.keys(this.results).length
+                    },
+                    summaryStatistics: {
+                        bestFormat: bestFormat,
+                        worstFormat: worstFormat,
+                        totalIterations: totalIterations,
+                        totalTestDurationSeconds: parseFloat(totalDuration.toFixed(2)),
+                        perFormatBest: perFormatBest
+                    },
+                    crossFormatComparisons: crossFormatComparisons,
+                    environment: {
+                        userAgent: envInfo.userAgent || navigator.userAgent,
+                        platform: envInfo.platform || navigator.platform,
+                        hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+                        memoryApi: !!performance.memory
+                    },
+                    sourceData: this.results
+                };
+
+                const jsonContent = JSON.stringify(exportData, null, 2);
                 this.downloadFile('icon_performance_results.json', jsonContent, 'application/json');
             }
 

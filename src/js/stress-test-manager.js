@@ -1,5 +1,5 @@
 class StressTestManager {
-    constructor() {
+    constructor(options = {}) {
         this.isRunning = false;
         this.shouldStop = false;
         this.currentTest = null;
@@ -15,7 +15,7 @@ class StressTestManager {
         // System information storage
         this.systemInfo = this.loadSystemInfo();
         
-        this.iconConfigs = [
+        this.iconConfigs = options.iconConfigs || [
             {
                 name: 'Remix Icon (Square)',
                 selector: '.ri-code-s-slash-line',
@@ -57,6 +57,12 @@ class StressTestManager {
         if (window.systemSpecsManager) {
             this.systemInfo = window.systemSpecsManager.systemInfo;
             window.systemSpecsManager.initializeModal();
+        }
+
+        // Load previously saved results if not auto-running (batch mode)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.get('autorun')) {
+            this.loadSavedResults();
         }
     }
 
@@ -233,6 +239,24 @@ class StressTestManager {
         
         // Update system info display on page load
         setTimeout(() => this.updateSystemInfoDisplay(), 100);
+
+        // Auto-start support for batch runner (via URL parameter)
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoTestType = urlParams.get('autorun');
+        if (autoTestType) {
+            // Set the test type dropdown and start after a brief delay for page setup
+            setTimeout(() => {
+                const testTypeSelect = document.getElementById('testType');
+                if (testTypeSelect) {
+                    testTypeSelect.value = autoTestType;
+                }
+                // Signal ready to parent, then start
+                if (window.parent !== window) {
+                    window.parent.postMessage({ type: 'testReady', format: this.detectPageFormat() }, '*');
+                }
+                this.startStressTest();
+            }, 500);
+        }
     }
 
     updateMemoryDisplay() {
@@ -254,6 +278,7 @@ class StressTestManager {
         this.isRunning = true;
         this.shouldStop = false;
         this.startTime = performance.now();
+        this.testStartedAt = new Date().toISOString();
         this.results = {};
         this.completedIterations = 0;
         
@@ -359,8 +384,8 @@ class StressTestManager {
         
         try {
             // Run performance test without interruptions for accuracy
+            // completedIterations is incremented per-iteration inside processBatch
             await this.processBatch(config, 0, testConfig.iterations, measurements, testConfig);
-            this.completedIterations += testConfig.iterations;
         } finally {
             // Stop background monitoring
             if (progressInterval) {
@@ -375,8 +400,26 @@ class StressTestManager {
     async processBatch(config, startIndex, endIndex, measurements, testConfig) {
         // Get reference element for cloning
         let referenceElement;
-        if (config.isCircular) {
-            referenceElement = document.querySelectorAll('.ri-code-s-slash-line')[1]; // Circular instance
+        if (config.renderType === 'inline-svg' || config.renderType === 'external-svg' || config.renderType === 'optimized-svg') {
+            // SVG render types can work from config alone (svgMarkup / src)
+            // Still try to find a reference element for metrics, but don't require it
+            referenceElement = document.querySelector(config.selector);
+            if (!referenceElement) {
+                // Create a temporary element for metrics measurement
+                const tempDiv = document.createElement('div');
+                tempDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+                if (config.svgMarkup) {
+                    tempDiv.innerHTML = config.svgMarkup;
+                } else if (config.src) {
+                    tempDiv.innerHTML = `<img src="${config.src}" width="48" height="48">`;
+                }
+                document.body.appendChild(tempDiv);
+                referenceElement = tempDiv.firstElementChild;
+                // Clean up after metrics
+                requestAnimationFrame(() => tempDiv.remove());
+            }
+        } else if (config.isCircular) {
+            referenceElement = document.querySelectorAll(config.selector)[1] || document.querySelector(config.selector);
         } else {
             referenceElement = document.querySelector(config.selector);
         }
@@ -412,6 +455,9 @@ class StressTestManager {
                 used: endMemory.used - startMemory.used,
                 total: endMemory.total
             });
+
+            // Track actual completed iterations for accurate progress
+            this.completedIterations++;
             
             // Clean up for next iteration (but leave last batch visible)
             if (i < endIndex - 1) {
@@ -488,21 +534,48 @@ class StressTestManager {
         for (let i = 0; i < iconCount; i++) {
             let iconElement;
             
-            if (config.hasNetworkOverhead) {
+            if (config.renderType === 'inline-svg') {
+                // Inline SVG icon — build SVG DOM nodes with unique gradient IDs
+                iconElement = document.createElement('div');
+                iconElement.className = 'w-12 h-12 m-1 inline-flex';
+                let svgMarkup = config.svgMarkup || referenceElement.outerHTML;
+                // Replace gradient IDs with unique ones to avoid DOM conflicts
+                const uid = 'g' + i;
+                svgMarkup = svgMarkup.replace(/id="[^"]*"/g, `id="${uid}"`).replace(/url\(#[^)]*\)/g, `url(#${uid})`);
+                iconElement.innerHTML = svgMarkup;
+            } else if (config.renderType === 'external-svg') {
+                // External SVG via <img> tag
+                iconElement = document.createElement('div');
+                iconElement.className = 'w-12 h-12 m-1 inline-flex';
+                const img = document.createElement('img');
+                img.src = config.src || 'img/remix_circle_icon.svg';
+                img.width = 48;
+                img.height = 48;
+                img.alt = config.name;
+                iconElement.appendChild(img);
+            } else if (config.renderType === 'optimized-svg') {
+                // Optimized / minified inline SVG with unique gradient IDs
+                iconElement = document.createElement('div');
+                iconElement.className = 'w-12 h-12 m-1 inline-flex';
+                let svgMarkup = config.svgMarkup || referenceElement.outerHTML;
+                const uid = 'o' + i;
+                svgMarkup = svgMarkup.replace(/id="[^"]*"/g, `id="${uid}"`).replace(/url\(#[^)]*\)/g, `url(#${uid})`);
+                iconElement.innerHTML = svgMarkup;
+            } else if (config.hasNetworkOverhead) {
                 // Font-based icon (Remix Icons)
                 iconElement = document.createElement('div');
-                iconElement.className = 'w-12 h-12 bg-blue-500 rounded flex items-center justify-center m-1 inline-flex';
+                iconElement.className = 'w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center m-1 inline-flex';
                 const icon = document.createElement('i');
-                icon.className = 'ri-code-s-slash-line text-white text-sm';
+                icon.className = 'ri-code-s-slash-line text-white text-xl';
                 iconElement.appendChild(icon);
                 
                 if (config.isCircular) {
-                    iconElement.className = iconElement.className.replace('rounded', 'rounded-full');
+                    iconElement.className = iconElement.className.replace('rounded-lg', 'rounded-full');
                 }
             } else {
                 // CSS-based icon
                 iconElement = document.createElement('div');
-                iconElement.className = 'w-12 h-12 bg-blue-500 rounded flex items-center justify-center m-1 inline-flex';
+                iconElement.className = 'w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center m-1 inline-flex';
                 const iconContent = document.createElement('div');
                 iconContent.className = config.selector.substring(1); // Remove the dot
                 
@@ -519,7 +592,7 @@ class StressTestManager {
                 iconElement.appendChild(iconContent);
                 
                 if (config.name.includes('Circular')) {
-                    iconElement.className = iconElement.className.replace('rounded', 'rounded-full');
+                    iconElement.className = iconElement.className.replace('rounded-lg', 'rounded-full');
                 }
                 
                 // Add special structure for Pure CSS icons
@@ -734,24 +807,45 @@ class StressTestManager {
         return 0.5 + 0.5 * this.erf(x / Math.sqrt(2));
     }
 
-    async displayAggregatedResults() {
+    async displayAggregatedResults({ fromSaved = false, savedDuration = null } = {}) {
         const resultsDiv = document.getElementById('results');
-        const testDuration = (performance.now() - this.startTime) / 1000;
+        const testDuration = savedDuration != null ? savedDuration : (performance.now() - this.startTime) / 1000;
         
-        let html = `
-            <div class="bg-green-50 border border-green-200 p-3 rounded mb-4">
-                <h3 class="font-semibold text-green-800">Stress Test Complete!</h3>
-                <div class="text-sm text-green-700 mt-1">
-                    Total Duration: ${testDuration.toFixed(1)}s | 
-                    Total Iterations: ${this.completedIterations.toLocaleString()} | 
-                    Average Speed: ${(this.completedIterations / testDuration).toFixed(1)} iterations/sec
+        const startedAtDisplay = this.testStartedAt ? new Date(this.testStartedAt).toLocaleString() : 'N/A';
+
+        let html;
+        if (fromSaved) {
+            html = `
+                <div class="bg-blue-50 border border-blue-200 p-3 rounded mb-4">
+                    <h3 class="font-semibold text-blue-800">Previous Test Results</h3>
+                    <div class="text-sm text-blue-700 mt-1">
+                        Started: ${startedAtDisplay} | 
+                        Total Duration: ${testDuration.toFixed(1)}s | 
+                        Total Iterations: ${this.completedIterations.toLocaleString()} | 
+                        Average Speed: ${(this.completedIterations / testDuration).toFixed(1)} iterations/sec
+                    </div>
+                    <div class="text-xs text-blue-600 mt-2 p-2 bg-blue-100 rounded">
+                        <strong>📋 Loaded from saved data.</strong> Run a new test to replace these results.
+                    </div>
                 </div>
-                <div class="text-xs text-green-600 mt-2 p-2 bg-green-100 rounded">
-                    <strong>🌐 Browser-Specific Results:</strong> These results are specific to your current browser environment. 
-                    Export data includes full browser identification for reproducibility.
+            `;
+        } else {
+            html = `
+                <div class="bg-green-50 border border-green-200 p-3 rounded mb-4">
+                    <h3 class="font-semibold text-green-800">Stress Test Complete!</h3>
+                    <div class="text-sm text-green-700 mt-1">
+                        Started: ${startedAtDisplay} | 
+                        Total Duration: ${testDuration.toFixed(1)}s | 
+                        Total Iterations: ${this.completedIterations.toLocaleString()} | 
+                        Average Speed: ${(this.completedIterations / testDuration).toFixed(1)} iterations/sec
+                    </div>
+                    <div class="text-xs text-green-600 mt-2 p-2 bg-green-100 rounded">
+                        <strong>🌐 Browser-Specific Results:</strong> These results are specific to your current browser environment. 
+                        Export data includes full browser identification for reproducibility.
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
 
         // Add Export Buttons Section
         html += '<div class="bg-blue-50 border border-blue-200 p-4 rounded mb-4">';
@@ -810,12 +904,17 @@ class StressTestManager {
         
         resultsDiv.innerHTML = html;
         
-        // Save results to localStorage
-        this.saveResultsToStorage(sortedResults, testDuration);
+        // Save results to localStorage (skip when displaying previously saved data)
+        if (!fromSaved) {
+            this.saveResultsToStorage(sortedResults, testDuration);
+        }
     }
 
     saveResultsToStorage(sortedResults, testDuration) {
         try {
+            // Determine format from the current page
+            const pageFormat = this.detectPageFormat();
+
             // Prepare statistical analysis data
             const statisticsData = {};
             if (sortedResults.length >= 2) {
@@ -842,8 +941,9 @@ class StressTestManager {
             }
 
             const testResults = {
+                testStartedAt: this.testStartedAt || new Date().toISOString(),
                 testDate: new Date().toISOString(),
-                testType: 'css',
+                testType: pageFormat,
                 iterations: this.completedIterations,
                 testDuration: testDuration,
                 results: Object.fromEntries(sortedResults),
@@ -882,11 +982,21 @@ class StressTestManager {
                 }
             };
 
-            localStorage.setItem('iconTestResults_css', JSON.stringify(testResults));
-            console.log('CSS test results saved to localStorage');
+            localStorage.setItem(`iconTestResults_${pageFormat}`, JSON.stringify(testResults));
+            console.log(`${pageFormat.toUpperCase()} test results saved to localStorage`);
             
             // Also save to past results history for archival
             this.saveToPastResults(testResults);
+
+            // Notify parent window if running inside an iframe (batch runner)
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'testComplete',
+                    format: pageFormat,
+                    duration: testDuration,
+                    iterations: this.completedIterations
+                }, '*');
+            }
             
         } catch (error) {
             console.error('Failed to save results to localStorage:', error);
@@ -922,6 +1032,7 @@ class StressTestManager {
             const historyEntry = {
                 id: Date.now().toString(),
                 timestamp: new Date().toISOString(),
+                testStartedAt: testResults.testStartedAt || null,
                 testDate: testResults.testDate,
                 
                 // Test Configuration
@@ -1008,6 +1119,32 @@ class StressTestManager {
         const path = window.location.pathname;
         const fileName = path.split('/').pop() || 'unknown';
         return fileName;
+    }
+
+    detectPageFormat() {
+        // Derive the format key (css, svg, png, etc.) from the current page filename
+        const source = this.detectOriginalSource();
+        return source.replace(/\.html$/i, '') || 'css';
+    }
+
+    parseBrowserName() {
+        const ua = navigator.userAgent;
+        if (ua.includes('Firefox/')) return 'Firefox ' + (ua.match(/Firefox\/(\d+)/)?.[1] || '');
+        if (ua.includes('Edg/')) return 'Edge ' + (ua.match(/Edg\/(\d+)/)?.[1] || '');
+        if (ua.includes('Chrome/')) return 'Chrome ' + (ua.match(/Chrome\/(\d+)/)?.[1] || '');
+        if (ua.includes('Safari/') && !ua.includes('Chrome')) return 'Safari ' + (ua.match(/Version\/(\d+)/)?.[1] || '');
+        return ua;
+    }
+
+    getBrowserInfo() {
+        return {
+            browserName: this.parseBrowserName(),
+            userAgent: navigator.userAgent,
+            platform: navigator.platform || 'unknown',
+            language: navigator.language || 'unknown',
+            hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+            userAgentNote: 'Browser identification parsed from userAgent string'
+        };
     }
 
     getFastestIcon(ranking) {
@@ -1220,18 +1357,16 @@ class StressTestManager {
             document.getElementById('currentIteration').textContent = this.completedIterations.toLocaleString();
         }
         
-        // Only update time-based info occasionally to reduce overhead
-        if (this.completedIterations % 100 === 0 || percentage >= 99) {
-            if (document.getElementById('elapsedTime')) {
-                const elapsed = (performance.now() - this.startTime) / 1000;
-                document.getElementById('elapsedTime').textContent = `${elapsed.toFixed(1)}s`;
-            }
-            if (document.getElementById('eta') && percentage > 5) {
-                const elapsed = (performance.now() - this.startTime) / 1000;
-                const totalEstimated = (elapsed / percentage) * 100;
-                const remaining = totalEstimated - elapsed;
-                document.getElementById('eta').textContent = remaining > 0 ? `${remaining.toFixed(0)}s` : 'Almost done';
-            }
+        // Update time-based info — throttling handled by the 2-second setInterval caller
+        if (document.getElementById('elapsedTime')) {
+            const elapsed = (performance.now() - this.startTime) / 1000;
+            document.getElementById('elapsedTime').textContent = `${elapsed.toFixed(1)}s`;
+        }
+        if (document.getElementById('eta') && percentage > 5) {
+            const elapsed = (performance.now() - this.startTime) / 1000;
+            const totalEstimated = (elapsed / percentage) * 100;
+            const remaining = totalEstimated - elapsed;
+            document.getElementById('eta').textContent = remaining > 0 ? `${remaining.toFixed(0)}s` : 'Almost done';
         }
     }
 
@@ -1411,21 +1546,32 @@ class StressTestManager {
     }
     
     startProgressMonitoring(config, testConfig) {
-        // Non-blocking progress monitoring that estimates completion
-        const startTime = performance.now();
+        // Non-blocking progress monitoring using actual completed iteration counts
+        const configStartIterations = this.completedIterations;
         const targetIterations = testConfig.iterations;
         
         const interval = setInterval(() => {
-            const elapsed = performance.now() - startTime;
-            const estimatedTotal = targetIterations * 16.3; // Rough estimate based on typical icon render time
-            const estimatedProgress = Math.min(95, (elapsed / estimatedTotal) * 100);
+            const configCompleted = this.completedIterations - configStartIterations;
+            const percentage = Math.min(100, (this.completedIterations / this.totalIterations) * 100);
             
-            const progressText = `${config.name}: ~${Math.round((estimatedProgress/100) * targetIterations).toLocaleString()}/${targetIterations.toLocaleString()} estimated`;
-            this.updateProgress(progressText, (this.completedIterations / this.totalIterations * 100) + (estimatedProgress * testConfig.iterations / this.totalIterations / 100));
+            const progressText = `${config.name}: ${configCompleted.toLocaleString()}/${targetIterations.toLocaleString()}`;
+            this.updateProgress(progressText, percentage);
             
             // Update memory display during long tests
             if (this.isRunning) {
                 this.updateMemoryDisplay();
+            }
+
+            // Broadcast progress to parent if running in iframe (batch runner)
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'testProgress',
+                    format: this.detectPageFormat(),
+                    percentage: percentage,
+                    completed: this.completedIterations,
+                    total: this.totalIterations,
+                    message: progressText
+                }, '*');
             }
         }, 2000); // Update every 2 seconds without blocking performance measurement
         
@@ -1435,10 +1581,44 @@ class StressTestManager {
         return interval;
     }
 
+    /**
+     * Load previously saved results from localStorage and display the full
+     * results view (tables, statistical analysis, charts). Called on page load
+     * so users can see past results (including those from the batch runner)
+     * without re-running tests.
+     */
+    loadSavedResults() {
+        try {
+            const pageFormat = this.detectPageFormat();
+            const stored = localStorage.getItem(`iconTestResults_${pageFormat}`);
+            if (!stored) return;
+
+            const testData = JSON.parse(stored);
+            if (!testData || !testData.results) return;
+
+            const resultsDiv = document.getElementById('results');
+            if (!resultsDiv) return;
+
+            // Restore state so displayAggregatedResults() can render the full view
+            this.results = testData.results;
+            this.completedIterations = testData.iterations || 0;
+            this.testStartedAt = testData.testStartedAt || testData.testDate || null;
+
+            // Render the full results view with saved duration, without re-saving
+            this.displayAggregatedResults({
+                fromSaved: true,
+                savedDuration: testData.testDuration || 0
+            });
+        } catch (error) {
+            console.warn('Could not load saved results:', error);
+        }
+    }
+
     // Export functionality for test results
     exportResultsAsJSON() {
         try {
-            const results = localStorage.getItem('iconTestResults_css');
+            const pageFormat = this.detectPageFormat();
+            const results = localStorage.getItem(`iconTestResults_${pageFormat}`);
             if (!results) {
                 alert('No test results found. Please run a test first.');
                 return;
@@ -1452,6 +1632,10 @@ class StressTestManager {
                 exportInfo: {
                     exportDate: new Date().toISOString(),
                     exportType: 'Icon Performance Test Results',
+                    testStartedAt: testData.testStartedAt || null,
+                    testCompletedAt: testData.testDate || null,
+                    testDurationSeconds: testData.testDuration || null,
+                    totalIterations: testData.iterations || null,
                     testingEnvironment: 'In-Browser Testing (Single Browser)',
                     browserSpecificWarning: 'These results are specific to the browser environment in which they were generated'
                 },
@@ -1485,8 +1669,11 @@ class StressTestManager {
     }
 }
 
-// Initialize the stress test manager when DOM is ready
-
+// Auto-initialize only if no page-specific initialization is expected.
+// Pages that pass custom options (e.g., svg.html) set window.__stressTestManagerInit = true
+// before this script loads, and handle initialization themselves.
 document.addEventListener('DOMContentLoaded', function() {
-    stressTestManager = new StressTestManager();
+    if (!window.__stressTestManagerInit) {
+        stressTestManager = new StressTestManager();
+    }
 });

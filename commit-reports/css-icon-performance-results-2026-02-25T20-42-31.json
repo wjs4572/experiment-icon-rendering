@@ -1,0 +1,689 @@
+{
+  "exportInfo": {
+    "exportDate": "2026-02-25T20:42:31.137Z",
+    "exportType": "Icon Performance Test Results",
+    "testingEnvironment": "In-Browser Testing (Single Browser)",
+    "browserSpecificWarning": "These results are specific to the browser environment in which they were generated"
+  },
+  "browserInformation": {
+    "primaryBrowser": "Chrome 145",
+    "fullUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "platform": "Win32",
+    "language": "en-US",
+    "hardwareConcurrency": 8,
+    "userAgentExplanation": "Browser identification parsed from userAgent string"
+  },
+  "testResults": {
+    "testDate": "2026-02-25T20:35:04.905Z",
+    "testType": "css",
+    "iterations": 100000,
+    "testDuration": 1781.397399999991,
+    "results": {
+      "Pure CSS Icon": {
+        "renderTime": {
+          "min": 4,
+          "max": 47.79999999701977,
+          "average": 16.540304999961705,
+          "stdDev": 1.3241720728359505,
+          "median": 16.599999994039536,
+          "standardError": 0.009363310521601475,
+          "confidenceInterval": {
+            "lower": 16.521952911339365,
+            "upper": 16.558657088584045
+          },
+          "sampleSize": 20000
+        },
+        "memoryUsage": {
+          "used": {
+            "min": -12233800,
+            "max": 12779272,
+            "average": -1352.88805,
+            "stdDev": 681483.2449206812,
+            "median": 0,
+            "standardError": 4818.814237484265,
+            "confidenceInterval": {
+              "lower": -10797.763955469158,
+              "upper": 8091.987855469159
+            },
+            "sampleSize": 20000
+          },
+          "total": 57838100
+        },
+        "elementMetrics": {
+          "width": 16,
+          "height": 16,
+          "area": 256,
+          "childNodes": 3,
+          "cssRules": 545,
+          "computedStyles": {
+            "fontSize": "14px",
+            "fontFamily": "\"Courier New\", monospace",
+            "color": "rgb(255, 255, 255)"
+          }
+        },
+        "networkMetrics": null,
+        "sampleSize": 20000,
+        "testConfig": {
+          "iterations": 20000,
+          "iconsPerTest": 100,
+          "description": "Extreme statistical confidence"
+        },
+        "bulkMetrics": {
+          "avgIconsPerTest": 100,
+          "avgTimePerIcon": {
+            "min": 0.04,
+            "max": 0.47799999997019765,
+            "average": 0.16540304999961428,
+            "stdDev": 0.013241720728358927,
+            "median": 0.16599999994039535,
+            "standardError": 0.00009363310521601066,
+            "confidenceInterval": {
+              "lower": 0.16521952911339088,
+              "upper": 0.16558657088583767
+            },
+            "sampleSize": 20000
+          },
+          "generationTime": {
+            "min": 0.19999998807907104,
+            "max": 3.7999999970197678,
+            "average": 0.45061499993652104,
+            "stdDev": 0.21185340653835308,
+            "median": 0.4000000059604645,
+            "standardError": 0.0014980298038073992,
+            "confidenceInterval": {
+              "lower": 0.4476788615210585,
+              "upper": 0.4535511383519836
+            },
+            "sampleSize": 20000
+          },
+          "layoutTime": {
+            "min": 0,
+            "max": 0.20000000298023224,
+            "average": 0.007755000003427267,
+            "stdDev": 0.026821557475275825,
+            "median": 0,
+            "standardError": 0.00018965705172752271,
+            "confidenceInterval": {
+              "lower": 0.007383272182041323,
+              "upper": 0.008126727824813211
+            },
+            "sampleSize": 20000
+          }
+        }
+      },
+      "Minimal CSS Icon": {
+        "renderTime": {
+          "min": 3.7000000029802322,
+          "max": 55.30000001192093,
+          "average": 16.54141999992356,
+          "stdDev": 1.110750229359411,
+          "median": 16.599999994039536,
+          "standardError": 0.007854190193845523,
+          "confidenceInterval": {
+            "lower": 16.52602578714362,
+            "upper": 16.556814212703497
+          },
+          "sampleSize": 20000
+        },
+        "memoryUsage": {
+          "used": {
+            "min": -32463161,
+            "max": 12815232,
+            "average": -3637.15205,
+            "stdDev": 813157.6775436343,
+            "median": 0,
+            "standardError": 5749.893079650078,
+            "confidenceInterval": {
+              "lower": -14906.942486114154,
+              "upper": 7632.638386114153
+            },
+            "sampleSize": 20000
+          },
+          "total": 72944155
+        },
+        "elementMetrics": {
+          "width": 18,
+          "height": 14,
+          "area": 252,
+          "childNodes": 0,
+          "cssRules": 545,
+          "computedStyles": {
+            "fontSize": "14px",
+            "fontFamily": "\"Courier New\", monospace",
+            "color": "rgb(255, 255, 255)"
+          }
+        },
+        "networkMetrics": null,
+        "sampleSize": 20000,
+        "testConfig": {
+          "iterations": 20000,
+          "iconsPerTest": 100,
+          "description": "Extreme statistical confidence"
+        },
+        "bulkMetrics": {
+          "avgIconsPerTest": 100,
+          "avgTimePerIcon": {
+            "min": 0.037000000029802325,
+            "max": 0.5530000001192092,
+            "average": 0.16541419999923265,
+            "stdDev": 0.011107502293594446,
+            "median": 0.16599999994039535,
+            "standardError": 0.00007854190193845761,
+            "confidenceInterval": {
+              "lower": 0.16526025787143328,
+              "upper": 0.16556814212703203
+            },
+            "sampleSize": 20000
+          },
+          "generationTime": {
+            "min": 0.09999999403953552,
+            "max": 4.299999997019768,
+            "average": 0.3054999999254942,
+            "stdDev": 0.17456309352775856,
+            "median": 0.29999999701976776,
+            "standardError": 0.001234347471783796,
+            "confidenceInterval": {
+              "lower": 0.303080678880798,
+              "upper": 0.3079193209701904
+            },
+            "sampleSize": 20000
+          },
+          "layoutTime": {
+            "min": 0,
+            "max": 0.20000000298023224,
+            "average": 0.007479999997466803,
+            "stdDev": 0.026383411528286327,
+            "median": 0,
+            "standardError": 0.00018655889202486594,
+            "confidenceInterval": {
+              "lower": 0.007114344569098065,
+              "upper": 0.00784565542583554
+            },
+            "sampleSize": 20000
+          }
+        }
+      },
+      "Circular CSS Icon": {
+        "renderTime": {
+          "min": 3.8999999910593033,
+          "max": 53.8999999910593,
+          "average": 16.545384999993445,
+          "stdDev": 1.1185898550424889,
+          "median": 16.599999994039536,
+          "standardError": 0.00790962471867021,
+          "confidenceInterval": {
+            "lower": 16.529882135544852,
+            "upper": 16.560887864442037
+          },
+          "sampleSize": 20000
+        },
+        "memoryUsage": {
+          "used": {
+            "min": -33201375,
+            "max": 12607593,
+            "average": -2128.35315,
+            "stdDev": 891126.4357504352,
+            "median": 0,
+            "standardError": 6301.21545613731,
+            "confidenceInterval": {
+              "lower": -14478.735444029127,
+              "upper": 10222.029144029126
+            },
+            "sampleSize": 20000
+          },
+          "total": 82905813
+        },
+        "elementMetrics": {
+          "width": 18,
+          "height": 14,
+          "area": 252,
+          "childNodes": 0,
+          "cssRules": 545,
+          "computedStyles": {
+            "fontSize": "14px",
+            "fontFamily": "\"Courier New\", monospace",
+            "color": "rgb(255, 255, 255)"
+          }
+        },
+        "networkMetrics": null,
+        "sampleSize": 20000,
+        "testConfig": {
+          "iterations": 20000,
+          "iconsPerTest": 100,
+          "description": "Extreme statistical confidence"
+        },
+        "bulkMetrics": {
+          "avgIconsPerTest": 100,
+          "avgTimePerIcon": {
+            "min": 0.03899999991059303,
+            "max": 0.538999999910593,
+            "average": 0.16545384999993207,
+            "stdDev": 0.011185898550425238,
+            "median": 0.16599999994039535,
+            "standardError": 0.00007909624718670458,
+            "confidenceInterval": {
+              "lower": 0.16529882135544613,
+              "upper": 0.165608878644418
+            },
+            "sampleSize": 20000
+          },
+          "generationTime": {
+            "min": 0.09999999403953552,
+            "max": 8.100000008940697,
+            "average": 0.4018249999910593,
+            "stdDev": 0.2133177081348551,
+            "median": 0.30000001192092896,
+            "standardError": 0.001508383979693288,
+            "confidenceInterval": {
+              "lower": 0.39886856739086046,
+              "upper": 0.40478143259125815
+            },
+            "sampleSize": 20000
+          },
+          "layoutTime": {
+            "min": 0,
+            "max": 0.20000000298023224,
+            "average": 0.007685000003874302,
+            "stdDev": 0.026729693218218067,
+            "median": 0,
+            "standardError": 0.00018900747333638066,
+            "confidenceInterval": {
+              "lower": 0.007314545356134996,
+              "upper": 0.008055454651613609
+            },
+            "sampleSize": 20000
+          }
+        }
+      },
+      "Circular Remix Icon": {
+        "renderTime": {
+          "min": 2.7999999970197678,
+          "max": 90.19999998807907,
+          "average": 16.550115000032633,
+          "stdDev": 1.2524529606396624,
+          "median": 16.599999994039536,
+          "standardError": 0.008856179815854733,
+          "confidenceInterval": {
+            "lower": 16.532756887593557,
+            "upper": 16.56747311247171
+          },
+          "sampleSize": 20000
+        },
+        "memoryUsage": {
+          "used": {
+            "min": -19589311,
+            "max": 20356925,
+            "average": -1188.33475,
+            "stdDev": 895726.5405406884,
+            "median": 0,
+            "standardError": 6333.743109050877,
+            "confidenceInterval": {
+              "lower": -13602.47124373972,
+              "upper": 11225.80174373972
+            },
+            "sampleSize": 20000
+          },
+          "total": 84291498
+        },
+        "elementMetrics": {
+          "width": 20,
+          "height": 28,
+          "area": 560,
+          "childNodes": 0,
+          "cssRules": 546,
+          "computedStyles": {
+            "fontSize": "20px",
+            "fontFamily": "remixicon",
+            "color": "rgb(255, 255, 255)"
+          }
+        },
+        "networkMetrics": {
+          "fontLoadTime": 0,
+          "networkRequests": [
+            {
+              "url": "https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css",
+              "duration": 118.29999999701977,
+              "size": 14155,
+              "startTime": 44.1000000089407
+            }
+          ],
+          "totalFontSize": 14155,
+          "fontStatus": "loaded"
+        },
+        "sampleSize": 20000,
+        "testConfig": {
+          "iterations": 20000,
+          "iconsPerTest": 100,
+          "description": "Extreme statistical confidence"
+        },
+        "bulkMetrics": {
+          "avgIconsPerTest": 100,
+          "avgTimePerIcon": {
+            "min": 0.027999999970197677,
+            "max": 0.9019999998807907,
+            "average": 0.16550115000032325,
+            "stdDev": 0.0125245296063975,
+            "median": 0.16599999994039535,
+            "standardError": 0.00008856179815855353,
+            "confidenceInterval": {
+              "lower": 0.1653275688759325,
+              "upper": 0.165674731124714
+            },
+            "sampleSize": 20000
+          },
+          "generationTime": {
+            "min": 0.09999999403953552,
+            "max": 23.599999994039536,
+            "average": 0.35394000000432135,
+            "stdDev": 0.23952316166765494,
+            "median": 0.29999999701976776,
+            "standardError": 0.0016936845186644052,
+            "confidenceInterval": {
+              "lower": 0.3506203783477391,
+              "upper": 0.3572596216609036
+            },
+            "sampleSize": 20000
+          },
+          "layoutTime": {
+            "min": 0,
+            "max": 5.299999997019768,
+            "average": 0.008130000038444996,
+            "stdDev": 0.046216987202099685,
+            "median": 0,
+            "standardError": 0.00032680345056616567,
+            "confidenceInterval": {
+              "lower": 0.007489465275335311,
+              "upper": 0.00877053480155468
+            },
+            "sampleSize": 20000
+          }
+        }
+      },
+      "Remix Icon (Square)": {
+        "renderTime": {
+          "min": 2.199999988079071,
+          "max": 101454.5,
+          "average": 22.163215000024437,
+          "stdDev": 721.9044792999089,
+          "median": 16.5,
+          "standardError": 5.1046355268190915,
+          "confidenceInterval": {
+            "lower": 12.158129367459017,
+            "upper": 32.168300632589855
+          },
+          "sampleSize": 20000
+        },
+        "memoryUsage": {
+          "used": {
+            "min": -30332605,
+            "max": 11930745,
+            "average": -2173.56915,
+            "stdDev": 1515182.2289060147,
+            "median": 0,
+            "standardError": 10713.956287927907,
+            "confidenceInterval": {
+              "lower": -23172.9234743387,
+              "upper": 18825.7851743387
+            },
+            "sampleSize": 20000
+          },
+          "total": 45353275
+        },
+        "elementMetrics": {
+          "width": 20,
+          "height": 28,
+          "area": 560,
+          "childNodes": 0,
+          "cssRules": 546,
+          "computedStyles": {
+            "fontSize": "20px",
+            "fontFamily": "remixicon",
+            "color": "rgb(255, 255, 255)"
+          }
+        },
+        "networkMetrics": {
+          "fontLoadTime": 0.10000000894069672,
+          "networkRequests": [
+            {
+              "url": "https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css",
+              "duration": 118.29999999701977,
+              "size": 14155,
+              "startTime": 44.1000000089407
+            }
+          ],
+          "totalFontSize": 14155,
+          "fontStatus": "loaded"
+        },
+        "sampleSize": 20000,
+        "testConfig": {
+          "iterations": 20000,
+          "iconsPerTest": 100,
+          "description": "Extreme statistical confidence"
+        },
+        "bulkMetrics": {
+          "avgIconsPerTest": 100,
+          "avgTimePerIcon": {
+            "min": 0.02199999988079071,
+            "max": 1014.545,
+            "average": 0.22163215000023484,
+            "stdDev": 7.219044792999179,
+            "median": 0.165,
+            "standardError": 0.051046355268191554,
+            "confidenceInterval": {
+              "lower": 0.1215812936745794,
+              "upper": 0.3216830063258903
+            },
+            "sampleSize": 20000
+          },
+          "generationTime": {
+            "min": 0.09999999403953552,
+            "max": 6.0999999940395355,
+            "average": 0.33961500007286666,
+            "stdDev": 0.23770775553754442,
+            "median": 0.29999999701976776,
+            "standardError": 0.0016808476588123175,
+            "confidenceInterval": {
+              "lower": 0.3363205386615945,
+              "upper": 0.3429094614841388
+            },
+            "sampleSize": 20000
+          },
+          "layoutTime": {
+            "min": 0,
+            "max": 0.4000000059604645,
+            "average": 0.010849999990314245,
+            "stdDev": 0.03146946162096437,
+            "median": 0,
+            "standardError": 0.00022252269712473704,
+            "confidenceInterval": {
+              "lower": 0.01041385550394976,
+              "upper": 0.01128614447667873
+            },
+            "sampleSize": 20000
+          }
+        }
+      }
+    },
+    "statisticalAnalysis": {
+      "Minimal CSS Icon vs Pure CSS Icon": {
+        "pValue": 0.9273063438084488,
+        "power": 0.05094964619009207,
+        "effectSize": 0.0009123424103741803,
+        "isSignificant": false,
+        "significanceLevel": "significant"
+      },
+      "Circular CSS Icon vs Pure CSS Icon": {
+        "pValue": 0.6785391982798576,
+        "power": 0.06989492864186969,
+        "effectSize": 0.004144574639567082,
+        "isSignificant": false,
+        "significanceLevel": "significant"
+      },
+      "Circular Remix Icon vs Pure CSS Icon": {
+        "pValue": 0.44655754760361477,
+        "power": 0.118549045560703,
+        "effectSize": 0.007611664057378558,
+        "isSignificant": false,
+        "significanceLevel": "significant"
+      },
+      "Remix Icon (Square) vs Pure CSS Icon": {
+        "pValue": 0.2706668800109244,
+        "power": 0.19641710381765826,
+        "effectSize": 0.011015283091636343,
+        "isSignificant": false,
+        "significanceLevel": "significant"
+      }
+    },
+    "performanceRanking": [
+      {
+        "rank": 1,
+        "iconType": "Pure CSS Icon",
+        "averageTime": 16.540304999961705,
+        "confidenceInterval": {
+          "lower": 16.521952911339365,
+          "upper": 16.558657088584045
+        },
+        "standardDeviation": 1.3241720728359505,
+        "sampleSize": 20000
+      },
+      {
+        "rank": 2,
+        "iconType": "Minimal CSS Icon",
+        "averageTime": 16.54141999992356,
+        "confidenceInterval": {
+          "lower": 16.52602578714362,
+          "upper": 16.556814212703497
+        },
+        "standardDeviation": 1.110750229359411,
+        "sampleSize": 20000
+      },
+      {
+        "rank": 3,
+        "iconType": "Circular CSS Icon",
+        "averageTime": 16.545384999993445,
+        "confidenceInterval": {
+          "lower": 16.529882135544852,
+          "upper": 16.560887864442037
+        },
+        "standardDeviation": 1.1185898550424889,
+        "sampleSize": 20000
+      },
+      {
+        "rank": 4,
+        "iconType": "Circular Remix Icon",
+        "averageTime": 16.550115000032633,
+        "confidenceInterval": {
+          "lower": 16.532756887593557,
+          "upper": 16.56747311247171
+        },
+        "standardDeviation": 1.2524529606396624,
+        "sampleSize": 20000
+      },
+      {
+        "rank": 5,
+        "iconType": "Remix Icon (Square)",
+        "averageTime": 22.163215000024437,
+        "confidenceInterval": {
+          "lower": 12.158129367459017,
+          "upper": 32.168300632589855
+        },
+        "standardDeviation": 721.9044792999089,
+        "sampleSize": 20000
+      }
+    ],
+    "testMetadata": {
+      "browserName": "Chrome 145",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+      "platform": "Win32",
+      "language": "en-US",
+      "hardwareConcurrency": 8,
+      "userAgentNote": "Browser identification parsed from userAgent string",
+      "testingEnvironment": "In-Browser (Single Browser)",
+      "browserSpecific": true,
+      "timestamp": 1786357.200000003,
+      "iterationsPerSecond": 56.13570559831316,
+      "testingNote": "Results are specific to this browser environment and are not comparable across different browsers without additional multi-browser testing"
+    },
+    "testConfiguration": {
+      "testType": "extreme",
+      "testMethod": "straight",
+      "iterations": 20000,
+      "iconsPerTest": 100,
+      "description": "Extreme statistical confidence",
+      "batchSize": 20000,
+      "useBatching": false
+    },
+    "systemSpecifications": {
+      "lastUpdated": "2026-02-17T18:55:01.604Z",
+      "autoDetected": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "platform": "Win32",
+        "language": "en-US",
+        "hardwareConcurrency": 8,
+        "deviceMemory": "8GB",
+        "connection": {
+          "effectiveType": "4g",
+          "downlink": 10,
+          "rtt": 50
+        },
+        "screen": {
+          "resolution": "2560×1440",
+          "colorDepth": 32,
+          "pixelRatio": 1
+        },
+        "gpu": "Google Inc. (Intel) — ANGLE (Intel, Intel(R) HD Graphics 530 (0x0000191B) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "touchSupport": false,
+        "cookiesEnabled": true,
+        "doNotTrack": "1",
+        "timezone": "America/New_York",
+        "languages": "en-US, pt-BR, pt, en"
+      },
+      "manual": {
+        "systemConfiguration": {
+          "model": "Micro-Star International Co., Ltd. GE72 6QF REV:1.0System Serial Number: Default stringAsset Tag: Default stringChassis Serial Number: Default stringEnclosure Type: Notebook",
+          "operatingSystem": "Windows 10 Home (x64) Version 2009 (build 19045.6937)Install Language: English (United States)System Locale: English (United States)Installed: 7/7/2020 11:10:17 AMServicing Branch: Current Branch (CB)Boot Mode: UEFI with successful Secure Boot",
+          "bootMode": "UEFI with successful Secure Boot"
+        },
+        "processor": {
+          "cpu": "Jan2026Critical\t\t Oracle Java SE Critical Patch Update for Java 8.0.2520.9 64-bit",
+          "architecture": "64-bit",
+          "cores": "64-bit",
+          "cache": "1024 kilobyte secondary memory cache6144 kilobyte tertiary memory cache64-bit readyMulti-core (4 total)Hyper-threaded (8 total)",
+          "generation": ""
+        },
+        "memory": {
+          "totalRAM": "",
+          "configuration": "Slot 'ChannelA-DIMM0' has 8192 MB (serial number 49941214)Slot 'ChannelA-DIMM1' is E",
+          "speed": ""
+        },
+        "graphics": {
+          "integrated": "Intel(R) HD Graphics 530 [Display adapter]NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+          "discrete": "NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+          "driverVersion": "8.5"
+        },
+        "storage": {
+          "systemDrive": "Capacity307.01 Gigabytes Hard Drive Free SpaceHL-DT-ST DVDRAM GUB0N [Optical drive]HGST HTS721010A9E630 [Hard drive] (1000.20 GB) -- drive 1, s/n JR100X6P3TZW9E, rev JB0OA3J0, SMART Status: HealthyTOSHIBA THNSNJ128G8NY [Hard drive] (128.04 GB) -- drive 0, s/n Y58S11JBTUQW, rev JYXA0101, SMART Status: Healthy",
+          "additionalDrives": "",
+          "performance": ""
+        },
+        "network": {
+          "connection": "Adapter",
+          "router": "10.0.0.1",
+          "speed": ""
+        },
+        "reportGeneratedBy": "Belarc Advisor"
+      },
+      "reportIncluded": true,
+      "dataCollectionGuidance": {
+        "recommendedTool": "Belarc Advisor (free from belarc.com)",
+        "alternativeTools": [
+          "Windows System Information (msinfo32)",
+          "macOS System Information",
+          "Linux: lshw, lscpu, dmidecode commands"
+        ],
+        "importanceNote": "System specifications are critical for reproducible performance measurements and scientific comparison of results across different hardware configurations."
+      }
+    }
+  },
+  "reproducibilityNote": "For cross-browser comparisons, run equivalent tests in each target browser environment"
+}

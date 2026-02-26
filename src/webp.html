@@ -3,101 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebP Implementation Tests - Icon Rendering Performance</title>
-    <!-- Tailwind CSS CDN -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title data-i18n="webp.page_title">WebP Icon Performance Testing</title>
+    <link rel="icon" href="https://simpsonconcepts.com/img/favicon_io/favicon.ico" type="image/x-icon">
+    <!-- Tailwind CSS CDN - Intentionally used for testing/research project per minimal approach policy -->
+    <!-- CDN warning is expected and acceptable for non-production performance testing tool -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Internationalization System -->
     <script src="js/i18n.js"></script>
+
+    <style>
+        .tab-content {
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Tab button active state */
+        .tab-button.active {
+            border-bottom-color: #3B82F6 !important;
+            color: #3B82F6 !important;
+        }
+    </style>
 </head>
 <body class="p-8 bg-gray-100">
-    <!-- Language Selector -->
-    <div class="text-right mb-4">
-        <select id="languageSelector" class="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="en">English</option>
-            <option value="en-us">English (United States)</option>
-            <option value="en-gb">English (United Kingdom)</option>
-            <option value="es">Español</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-            <option value="ja">日本語</option>
-            <option value="zh">中文</option>
-            <option value="zh-tw">中文 (繁體)</option>
-            <option value="pt">Português</option>
-            <option value="pt-br">Português (Brasil)</option>
-            <option value="pt-pt">Português (Portugal)</option>
-        </select>
-    </div>
-    
-    <header class="mb-8">
-        <a href="index.html" class="text-blue-600 hover:underline text-sm" data-i18n="nav.back_to_suite">&larr; Back to Test Suite</a>
-        <h1 class="text-3xl font-bold mt-4 mb-2" data-i18n="format.webp.title">WebP Implementation Tests</h1>
-        <p class="text-gray-600" data-i18n="format.webp.description">Testing modern WebP format with lossy and lossless compression options</p>
-    </header>
-    
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4" data-i18n="format.webp.features.lossless">Lossless WebP</h2>
-            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-4">
-                <div class="text-white text-xs">WebP</div>
-            </div>
-            <p class="text-gray-600 text-sm" data-i18n="coming_soon">Coming soon...</p>
+    <div class="max-w-6xl mx-auto">
+        <!-- Language Selector -->
+        <div class="text-right mb-4">
+            <select id="languageSelector" class="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="en">English</option>
+                <option value="en-us">English (United States)</option>
+                <option value="en-gb">English (United Kingdom)</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="ja">日本語</option>
+                <option value="zh">中文</option>
+                <option value="zh-tw">中文 (繁體)</option>
+                <option value="pt">Português</option>
+                <option value="pt-br">Português (Brasil)</option>
+                <option value="pt-pt">Português (Portugal)</option>
+            </select>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4" data-i18n="format.webp.features.lossy">Lossy WebP</h2>
-            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-4">
-                <div class="text-white text-xs">WebP</div>
+        <header class="mb-8">
+            <a href="index.html" class="text-blue-600 hover:underline text-sm" data-i18n="nav.back_to_suite">&larr; Back to Test Suite</a>
+            <h1 class="text-3xl font-bold mt-4 mb-2" data-i18n="format.webp.title">WebP Implementation Tests</h1>
+            <p class="text-gray-600" data-i18n="format.webp.description">Testing modern WebP format with lossy, lossless, and optimized compression options</p>
+
+            <!-- Browser-specific testing indicator -->
+            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg text-sm">
+                <div class="flex items-center">
+                    <span class="mr-2 text-yellow-600">🌐</span>
+                    <div>
+                        <strong class="text-yellow-800" data-i18n="summary.browser_notice">Browser-Specific Testing:</strong>
+                        <span class="text-yellow-700 ml-1" data-i18n="summary.browser_notice_desc">All results are specific to <span id="currentBrowserInfo" class="font-mono"></span></span>
+                    </div>
+                </div>
             </div>
-            <p class="text-gray-600 text-sm" data-i18n="coming_soon">Coming soon...</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button type="button" id="testingTab" class="tab-button active border-b-2 border-blue-500 py-2 px-1 text-sm font-medium text-blue-600" onclick="switchTab('testing')" data-i18n="css.tab.testing">
+                    Performance Testing
+                </button>
+                <button type="button" id="renderingTab" class="tab-button border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" onclick="switchTab('rendering')" data-i18n="css.tab.rendering">
+                    Live Rendering
+                </button>
+            </nav>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4" data-i18n="format.webp.features.optimized">Optimized WebP</h2>
-            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-500 rounded-lg flex items-center justify-center mb-4">
-                <div class="text-white text-xs">WebP</div>
+        <!-- Testing Tab Content -->
+        <div id="testingContent" class="tab-content">
+            <!-- Icon Examples -->
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" data-i18n="webp.examples_title">Icon Examples</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <!-- Lossy WebP (48×48, q80) -->
+                    <div class="text-center">
+                        <div class="w-12 h-12 mb-3 mx-auto">
+                            <img src="img/remix_circle_icon.webp" alt="Lossy WebP icon" width="48" height="48">
+                        </div>
+                        <div class="text-sm font-medium" data-i18n="webp.lossy">Lossy WebP</div>
+                        <div class="text-xs text-gray-500">48×48 · quality 80 · ~0.8 KB</div>
+                    </div>
+                    <!-- Lossless WebP (48×48) -->
+                    <div class="text-center">
+                        <div class="w-12 h-12 mb-3 mx-auto">
+                            <img src="img/remix_circle_icon_lossless.webp" alt="Lossless WebP icon" width="48" height="48">
+                        </div>
+                        <div class="text-sm font-medium" data-i18n="webp.lossless">Lossless WebP</div>
+                        <div class="text-xs text-gray-500">48×48 · lossless · ~1.5 KB</div>
+                    </div>
+                    <!-- Optimized WebP (48×48, q50) -->
+                    <div class="text-center">
+                        <div class="w-12 h-12 mb-3 mx-auto">
+                            <img src="img/remix_circle_icon_optimized.webp" alt="Optimized WebP icon" width="48" height="48">
+                        </div>
+                        <div class="text-sm font-medium" data-i18n="webp.optimized">Optimized WebP</div>
+                        <div class="text-xs text-gray-500">48×48 · quality 50 · ~0.7 KB</div>
+                    </div>
+                </div>
             </div>
-            <p class="text-gray-600 text-sm" data-i18n="coming_soon">Coming soon...</p>
-        </div>
-    </div>
 
-    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <h3 class="font-semibold text-yellow-800 mb-2" data-i18n="implementation_status">Implementation Status</h3>
-        <p class="text-yellow-700 text-sm">
-            WebP implementations are in development. These will test Google's WebP format 
-            performance with both lossy and lossless compression algorithms.
-        </p>
-    </div>
+            <!-- Performance Testing Controls -->
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" data-i18n="webp.controls_title">Performance Testing Controls</h2>
+                <div class="bg-white p-4 rounded border">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="css.test_type">Test Type:</label>
+                            <select id="testType" class="w-full p-2 border border-gray-300 rounded text-sm">
+                                <option value="single" data-i18n="css.test_single">Single Icon Test (2,000 iterations per type)</option>
+                                <option value="bulk" selected data-i18n="css.test_bulk">Bulk Icon Test (50 iterations × 100 icons)</option>
+                                <option value="stress" data-i18n="css.test_stress">Stress Test (200 iterations × 500 icons)</option>
+                                <option value="statistical" data-i18n="css.test_statistical">Statistical Power Test (200 iterations × 100 icons)</option>
+                                <option value="massive" data-i18n="css.test_massive">High Power Test (1,000 iterations × 100 icons)</option>
+                                <option value="ultra" data-i18n="css.test_ultra">Ultra Power Test (10,000 iterations × 100 icons)</option>
+                                <option value="extreme" data-i18n="css.test_extreme">Extreme Power Test (20,000 iterations × 100 icons)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="css.research_mode">Academic Research Mode:</label>
+                            <div class="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-800">
+                                🎓 <strong data-i18n="css.max_accuracy">Maximum Accuracy:</strong> <span data-i18n="css.max_accuracy_desc">Continuous measurement without interference</span><br>
+                                <span class="text-xs text-blue-600" data-i18n="css.progress_note">Background progress estimation only • No measurement delays</span>
+                            </div>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="startTest" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition text-sm font-medium" data-i18n="css.start_test">
+                                Start Stress Test
+                            </button>
+                        </div>
+                    </div>
 
-    <!-- System Specs Section -->
-    <div class="mt-6 bg-white p-4 rounded-lg shadow">
-        <div class="flex flex-wrap items-center gap-3">
-            <button id="systemInfoButton" class="bg-purple-600 text-white px-4 py-2 rounded text-sm hover:bg-purple-700 flex items-center" onclick="window.systemSpecsManager && window.systemSpecsManager.showModal()">
-                <span class="mr-2">⚙️</span><span data-i18n="css.system_specs">System Specs for Reproducibility</span>
-            </button>
-        </div>
-        <div class="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
-            <div class="flex items-center">
-                <span class="mr-2">📊</span>
-                <span class="text-blue-800" data-i18n="css.system_status">System Information Status: </span>
-                <span id="systemInfoStatus" class="ml-1">⚠️ <a href="#" onclick="window.systemSpecsManager && window.systemSpecsManager.showModal()" class="text-blue-600 hover:underline" data-i18n="css.add_system_specs">Add system specs</a></span>
+                    <div id="testProgress" class="hidden">
+                        <div class="mb-2">
+                            <div class="flex justify-between text-sm">
+                                <span id="currentIcon" data-i18n="css.testing_progress">Testing...</span>
+                                <span id="progressText">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-gray-600">
+                            <div><span data-i18n="css.iterations">Iterations:</span> <span id="currentIteration" class="font-medium">0</span></div>
+                            <div><span data-i18n="css.elapsed">Elapsed:</span> <span id="elapsedTime" class="font-medium">0s</span></div>
+                            <div><span data-i18n="css.eta">ETA:</span> <span id="eta" class="font-medium">--</span></div>
+                            <div><span data-i18n="css.memory">Memory:</span> <span id="memoryUsage" class="font-medium">0 MB</span></div>
+                        </div>
+                        <button id="stopTest" class="mt-3 bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600 hidden" data-i18n="css.stop_test">
+                            Stop Test
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        <button id="clearResults" class="bg-gray-500 text-white px-4 py-2 rounded text-sm hover:bg-gray-600" data-i18n="css.clear_results">
+                            Clear Results
+                        </button>
+                        <button id="systemInfoButton" class="bg-purple-600 text-white px-4 py-2 rounded text-sm hover:bg-purple-700 flex items-center">
+                            <span class="mr-2">⚙️</span><span data-i18n="css.system_specs">System Specs for Reproducibility</span>
+                        </button>
+                    </div>
+
+                    <!-- System Info Status -->
+                    <div class="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
+                        <div class="flex items-center">
+                            <span class="mr-2">📊</span>
+                            <span class="text-blue-800" data-i18n="css.system_status">System Information Status: </span>
+                            <span id="systemInfoStatus" class="ml-1">⚠️ <a href="#" onclick="window.systemSpecsManager && window.systemSpecsManager.showModal()" class="text-blue-600 hover:underline" data-i18n="css.add_system_specs">Add system specs</a></span>
+                        </div>
+                        <div class="text-xs text-blue-600 mt-1">
+                            <strong data-i18n="css.belarc_recommendation">Recommended: Use Belarc Advisor to collect comprehensive system specs for scientific reproducibility</strong>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="text-xs text-blue-600 mt-1">
-                <strong data-i18n="css.belarc_recommendation">Recommended: Use Belarc Advisor to collect comprehensive system specs for scientific reproducibility</strong>
+
+            <!-- Current Test Results -->
+            <div id="results" class="bg-gray-50 p-4 rounded border">
+                <div class="text-gray-500" data-i18n="css.no_tests_message">No tests run yet. Click "Start Stress Test" to begin performance analysis.</div>
+            </div>
+        </div>
+
+        <!-- Rendering Tab Content -->
+        <div id="renderingContent" class="tab-content hidden">
+            <div class="bg-white p-6 rounded border">
+                <h2 class="text-xl font-semibold mb-4" data-i18n="css.live_rendering_title">Live Icon Rendering</h2>
+                <p class="text-gray-600 mb-4" data-i18n="css.live_rendering_desc">This tab shows the icons being rendered in real-time during performance testing. Switch to this tab after starting a test to watch the rendering process.</p>
+
+                <!-- This is where the test container will be placed -->
+                <div id="renderingTabContainer" class="border-2 border-gray-300 rounded p-4 min-h-[400px] bg-gray-50">
+                    <div class="text-gray-500 text-center py-8" data-i18n="css.no_test_running">No test running. Start a performance test to see live rendering.</div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Shared System Specifications Module -->
     <script src="js/system-specs.js"></script>
+    <!-- Signal that this page handles its own StressTestManager initialization -->
+    <script>window.__stressTestManagerInit = true;</script>
+    <!-- External JavaScript Module -->
+    <script src="js/stress-test-manager.js"></script>
+
+    <!-- Tab switching functionality (global scope for onclick) -->
     <script>
-        // Initialize internationalization
+        let stressTestManager;
+
+        // Global tab switching function for onclick handlers
+        function switchTab(tabName) {
+            console.log('Switching to tab:', tabName);
+
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            // Show selected tab content
+            if (tabName === 'testing') {
+                document.getElementById('testingContent').classList.remove('hidden');
+                const testingTab = document.getElementById('testingTab');
+                testingTab.classList.add('active', 'border-blue-500', 'text-blue-600');
+                testingTab.classList.remove('border-transparent', 'text-gray-500');
+            } else if (tabName === 'rendering') {
+                document.getElementById('renderingContent').classList.remove('hidden');
+                const renderingTab = document.getElementById('renderingTab');
+                renderingTab.classList.add('active', 'border-blue-500', 'text-blue-600');
+                renderingTab.classList.remove('border-transparent', 'text-gray-500');
+            }
+
+            console.log('Tab switch completed');
+        }
+    </script>
+
+    <!-- Initialize the stress test manager when DOM is ready -->
+    <script>
+
         document.addEventListener('DOMContentLoaded', function() {
-            if (typeof I18n !== 'undefined') {
-                const i18n = new I18n();
+            console.log('DOM loaded, setting up tabs');
+
+            // Setup tab event listeners FIRST before StressTestManager
+            const testingTab = document.getElementById('testingTab');
+            const renderingTab = document.getElementById('renderingTab');
+
+            console.log('Found tabs:', { testingTab: !!testingTab, renderingTab: !!renderingTab });
+
+            if (testingTab) {
+                testingTab.addEventListener('click', function(e) {
+                    console.log('Testing tab clicked');
+                    e.preventDefault();
+                    switchTab('testing');
+                });
+                console.log('Testing tab listener added');
+            } else {
+                console.error('Testing tab not found!');
             }
-            if (window.systemSpecsManager) {
-                window.systemSpecsManager.updateStatusDisplay();
+
+            if (renderingTab) {
+                renderingTab.addEventListener('click', function(e) {
+                    console.log('Rendering tab clicked');
+                    e.preventDefault();
+                    switchTab('rendering');
+                });
+                console.log('Rendering tab listener added');
+            } else {
+                console.error('Rendering tab not found!');
             }
+
+            // Initialize StressTestManager with WebP-specific icon configs
+            const webpIconConfigs = [
+                {
+                    name: 'Lossy WebP (q80)',
+                    selector: 'img[alt="Lossy WebP icon"]',
+                    containerSelector: 'img[alt="Lossy WebP icon"]',
+                    renderType: 'external-svg',
+                    hasNetworkOverhead: true,
+                    src: 'img/remix_circle_icon.webp'
+                },
+                {
+                    name: 'Lossless WebP',
+                    selector: 'img[alt="Lossless WebP icon"]',
+                    containerSelector: 'img[alt="Lossless WebP icon"]',
+                    renderType: 'external-svg',
+                    hasNetworkOverhead: true,
+                    src: 'img/remix_circle_icon_lossless.webp'
+                },
+                {
+                    name: 'Optimized WebP (q50)',
+                    selector: 'img[alt="Optimized WebP icon"]',
+                    containerSelector: 'img[alt="Optimized WebP icon"]',
+                    renderType: 'external-svg',
+                    hasNetworkOverhead: true,
+                    src: 'img/remix_circle_icon_optimized.webp'
+                }
+            ];
+
+            try {
+                window.stressTestManager = new StressTestManager({ iconConfigs: webpIconConfigs });
+                console.log('StressTestManager initialized with WebP configs');
+
+                // Display current browser information
+                const browserInfo = document.getElementById('currentBrowserInfo');
+                if (browserInfo && window.stressTestManager) {
+                    const parsedBrowser = window.stressTestManager.parseBrowserName();
+                    browserInfo.textContent = parsedBrowser;
+                }
+            } catch (error) {
+                console.error('Error initializing StressTestManager:', error);
+            }
+
+            console.log('Tab event listeners set up');
         });
     </script>
 </body>

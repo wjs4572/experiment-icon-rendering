@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Icon Rendering Performance Test Suite</title>
+    <link rel="icon" href="https://simpsonconcepts.com/img/favicon_io/favicon.ico" type="image/x-icon">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Internationalization System -->
@@ -39,6 +40,85 @@
                 Test the same icon implementation across multiple formats to measure load times, memory usage, and rendering performance.
             </div>
         </header>
+
+        <!-- Batch Test Runner -->
+        <div class="max-w-6xl mx-auto mb-12 bg-white rounded-xl shadow-lg p-6 border-2 border-blue-200">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-2">Run All Test Suites</h2>
+            <p class="text-gray-600 text-sm mb-4">Execute all format tests sequentially with a single click. Each suite will run to completion before the next begins.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Test Type:</label>
+                    <select id="batchTestType" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        <option value="single">Single Icon Test (2,000 iterations per type)</option>
+                        <option value="bulk" selected>Bulk Icon Test (50 iterations × 100 icons)</option>
+                        <option value="stress">Stress Test (200 iterations × 500 icons)</option>
+                        <option value="statistical">Statistical Power Test (200 iterations × 100 icons)</option>
+                        <option value="massive">High Power Test (1,000 iterations × 100 icons)</option>
+                        <option value="ultra">Ultra Power Test (10,000 iterations × 100 icons)</option>
+                        <option value="extreme">Extreme Power Test (20,000 iterations × 100 icons)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Test Suites:</label>
+                    <div id="batchSuiteSelection" class="flex flex-wrap gap-2">
+                        <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-1.5 rounded" value="css" checked> CSS</label>
+                        <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-1.5 rounded" value="svg" checked> SVG</label>
+                        <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-1.5 rounded" value="png" checked> PNG</label>
+                        <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-1.5 rounded" value="gif" checked> GIF</label>
+                        <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-1.5 rounded" value="jpeg" checked> JPEG</label>
+                        <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-1.5 rounded" value="webp" checked> WebP</label>
+                        <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-1.5 rounded" value="avif" checked> AVIF</label>
+                    </div>
+                </div>
+                <div class="flex items-end">
+                    <button id="startBatchTest" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition text-sm font-medium w-full">
+                        ▶ Run All Selected Tests
+                    </button>
+                </div>
+            </div>
+
+            <!-- Batch Progress -->
+            <div id="batchProgress" class="hidden">
+                <div class="border-t border-gray-200 pt-4 mt-2">
+                    <!-- Overall progress -->
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span id="batchOverallLabel" class="font-medium text-gray-700">Overall Progress</span>
+                            <span id="batchOverallPercent" class="text-gray-600">0 / 7 suites</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div id="batchOverallBar" class="bg-blue-600 h-3 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Current suite progress -->
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span id="batchCurrentLabel" class="text-gray-600">Waiting...</span>
+                            <span id="batchCurrentPercent" class="text-gray-500">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="batchCurrentBar" class="bg-teal-500 h-2 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Suite status list -->
+                    <div id="batchSuiteStatus" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 text-xs mt-3"></div>
+
+                    <div class="flex gap-2 mt-4">
+                        <button id="stopBatchTest" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">
+                            ■ Stop Batch
+                        </button>
+                        <span id="batchElapsed" class="text-sm text-gray-500 self-center ml-2">Elapsed: 0s</span>
+                        <span id="batchEta" class="text-sm text-gray-500 self-center ml-2">ETA: --</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Iframe for running tests (shown during batch execution) -->
+        <iframe id="testRunnerFrame" class="hidden" style="width:100%;height:600px;border:1px solid #e5e7eb;border-radius:0.5rem;"></iframe>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             
@@ -284,5 +364,209 @@
             </div>
         </footer>
     </div>
+
+    <script>
+    (function() {
+        // Batch Test Runner
+        const suitePages = {
+            css: 'css.html',
+            svg: 'svg.html',
+            png: 'png.html',
+            gif: 'gif.html',
+            jpeg: 'jpeg.html',
+            webp: 'webp.html',
+            avif: 'avif.html'
+        };
+
+        const suiteLabels = {
+            css: 'CSS', svg: 'SVG', png: 'PNG', gif: 'GIF',
+            jpeg: 'JPEG', webp: 'WebP', avif: 'AVIF'
+        };
+
+        let batchRunning = false;
+        let batchShouldStop = false;
+        let batchStartTime = 0;
+        let batchElapsedInterval = null;
+        let selectedSuites = [];
+        let completedSuiteCount = 0;
+
+        const startBtn = document.getElementById('startBatchTest');
+        const stopBtn = document.getElementById('stopBatchTest');
+        const progressDiv = document.getElementById('batchProgress');
+        const frame = document.getElementById('testRunnerFrame');
+
+        startBtn.addEventListener('click', startBatch);
+        stopBtn.addEventListener('click', stopBatch);
+
+        function getSelectedSuites() {
+            const checkboxes = document.querySelectorAll('#batchSuiteSelection input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        function startBatch() {
+            selectedSuites = getSelectedSuites();
+            if (selectedSuites.length === 0) {
+                alert('Please select at least one test suite.');
+                return;
+            }
+
+            batchRunning = true;
+            batchShouldStop = false;
+            completedSuiteCount = 0;
+            batchStartTime = performance.now();
+
+            // Show progress, disable start
+            progressDiv.classList.remove('hidden');
+            frame.classList.remove('hidden');
+            startBtn.disabled = true;
+            startBtn.textContent = 'Running...';
+            startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Render suite status pills
+            renderSuiteStatus(selectedSuites);
+
+            // Update elapsed timer
+            batchElapsedInterval = setInterval(updateBatchElapsed, 1000);
+
+            // Start sequential execution
+            runNextSuite(0);
+        }
+
+        function stopBatch() {
+            batchShouldStop = true;
+            // Try to stop the current test in the iframe
+            try {
+                const iframeWin = frame.contentWindow;
+                if (iframeWin && iframeWin.stressTestManager) {
+                    iframeWin.stressTestManager.stopTest();
+                }
+            } catch (e) { /* cross-origin safety */ }
+            finishBatch('Stopped by user');
+        }
+
+        function runNextSuite(index) {
+            if (batchShouldStop || index >= selectedSuites.length) {
+                if (!batchShouldStop) {
+                    finishBatch('All tests complete!');
+                }
+                return;
+            }
+
+            const format = selectedSuites[index];
+            const testType = document.getElementById('batchTestType').value;
+            const page = suitePages[format];
+
+            // Update overall progress
+            document.getElementById('batchOverallLabel').textContent =
+                `Suite ${index + 1} of ${selectedSuites.length}: ${suiteLabels[format]}`;
+            document.getElementById('batchOverallPercent').textContent =
+                `${completedSuiteCount} / ${selectedSuites.length} suites`;
+            document.getElementById('batchOverallBar').style.width =
+                `${(completedSuiteCount / selectedSuites.length) * 100}%`;
+
+            // Update current suite
+            document.getElementById('batchCurrentLabel').textContent =
+                `${suiteLabels[format]}: Loading...`;
+            document.getElementById('batchCurrentPercent').textContent = '0%';
+            document.getElementById('batchCurrentBar').style.width = '0%';
+
+            // Update suite pill
+            updateSuitePill(format, 'running');
+
+            // Set up message listener for this suite
+            const handler = function(event) {
+                if (!event.data || !event.data.type) return;
+
+                if (event.data.type === 'testProgress' && event.data.format === format) {
+                    const pct = Math.min(100, event.data.percentage).toFixed(0);
+                    document.getElementById('batchCurrentLabel').textContent =
+                        `${suiteLabels[format]}: ${event.data.message}`;
+                    document.getElementById('batchCurrentPercent').textContent = `${pct}%`;
+                    document.getElementById('batchCurrentBar').style.width = `${pct}%`;
+                    updateBatchEta(index, parseFloat(pct));
+                }
+
+                if (event.data.type === 'testComplete' && event.data.format === format) {
+                    window.removeEventListener('message', handler);
+                    completedSuiteCount++;
+                    updateSuitePill(format, 'done');
+
+                    // Brief pause between suites to let the browser settle
+                    setTimeout(() => runNextSuite(index + 1), 1000);
+                }
+            };
+            window.addEventListener('message', handler);
+
+            // Load the page with autorun parameter
+            frame.src = `${page}?autorun=${testType}`;
+        }
+
+        function finishBatch(message) {
+            batchRunning = false;
+            clearInterval(batchElapsedInterval);
+
+            // Update overall bar to final state
+            document.getElementById('batchOverallLabel').textContent = message;
+            document.getElementById('batchOverallPercent').textContent =
+                `${completedSuiteCount} / ${selectedSuites.length} suites`;
+            document.getElementById('batchOverallBar').style.width =
+                `${(completedSuiteCount / selectedSuites.length) * 100}%`;
+
+            // Clear iframe and hide it
+            frame.src = 'about:blank';
+            frame.classList.add('hidden');
+
+            // Re-enable start button
+            startBtn.disabled = false;
+            startBtn.textContent = '▶ Run All Selected Tests';
+            startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function renderSuiteStatus(suites) {
+            const container = document.getElementById('batchSuiteStatus');
+            container.innerHTML = suites.map(format =>
+                `<div id="batchPill_${format}" class="flex items-center gap-1.5 px-2 py-1.5 rounded border border-gray-200 bg-gray-50 text-gray-500">
+                    <span id="batchPillIcon_${format}" class="text-sm">⏳</span>
+                    <span class="font-medium">${suiteLabels[format]}</span>
+                </div>`
+            ).join('');
+        }
+
+        function updateSuitePill(format, state) {
+            const pill = document.getElementById(`batchPill_${format}`);
+            const icon = document.getElementById(`batchPillIcon_${format}`);
+            if (!pill || !icon) return;
+
+            if (state === 'running') {
+                pill.className = 'flex items-center gap-1.5 px-2 py-1.5 rounded border border-blue-300 bg-blue-50 text-blue-700';
+                icon.textContent = '🔄';
+            } else if (state === 'done') {
+                pill.className = 'flex items-center gap-1.5 px-2 py-1.5 rounded border border-green-300 bg-green-50 text-green-700';
+                icon.textContent = '✅';
+            }
+        }
+
+        function updateBatchElapsed() {
+            const secs = ((performance.now() - batchStartTime) / 1000).toFixed(0);
+            document.getElementById('batchElapsed').textContent = `Elapsed: ${secs}s`;
+        }
+
+        function updateBatchEta(currentIndex, currentPct) {
+            if (completedSuiteCount === 0 && currentPct < 5) {
+                document.getElementById('batchEta').textContent = 'ETA: calculating...';
+                return;
+            }
+            const elapsed = (performance.now() - batchStartTime) / 1000;
+            // Total progress fraction: completed suites + current suite fraction
+            const totalFraction = (completedSuiteCount + (currentPct / 100)) / selectedSuites.length;
+            if (totalFraction > 0) {
+                const totalEstimated = elapsed / totalFraction;
+                const remaining = Math.max(0, totalEstimated - elapsed);
+                document.getElementById('batchEta').textContent =
+                    remaining > 0 ? `ETA: ${Math.round(remaining)}s` : 'ETA: Almost done';
+            }
+        }
+    })();
+    </script>
 </body>
 </html>
