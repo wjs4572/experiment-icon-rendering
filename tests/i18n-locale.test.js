@@ -25,9 +25,9 @@ const LOCALE_DATA = {
       h1: 'Implementación CSS',
       startTest: 'Iniciar Prueba de Estrés',
     },
-    past: {
-      title: 'Archivo de Resultados de Pruebas Pasadas',
-      clearHistory: 'Limpiar Historial',
+    library: {
+      title: 'Biblioteca de Resultados',
+      importBtn: 'Importar Resultados',
     },
   },
   zh: {
@@ -42,9 +42,9 @@ const LOCALE_DATA = {
       h1: 'CSS实现',
       startTest: '开始压力测试',
     },
-    past: {
-      title: '历史测试结果存档',
-      clearHistory: '清空历史',
+    library: {
+      title: '结果库',
+      importBtn: '导入结果',
     },
   },
   'pt-br': {
@@ -59,9 +59,9 @@ const LOCALE_DATA = {
       h1: 'Implementação CSS',
       startTest: 'Iniciar Teste de Stress',
     },
-    past: {
-      title: 'Arquivo de Resultados de Testes Anteriores',
-      clearHistory: 'Limpar Histórico',
+    library: {
+      title: 'Biblioteca de Resultados',
+      importBtn: 'Importar Resultados',
     },
   },
 };
@@ -183,34 +183,34 @@ for (const [localeKey, data] of Object.entries(LOCALE_DATA)) {
       });
     });
 
-    test.describe('past-results.html', () => {
+    test.describe('results-library.html', () => {
       test.beforeEach(async ({ page }) => {
         await page.addInitScript(() => localStorage.removeItem('preferredLanguage'));
-        await page.goto('past-results.html');
-        await page.waitForLoadState('domcontentloaded');
+        await page.goto('results-library.html');
+        await page.waitForLoadState('networkidle');
       });
 
       test('page h1 is translated', async ({ page }) => {
-        const h1 = page.locator('h1[data-i18n="past.title"]');
+        const h1 = page.locator('h1[data-i18n="library.title"]');
         await expect(h1).toBeVisible();
-        await expect(h1).toHaveText(data.past.title);
+        await expect(h1).toHaveText(data.library.title);
       });
 
-      test('clear history button is translated', async ({ page }) => {
-        const btn = page.locator('#clearHistory');
+      test('import button is translated', async ({ page }) => {
+        const btn = page.locator('#importBtn');
         await expect(btn).toBeVisible();
-        await expect(btn).toHaveText(data.past.clearHistory);
+        await expect(btn).toHaveText(data.library.importBtn);
       });
 
-      test('filter section title is translated (not English)', async ({ page }) => {
-        const el = page.locator('[data-i18n="past.filter_title"]');
+      test('bulk action buttons are translated (not English)', async ({ page }) => {
+        const el = page.locator('[data-i18n="library.export_selected"]');
         await expect(el).toBeVisible();
         const text = await el.textContent();
-        expect(text).not.toBe('Filter Results');
+        expect(text).not.toBe('Export Selected');
       });
 
       test('data-i18n elements have non-empty content', async ({ page }) => {
-        const keys = ['past.subtitle', 'past.export_history', 'past.apply_filters'];
+        const keys = ['library.subtitle', 'library.nav_dashboard', 'library.clear_all'];
         for (const key of keys) {
           const el = page.locator(`[data-i18n="${key}"]`);
           await expect(el).toBeVisible();

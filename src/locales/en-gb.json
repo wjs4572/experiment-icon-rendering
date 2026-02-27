@@ -396,5 +396,19 @@
   "sysspec.import_success": "Belarc report imported successfully! Review the fields and click Save.",
   "sysspec.import_partial": "Could not extract all fields. Some data may have been imported — please review and complete manually.",
   "sysspec.import_error": "Failed to parse the Belarc report. Please check the file format.",
-  "sysspec.import_read_error": "Failed to read the file."
+  "sysspec.import_read_error": "Failed to read the file.",
+  "library.title": "Results Library",
+  "library.subtitle": "Browse, filter, and manage all test run records.",
+  "library.nav_dashboard": "← Back to Dashboard",
+  "library.nav_summary": "View Summary",
+  "library.import_btn": "Import Results",
+  "library.make_imported_active": "Make all imported active",
+  "library.export_selected": "Export Selected",
+  "library.delete_selected": "Delete Selected",
+  "library.toggle_active": "Toggle Active",
+  "library.clear_all": "Clear All History",
+  "library.details_title": "Run Details",
+  "library.detail_export": "Export This Run",
+  "library.detail_toggle": "Toggle Active",
+  "library.detail_delete": "Delete"
 }

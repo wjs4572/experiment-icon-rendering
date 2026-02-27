@@ -396,5 +396,19 @@
   "sysspec.import_success": "Belarc-Bericht erfolgreich importiert! Überprüfen Sie die Felder und klicken Sie auf Speichern.",
   "sysspec.import_partial": "Es konnten nicht alle Felder extrahiert werden. Einige Daten wurden möglicherweise importiert — bitte überprüfen und manuell vervollständigen.",
   "sysspec.import_error": "Fehler beim Analysieren des Belarc-Berichts. Bitte überprüfen Sie das Dateiformat.",
-  "sysspec.import_read_error": "Fehler beim Lesen der Datei."
+  "sysspec.import_read_error": "Fehler beim Lesen der Datei.",
+  "library.title": "Ergebnisbibliothek",
+  "library.subtitle": "Alle Testlaufprotokolle durchsuchen, filtern und verwalten.",
+  "library.nav_dashboard": "← Zurück zum Dashboard",
+  "library.nav_summary": "Zusammenfassung anzeigen",
+  "library.import_btn": "Ergebnisse importieren",
+  "library.make_imported_active": "Alle importierten aktivieren",
+  "library.export_selected": "Ausgewählte exportieren",
+  "library.delete_selected": "Ausgewählte löschen",
+  "library.toggle_active": "Aktiv umschalten",
+  "library.clear_all": "Gesamten Verlauf löschen",
+  "library.details_title": "Laufdetails",
+  "library.detail_export": "Diesen Lauf exportieren",
+  "library.detail_toggle": "Aktiv umschalten",
+  "library.detail_delete": "Löschen"
 }

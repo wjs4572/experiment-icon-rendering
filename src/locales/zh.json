@@ -396,5 +396,19 @@
   "sysspec.import_success": "Belarc 报告导入成功！请检查字段并点击保存。",
   "sysspec.import_partial": "无法提取所有字段。部分数据可能已导入——请检查并手动补充。",
   "sysspec.import_error": "解析 Belarc 报告失败。请检查文件格式。",
-  "sysspec.import_read_error": "读取文件失败。"
+  "sysspec.import_read_error": "读取文件失败。",
+  "library.title": "结果库",
+  "library.subtitle": "浏览、筛选和管理所有测试运行记录。",
+  "library.nav_dashboard": "← 返回仪表板",
+  "library.nav_summary": "查看摘要",
+  "library.import_btn": "导入结果",
+  "library.make_imported_active": "将所有导入的设为活动",
+  "library.export_selected": "导出选中",
+  "library.delete_selected": "删除选中",
+  "library.toggle_active": "切换活动状态",
+  "library.clear_all": "清除所有历史",
+  "library.details_title": "运行详情",
+  "library.detail_export": "导出此运行",
+  "library.detail_toggle": "切换活动状态",
+  "library.detail_delete": "删除"
 }

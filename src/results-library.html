@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Results Library - Icon Performance Testing</title>
+    <link rel="icon" href="https://simpsonconcepts.com/img/favicon_io/favicon.ico" type="image/x-icon">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tabulator CSS + JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tabulator-tables/dist/css/tabulator.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/tabulator-tables/dist/js/tabulator.min.js"></script>
+    <!-- Internationalization System -->
+    <script src="js/i18n.js"></script>
+    <!-- Foundation modules -->
+    <script src="js/run-id.js"></script>
+    <script src="js/run-record.js"></script>
+    <script src="js/run-state.js"></script>
+    <style>
+        /* Tabulator overrides for Tailwind consistency */
+        .tabulator { border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; }
+        .tabulator .tabulator-header { background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; }
+        .tabulator .tabulator-header .tabulator-col { border-right: 1px solid #e5e7eb; }
+        .tabulator .tabulator-tableHolder .tabulator-table .tabulator-row { border-bottom: 1px solid #f3f4f6; }
+        .tabulator .tabulator-tableHolder .tabulator-table .tabulator-row:hover { background-color: #eff6ff; }
+        .tabulator .tabulator-tableHolder .tabulator-table .tabulator-row.tabulator-selected { background-color: #dbeafe; }
+        .tabulator .tabulator-footer { background-color: #f9fafb; border-top: 2px solid #e5e7eb; }
+        .tabulator .tabulator-header .tabulator-header-filter input { border: 1px solid #d1d5db; border-radius: 0.25rem; padding: 2px 6px; font-size: 0.75rem; }
+        .copy-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-8 py-12">
+        <!-- Language Selector -->
+        <div class="text-right mb-4">
+            <label for="languageSelector" class="sr-only">Language</label>
+            <select id="languageSelector" class="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="en">English</option>
+                <option value="en-us">English (United States)</option>
+                <option value="en-gb">English (United Kingdom)</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="ja">日本語</option>
+                <option value="zh">中文</option>
+                <option value="zh-tw">中文 (繁體)</option>
+                <option value="pt">Português</option>
+                <option value="pt-br">Português (Brasil)</option>
+                <option value="pt-pt">Português (Portugal)</option>
+            </select>
+        </div>
+
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2" data-i18n="library.title">Results Library</h1>
+            <p class="text-lg text-gray-600 mb-4" data-i18n="library.subtitle">
+                Browse, filter, and manage all test run records.
+            </p>
+            <nav class="flex justify-center gap-4" aria-label="Page navigation">
+                <a href="index.html"
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                   data-i18n="library.nav_dashboard">← Back to Dashboard</a>
+                <a href="summary.html"
+                   class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                   data-i18n="library.nav_summary">View Summary</a>
+            </nav>
+        </header>
+
+        <!-- Import Section -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6">
+            <div class="flex flex-wrap items-center gap-4">
+                <button id="importBtn"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                        data-i18n="library.import_btn">Import Results</button>
+                <input type="file" id="importFileInput" accept=".json" class="hidden" aria-label="Import results JSON file">
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                    <input type="checkbox" id="importActiveCheckbox" checked
+                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span data-i18n="library.make_imported_active">Make all imported active</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Import Status -->
+        <div id="importStatus" class="hidden mb-6 p-4 rounded-lg text-center" role="status" aria-live="polite"></div>
+
+        <!-- Bulk Action Bar -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6 flex flex-wrap items-center gap-3">
+            <span id="selectionCount" class="text-sm text-gray-500 min-w-[6rem]">0 selected</span>
+            <button id="exportSelectedBtn" disabled
+                    class="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    data-i18n="library.export_selected">Export Selected</button>
+            <button id="deleteSelectedBtn" disabled
+                    class="px-3 py-1.5 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    data-i18n="library.delete_selected">Delete Selected</button>
+            <button id="toggleActiveBtn" disabled
+                    class="px-3 py-1.5 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    data-i18n="library.toggle_active">Toggle Active</button>
+            <div class="flex-grow"></div>
+            <button id="clearAllBtn"
+                    class="px-3 py-1.5 bg-gray-600 text-white rounded text-sm hover:bg-gray-700 transition-colors"
+                    data-i18n="library.clear_all">Clear All History</button>
+        </div>
+
+        <!-- Tabulator Table -->
+        <div id="results-table" class="mb-8" role="grid" aria-label="Test results table"></div>
+
+        <!-- Details Panel -->
+        <section id="detailsPanel" class="hidden bg-white rounded-lg shadow-lg overflow-hidden mb-8" role="region" aria-label="Run details">
+            <!-- Gradient header -->
+            <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-semibold" data-i18n="library.details_title">Run Details</h2>
+                <button id="closeDetailsBtn" class="text-white/80 hover:text-white text-2xl leading-none" aria-label="Close details panel">&times;</button>
+            </div>
+            <div id="detailsContent" class="p-6">
+                <!-- Dynamically populated -->
+            </div>
+            <div class="px-6 pb-6 flex gap-2">
+                <button id="detailExportBtn"
+                        class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+                        data-i18n="library.detail_export">Export This Run</button>
+                <button id="detailToggleBtn"
+                        class="px-4 py-2 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600 transition-colors"
+                        data-i18n="library.detail_toggle">Toggle Active</button>
+                <button id="detailDeleteBtn"
+                        class="px-4 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors"
+                        data-i18n="library.detail_delete">Delete</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Copy-to-clipboard toast -->
+    <div id="copyToast" class="copy-toast hidden">
+        <div class="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg shadow-lg">Copied!</div>
+    </div>
+
+    <script>
+    'use strict';
+
+    /* ================================================================
+     * ResultsLibraryManager
+     * ================================================================ */
+    class ResultsLibraryManager {
+
+        constructor() {
+            /** @type {Tabulator|null} */
+            this.table = null;
+            /** @type {Object|null} Currently displayed record in the details panel */
+            this._detailRecord = null;
+            this._init();
+        }
+
+        /* ────────────────────────────────────────────────────────────
+         * Initialisation
+         * ──────────────────────────────────────────────────────────── */
+
+        _init() {
+            this._buildTable();
+            this._bindEvents();
+        }
+
+        /* ────────────────────────────────────────────────────────────
+         * Helpers
+         * ──────────────────────────────────────────────────────────── */
+
+        _locale() {
+            return window.i18n?.currentLanguage || navigator.language || 'en';
+        }
+
+        _fmtDate(dateStr) {
+            if (!dateStr) return '\u2014';
+            const d = new Date(dateStr);
+            return isNaN(d.getTime()) ? '\u2014' : d.toLocaleString(this._locale());
+        }
+
+        _fmtNum(n, decimals) {
+            if (typeof n !== 'number' || isNaN(n)) return '\u2014';
+            return n.toLocaleString(this._locale(), {
+                minimumFractionDigits: decimals || 0,
+                maximumFractionDigits: decimals || 0
+            });
+        }
+
+        /** Escape a value for safe HTML insertion */
+        _esc(val) {
+            if (val === null || val === undefined) return '';
+            const el = document.createElement('span');
+            el.textContent = String(val);
+            return el.innerHTML;
+        }
+
+        _loadRecords() {
+            return window.RunStateStore.getAllCompleted();
+        }
+
+        /* ────────────────────────────────────────────────────────────
+         * Tabulator Setup
+         * ──────────────────────────────────────────────────────────── */
+
+        _buildTable() {
+            const self = this;
+            const records = this._loadRecords();
+
+            this.table = new Tabulator('#results-table', {
+                data: records,
+                layout: 'fitColumns',
+                responsiveLayout: 'collapse',
+                pagination: true,
+                paginationSize: 25,
+                paginationSizeSelector: [10, 25, 50, 100],
+                selectable: true,
+                placeholder: 'No test results found. Run a test or import results to get started.',
+                initialSort: [{ column: 'startTime', dir: 'desc' }],
+                columns: [
+                    /* Selection checkbox */
+                    {
+                        formatter: 'rowSelection',
+                        titleFormatter: function () {
+                            var cb = document.createElement('input');
+                            cb.type = 'checkbox';
+                            cb.setAttribute('aria-label', 'Select all rows');
+                            cb.addEventListener('change', function () {
+                                if (cb.checked) {
+                                    self.table.getRows('active').forEach(function (r) { r.select(); });
+                                } else {
+                                    self.table.deselectRow();
+                                }
+                            });
+                            return cb;
+                        },
+                        headerSort: false,
+                        width: 40,
+                        hozAlign: 'center',
+                        headerHozAlign: 'center',
+                        resizable: false
+                    },
+                    /* Active toggle */
+                    {
+                        title: 'Active',
+                        field: 'active',
+                        formatter: 'tickCross',
+                        editor: 'tickCross',
+                        width: 80,
+                        hozAlign: 'center',
+                        headerHozAlign: 'center',
+                        cellEdited: function (cell) {
+                            var data = cell.getRow().getData();
+                            window.RunStateStore.toggleActive([data.testResultId], cell.getValue());
+                        }
+                    },
+                    /* Format */
+                    {
+                        title: 'Format',
+                        field: 'format',
+                        headerFilter: 'input',
+                        width: 90,
+                        formatter: function (cell) {
+                            return self._esc((cell.getValue() || '').toUpperCase());
+                        }
+                    },
+                    /* Test Type */
+                    {
+                        title: 'Test Type',
+                        field: 'testType',
+                        headerFilter: 'input',
+                        width: 110
+                    },
+                    /* Start Time */
+                    {
+                        title: 'Start Time',
+                        field: 'startTime',
+                        sorter: 'datetime',
+                        formatter: function (cell) {
+                            return self._esc(self._fmtDate(cell.getValue()));
+                        },
+                        width: 170
+                    },
+                    /* Duration */
+                    {
+                        title: 'Duration',
+                        field: 'durationMs',
+                        sorter: 'number',
+                        hozAlign: 'right',
+                        headerHozAlign: 'right',
+                        width: 95,
+                        formatter: function (cell) {
+                            var ms = cell.getValue();
+                            return typeof ms === 'number' ? (ms / 1000).toFixed(1) + 's' : '\u2014';
+                        }
+                    },
+                    /* Iterations */
+                    {
+                        title: 'Iterations',
+                        field: 'iterations',
+                        sorter: 'number',
+                        hozAlign: 'right',
+                        headerHozAlign: 'right',
+                        width: 100,
+                        formatter: function (cell) {
+                            return self._esc(self._fmtNum(cell.getValue()));
+                        }
+                    },
+                    /* Source */
+                    {
+                        title: 'Source',
+                        field: 'source',
+                        headerFilter: 'input',
+                        width: 95
+                    },
+                    /* Imported file name */
+                    {
+                        title: 'File',
+                        field: 'importedFileName',
+                        headerFilter: 'input',
+                        width: 120,
+                        formatter: function (cell) {
+                            return self._esc(cell.getValue() || '\u2014');
+                        }
+                    },
+                    /* Run ID (first 8 chars, copyable) */
+                    {
+                        title: 'Run ID',
+                        field: 'runId',
+                        width: 95,
+                        formatter: function (cell) {
+                            var val = cell.getValue();
+                            return val ? self._esc(val.substring(0, 8)) : '\u2014';
+                        },
+                        tooltip: function (_e, cell) {
+                            return 'Click to copy: ' + (cell.getValue() || '');
+                        },
+                        cellClick: function (_e, cell) {
+                            var val = cell.getValue();
+                            if (val && navigator.clipboard) {
+                                navigator.clipboard.writeText(val).then(function () {
+                                    self._showCopyToast();
+                                }).catch(function () { /* silent */ });
+                            }
+                        }
+                    },
+                    /* Fastest icon */
+                    {
+                        title: 'Fastest',
+                        field: 'performanceRanking',
+                        headerSort: false,
+                        width: 100,
+                        formatter: function (cell) {
+                            var ranking = cell.getValue();
+                            return self._esc(ranking && ranking.length > 0 ? ranking[0].iconType : '\u2014');
+                        }
+                    }
+                ]
+            });
+
+            /* Row click → details panel (skip if clicking a checkbox or the runId cell) */
+            this.table.on('rowClick', function (e, row) {
+                if (e.target.closest('input[type="checkbox"]') || e.target.tagName === 'INPUT') return;
+                var cellEl = e.target.closest('.tabulator-cell');
+                if (cellEl) {
+                    var field = cellEl.getAttribute('tabulator-field');
+                    if (field === 'runId') return; // handled by cellClick for copy
+                }
+                self.showDetails(row.getData());
+            });
+
+            /* Update bulk-action buttons on selection change */
+            this.table.on('rowSelected', function () { self._updateBulkButtons(); });
+            this.table.on('rowDeselected', function () { self._updateBulkButtons(); });
+        }
+
+        /* ────────────────────────────────────────────────────────────
+         * Event Binding
+         * ──────────────────────────────────────────────────────────── */
+
+        _bindEvents() {
+            var self = this;
+
+            // Import
+            document.getElementById('importBtn').addEventListener('click', function () {
+                document.getElementById('importFileInput').click();
+            });
+            document.getElementById('importFileInput').addEventListener('change', function (e) {
+                self._handleImport(e);
+            });
+
+            // Bulk actions
+            document.getElementById('exportSelectedBtn').addEventListener('click', function () { self._exportSelected(); });
+            document.getElementById('deleteSelectedBtn').addEventListener('click', function () { self._deleteSelected(); });
+            document.getElementById('toggleActiveBtn').addEventListener('click', function () { self._toggleActiveSelected(); });
+            document.getElementById('clearAllBtn').addEventListener('click', function () { self._clearAll(); });
+
+            // Details panel actions
+            document.getElementById('closeDetailsBtn').addEventListener('click', function () { self._hideDetails(); });
+            document.getElementById('detailExportBtn').addEventListener('click', function () { self._exportDetail(); });
+            document.getElementById('detailToggleBtn').addEventListener('click', function () { self._toggleActiveDetail(); });
+            document.getElementById('detailDeleteBtn').addEventListener('click', function () { self._deleteDetail(); });
+        }
+
+        /* ────────────────────────────────────────────────────────────
+         * Bulk Action Buttons State
+         * ──────────────────────────────────────────────────────────── */
+
+        _updateBulkButtons() {
+            var count = this.table ? this.table.getSelectedRows().length : 0;
+            document.getElementById('selectionCount').textContent = count + ' selected';
+            var hasSelection = count > 0;
+            document.getElementById('exportSelectedBtn').disabled = !hasSelection;
+            document.getElementById('deleteSelectedBtn').disabled = !hasSelection;
+            document.getElementById('toggleActiveBtn').disabled = !hasSelection;
+        }
+
+        /* ────────────────────────────────────────────────────────────
+         * Bulk Operations
+         * ──────────────────────────────────────────────────────────── */
+
+        _exportSelected() {
+            var rows = this.table.getSelectedRows();
+            if (rows.length === 0) return;
+            var records = rows.map(function (r) { return r.getData(); });
+            var envelope = {
+                exportedAt: new Date().toISOString(),
+                count: records.length,
+                records: records
+            };
+            this._downloadJSON(envelope, 'results-library-export-' + new Date().toISOString().split('T')[0] + '.json');
+        }
+
+        _deleteSelected() {
+            var rows = this.table.getSelectedRows();
+            if (rows.length === 0) return;
+            if (!confirm('Delete ' + rows.length + ' selected record(s)? This cannot be undone.')) return;
+            var ids = rows.map(function (r) { return r.getData().testResultId; });
+            window.RunStateStore.deleteRecords(ids);
+            this._refreshTable();
+            this._hideDetails();
+        }
+
+        _toggleActiveSelected() {
+            var rows = this.table.getSelectedRows();
+            if (rows.length === 0) return;
+            // Determine new state: if any are active, deactivate all; otherwise activate all
+            var anyActive = rows.some(function (r) { return r.getData().active; });
+            var newState = !anyActive;
+            var ids = rows.map(function (r) { return r.getData().testResultId; });
+            window.RunStateStore.toggleActive(ids, newState);
+            this._refreshTable();
+        }
+
+        _clearAll() {
+            if (!confirm('Clear ALL test history? This cannot be undone.')) return;
+            try {
+                localStorage.removeItem('iconTestRunRecords');
+            } catch (e) { /* silent */ }
+            this._refreshTable();
+            this._hideDetails();
+        }
+
+        /* ────────────────────────────────────────────────────────────
+         * Import
+         * ──────────────────────────────────────────────────────────── */
+
+        _handleImport(event) {
+            var self = this;
+            var file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.endsWith('.json')) {
+                this._showImportStatus('error', 'Please select a valid JSON file.');
+                event.target.value = '';
+                return;
+            }
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    var data = JSON.parse(e.target.result);
+                    self._processImport(data, file.name);
+                } catch (err) {
+                    self._showImportStatus('error', 'Failed to parse JSON file.');
+                }
+            };
+            reader.onerror = function () {
+                self._showImportStatus('error', 'Failed to read the file.');
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        _processImport(data, fileName) {
+            var makeActive = document.getElementById('importActiveCheckbox').checked;
+            var rawList = [];
+
+            // Accept array of records, envelope with .records array, or single record
+            if (Array.isArray(data)) {
+                rawList = data;
+            } else if (data && Array.isArray(data.records)) {
+                rawList = data.records;
+            } else if (data && typeof data === 'object') {
+                rawList = [data];
+            }
+
+            if (rawList.length === 0) {
+                this._showImportStatus('error', 'No valid records found in file.');
+                return;
+            }
+
+            var records = [];
+            for (var i = 0; i < rawList.length; i++) {
+                try {
+                    var rec = window.RunRecord.normalizeImportedRecord(rawList[i], fileName);
+                    if (makeActive) rec.active = true;
+                    records.push(rec);
+                } catch (e) {
+                    // skip invalid entries
+                }
+            }
+
+            if (records.length === 0) {
+                this._showImportStatus('error', 'No valid records could be imported.');
+                return;
+            }
+
+            window.RunStateStore.importRecords(records);
+            this._refreshTable();
+            this._showImportStatus('success', records.length + ' record(s) imported from ' + this._esc(fileName));
+        }
+
+        _showImportStatus(type, message) {
+            var el = document.getElementById('importStatus');
+            el.classList.remove('hidden');
+            var styles = {
+                success: 'bg-green-50 border border-green-200 text-green-800',
+                error:   'bg-red-50 border border-red-200 text-red-800',
+                info:    'bg-blue-50 border border-blue-200 text-blue-800'
+            };
+            el.className = 'mb-6 p-4 rounded-lg text-center ' + (styles[type] || styles.info);
+            el.textContent = message;
+            setTimeout(function () { el.classList.add('hidden'); }, 8000);
+        }
+
+        /* ────────────────────────────────────────────────────────────
+         * Table Refresh
+         * ──────────────────────────────────────────────────────────── */
+
+        _refreshTable() {
+            this.table.replaceData(this._loadRecords());
+            this._updateBulkButtons();
+        }
+
+        /* ────────────────────────────────────────────────────────────
+         * Copy Toast
+         * ──────────────────────────────────────────────────────────── */
+
+        _showCopyToast() {
+            var toast = document.getElementById('copyToast');
+            toast.classList.remove('hidden');
+            setTimeout(function () { toast.classList.add('hidden'); }, 1500);
+        }
+
+        /* ────────────────────────────────────────────────────────────
+         * Details Panel
+         * ──────────────────────────────────────────────────────────── */
+
+        showDetails(record) {
+            this._detailRecord = record;
+            var panel = document.getElementById('detailsPanel');
+            var content = document.getElementById('detailsContent');
+            content.innerHTML = '';
+
+            // ── Metadata ──────────────────────────────────────────
+            content.appendChild(this._buildSection('Run Metadata', this._buildMetadataGrid(record)));
+
+            // ── Test Configuration ────────────────────────────────
+            content.appendChild(this._buildSection('Test Configuration', this._buildConfigGrid(record)));
+
+            // ── System / Browser Info ─────────────────────────────
+            content.appendChild(this._buildSection('System Environment', this._buildSystemGrid(record)));
+
+            // ── Performance Ranking ───────────────────────────────
+            if (record.performanceRanking && record.performanceRanking.length > 0) {
+                content.appendChild(this._buildSection('Performance Ranking', this._buildRankingTable(record.performanceRanking)));
+            }
+
+            // ── Statistical Analysis ──────────────────────────────
+            if (record.statisticalAnalysis && Object.keys(record.statisticalAnalysis).length > 0) {
+                content.appendChild(this._buildSection('Statistical Analysis', this._buildStatsTable(record.statisticalAnalysis)));
+            }
+
+            panel.classList.remove('hidden');
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        _hideDetails() {
+            this._detailRecord = null;
+            document.getElementById('detailsPanel').classList.add('hidden');
+        }
+
+        /* ── Detail panel builders ─────────────────────────────── */
+
+        _buildSection(title, contentEl) {
+            var section = document.createElement('div');
+            section.className = 'mb-6';
+            var h = document.createElement('h3');
+            h.className = 'font-semibold text-gray-800 mb-3 text-lg';
+            h.textContent = title;
+            section.appendChild(h);
+            section.appendChild(contentEl);
+            return section;
+        }
+
+        _buildKV(pairs) {
+            var grid = document.createElement('div');
+            grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3';
+            for (var i = 0; i < pairs.length; i++) {
+                var box = document.createElement('div');
+                box.className = 'bg-gray-50 p-3 rounded';
+                var label = document.createElement('div');
+                label.className = 'text-xs font-medium text-gray-500 uppercase tracking-wide';
+                label.textContent = pairs[i][0];
+                var value = document.createElement('div');
+                value.className = 'text-sm font-semibold text-gray-800 mt-1 break-all';
+                value.textContent = pairs[i][1];
+                box.appendChild(label);
+                box.appendChild(value);
+                grid.appendChild(box);
+            }
+            return grid;
+        }
+
+        _buildMetadataGrid(rec) {
+            return this._buildKV([
+                ['Run ID', rec.runId || '\u2014'],
+                ['Suite Run ID', rec.suiteRunId || '\u2014'],
+                ['Test Result ID', rec.testResultId || '\u2014'],
+                ['Format', (rec.format || '\u2014').toUpperCase()],
+                ['Source', rec.source || '\u2014'],
+                ['Imported File', rec.importedFileName || '\u2014'],
+                ['Active', rec.active ? 'Yes' : 'No'],
+                ['Schema Version', String(rec.schemaVersion || '\u2014')]
+            ]);
+        }
+
+        _buildConfigGrid(rec) {
+            var cfg = rec.testConfiguration || {};
+            return this._buildKV([
+                ['Test Type', rec.testType || cfg.testType || '\u2014'],
+                ['Iterations', this._fmtNum(rec.iterations || cfg.iterations)],
+                ['Duration', typeof rec.durationMs === 'number' ? (rec.durationMs / 1000).toFixed(1) + 's' : '\u2014'],
+                ['Start Time', this._fmtDate(rec.startTime)],
+                ['End Time', this._fmtDate(rec.endTime)],
+                ['Method', cfg.method || '\u2014']
+            ]);
+        }
+
+        _buildSystemGrid(rec) {
+            var sys = rec.systemSpecifications || rec.testMetadata || {};
+            var pairs = [];
+            if (sys.userAgent || sys.browser) {
+                pairs.push(['Browser', this._getBrowserName(sys.userAgent || sys.browser || '')]);
+            }
+            if (sys.platform)         pairs.push(['Platform', sys.platform]);
+            if (sys.screenResolution) pairs.push(['Screen', sys.screenResolution]);
+            if (sys.colorDepth)       pairs.push(['Color Depth', sys.colorDepth + '-bit']);
+            if (sys.memory) {
+                var used = (sys.memory.usedJSHeapSize / (1024 * 1024)).toFixed(1);
+                var limit = (sys.memory.jsHeapSizeLimit / (1024 * 1024)).toFixed(1);
+                pairs.push(['Memory', used + ' MB / ' + limit + ' MB']);
+            }
+            if (pairs.length === 0) pairs.push(['Info', 'No system information available']);
+            return this._buildKV(pairs);
+        }
+
+        _getBrowserName(ua) {
+            if (!ua) return 'Unknown';
+            if (ua.includes('Chrome')) return 'Chrome';
+            if (ua.includes('Firefox')) return 'Firefox';
+            if (ua.includes('Safari')) return 'Safari';
+            if (ua.includes('Edge')) return 'Edge';
+            return 'Unknown';
+        }
+
+        _buildRankingTable(ranking) {
+            var wrapper = document.createElement('div');
+            wrapper.className = 'overflow-x-auto';
+            var table = document.createElement('table');
+            table.className = 'w-full text-sm';
+            table.setAttribute('role', 'table');
+
+            var thead = document.createElement('thead');
+            var headRow = document.createElement('tr');
+            headRow.className = 'bg-gray-50 border-b';
+            var headers = ['Rank', 'Icon Type', 'Avg Time (ms)', 'Std Dev', 'CI Lower', 'CI Upper', 'Samples'];
+            for (var h = 0; h < headers.length; h++) {
+                var th = document.createElement('th');
+                th.className = 'text-left p-2 text-xs font-medium text-gray-500 uppercase';
+                th.textContent = headers[h];
+                th.setAttribute('scope', 'col');
+                headRow.appendChild(th);
+            }
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+
+            var tbody = document.createElement('tbody');
+            for (var i = 0; i < ranking.length; i++) {
+                var r = ranking[i];
+                var tr = document.createElement('tr');
+                tr.className = 'border-b' + (i === 0 ? ' bg-green-50' : '');
+                var cells = [
+                    String(r.rank || i + 1),
+                    r.iconType || '\u2014',
+                    this._fmtNum(r.averageTime, 3),
+                    this._fmtNum(r.standardDeviation, 3),
+                    r.confidenceInterval ? this._fmtNum(r.confidenceInterval.lower, 3) : '\u2014',
+                    r.confidenceInterval ? this._fmtNum(r.confidenceInterval.upper, 3) : '\u2014',
+                    this._fmtNum(r.sampleSize)
+                ];
+                for (var c = 0; c < cells.length; c++) {
+                    var td = document.createElement('td');
+                    td.className = 'p-2';
+                    td.textContent = cells[c];
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+            table.appendChild(tbody);
+            wrapper.appendChild(table);
+            return wrapper;
+        }
+
+        _buildStatsTable(analysis) {
+            var wrapper = document.createElement('div');
+            wrapper.className = 'overflow-x-auto';
+            var table = document.createElement('table');
+            table.className = 'w-full text-sm';
+            table.setAttribute('role', 'table');
+
+            var thead = document.createElement('thead');
+            var headRow = document.createElement('tr');
+            headRow.className = 'bg-gray-50 border-b';
+            var headers = ['Comparison', 'P-Value', 'Significant', 'Power', 'Effect Size'];
+            for (var h = 0; h < headers.length; h++) {
+                var th = document.createElement('th');
+                th.className = 'text-left p-2 text-xs font-medium text-gray-500 uppercase';
+                th.textContent = headers[h];
+                th.setAttribute('scope', 'col');
+                headRow.appendChild(th);
+            }
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+
+            var tbody = document.createElement('tbody');
+            var entries = Object.entries(analysis);
+            for (var i = 0; i < entries.length; i++) {
+                var key = entries[i][0];
+                var stat = entries[i][1];
+                var tr = document.createElement('tr');
+                tr.className = 'border-b';
+
+                var tdComp = document.createElement('td');
+                tdComp.className = 'p-2 font-medium';
+                tdComp.textContent = key;
+                tr.appendChild(tdComp);
+
+                var tdP = document.createElement('td');
+                tdP.className = 'p-2 text-center';
+                tdP.textContent = stat.pValue < 0.001 ? '<0.001' : this._fmtNum(stat.pValue, 4);
+                tr.appendChild(tdP);
+
+                var tdSig = document.createElement('td');
+                tdSig.className = 'p-2 text-center ' + (stat.isSignificant ? 'text-green-600' : 'text-red-600');
+                tdSig.textContent = stat.isSignificant ? '\u2713 Significant' : '\u2717 Not Significant';
+                tr.appendChild(tdSig);
+
+                var tdPow = document.createElement('td');
+                tdPow.className = 'p-2 text-center';
+                tdPow.textContent = this._fmtNum(stat.power, 2);
+                tr.appendChild(tdPow);
+
+                var tdEff = document.createElement('td');
+                tdEff.className = 'p-2 text-center';
+                tdEff.textContent = this._fmtNum(stat.effectSize, 2);
+                tr.appendChild(tdEff);
+
+                tbody.appendChild(tr);
+            }
+            table.appendChild(tbody);
+            wrapper.appendChild(table);
+            return wrapper;
+        }
+
+        /* ── Detail panel single-record actions ────────────────── */
+
+        _exportDetail() {
+            if (!this._detailRecord) return;
+            this._downloadJSON(this._detailRecord, 'run-' + (this._detailRecord.testResultId || 'export') + '.json');
+        }
+
+        _toggleActiveDetail() {
+            if (!this._detailRecord) return;
+            var newState = !this._detailRecord.active;
+            window.RunStateStore.toggleActive([this._detailRecord.testResultId], newState);
+            this._detailRecord.active = newState;
+            this._refreshTable();
+            // Re-render the details panel with updated state
+            this.showDetails(this._detailRecord);
+        }
+
+        _deleteDetail() {
+            if (!this._detailRecord) return;
+            if (!confirm('Delete this record? This cannot be undone.')) return;
+            window.RunStateStore.deleteRecords([this._detailRecord.testResultId]);
+            this._refreshTable();
+            this._hideDetails();
+        }
+
+        /* ────────────────────────────────────────────────────────────
+         * Download Helper
+         * ──────────────────────────────────────────────────────────── */
+
+        _downloadJSON(data, filename) {
+            var str = JSON.stringify(data, null, 2);
+            var blob = new Blob([str], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    /* ================================================================
+     * Bootstrap
+     * ================================================================ */
+    var resultsLibraryManager;
+
+    function initResultsLibrary() {
+        if (!resultsLibraryManager) {
+            resultsLibraryManager = new ResultsLibraryManager();
+        } else {
+            resultsLibraryManager._refreshTable();
+        }
+    }
+
+    document.addEventListener('i18nReady', initResultsLibrary);
+    document.addEventListener('languageChanged', function () {
+        if (resultsLibraryManager) {
+            resultsLibraryManager._refreshTable();
+        }
+    });
+
+    // Fallback: if i18n was already ready before listener attached
+    document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+            if (!resultsLibraryManager) initResultsLibrary();
+        }, 500);
+    });
+    </script>
+</body>
+</html>

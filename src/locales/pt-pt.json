@@ -396,5 +396,19 @@
   "sysspec.import_success": "Relatório Belarc importado com sucesso! Reveja os campos e clique em Guardar.",
   "sysspec.import_partial": "Não foi possível extrair todos os campos. Alguns dados podem ter sido importados — reveja e complete manualmente.",
   "sysspec.import_error": "Falha ao analisar o relatório Belarc. Verifique o formato do ficheiro.",
-  "sysspec.import_read_error": "Falha ao ler o ficheiro."
+  "sysspec.import_read_error": "Falha ao ler o ficheiro.",
+  "library.title": "Biblioteca de Resultados",
+  "library.subtitle": "Explorar, filtrar e gerir todos os registos de execução de testes.",
+  "library.nav_dashboard": "← Voltar ao Painel",
+  "library.nav_summary": "Ver Resumo",
+  "library.import_btn": "Importar Resultados",
+  "library.make_imported_active": "Ativar todos os importados",
+  "library.export_selected": "Exportar Selecionados",
+  "library.delete_selected": "Eliminar Selecionados",
+  "library.toggle_active": "Alternar Ativo",
+  "library.clear_all": "Limpar Todo o Histórico",
+  "library.details_title": "Detalhes da Execução",
+  "library.detail_export": "Exportar Esta Execução",
+  "library.detail_toggle": "Alternar Ativo",
+  "library.detail_delete": "Eliminar"
 }

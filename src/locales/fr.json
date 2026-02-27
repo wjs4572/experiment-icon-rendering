@@ -396,5 +396,19 @@
   "sysspec.import_success": "Rapport Belarc importé avec succès ! Vérifiez les champs et cliquez sur Enregistrer.",
   "sysspec.import_partial": "Impossible d'extraire tous les champs. Certaines données ont peut-être été importées — veuillez vérifier et compléter manuellement.",
   "sysspec.import_error": "Échec de l'analyse du rapport Belarc. Veuillez vérifier le format du fichier.",
-  "sysspec.import_read_error": "Échec de la lecture du fichier."
+  "sysspec.import_read_error": "Échec de la lecture du fichier.",
+  "library.title": "Bibliothèque de Résultats",
+  "library.subtitle": "Parcourir, filtrer et gérer tous les enregistrements d'exécution de tests.",
+  "library.nav_dashboard": "← Retour au Tableau de Bord",
+  "library.nav_summary": "Voir le Résumé",
+  "library.import_btn": "Importer des Résultats",
+  "library.make_imported_active": "Activer tous les résultats importés",
+  "library.export_selected": "Exporter la Sélection",
+  "library.delete_selected": "Supprimer la Sélection",
+  "library.toggle_active": "Basculer Actif",
+  "library.clear_all": "Effacer Tout l'Historique",
+  "library.details_title": "Détails de l'Exécution",
+  "library.detail_export": "Exporter Cette Exécution",
+  "library.detail_toggle": "Basculer Actif",
+  "library.detail_delete": "Supprimer"
 }

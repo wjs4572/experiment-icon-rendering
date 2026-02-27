@@ -396,5 +396,19 @@
   "sysspec.import_success": "Belarcレポートが正常にインポートされました！フィールドを確認して「保存」をクリックしてください。",
   "sysspec.import_partial": "すべてのフィールドを抽出できませんでした。一部のデータがインポートされた可能性があります。確認して手動で補完してください。",
   "sysspec.import_error": "Belarcレポートの解析に失敗しました。ファイル形式を確認してください。",
-  "sysspec.import_read_error": "ファイルの読み込みに失敗しました。"
+  "sysspec.import_read_error": "ファイルの読み込みに失敗しました。",
+  "library.title": "結果ライブラリ",
+  "library.subtitle": "すべてのテスト実行記録を閲覧、フィルタリング、管理します。",
+  "library.nav_dashboard": "← ダッシュボードに戻る",
+  "library.nav_summary": "サマリーを表示",
+  "library.import_btn": "結果をインポート",
+  "library.make_imported_active": "インポートしたものをすべてアクティブにする",
+  "library.export_selected": "選択をエクスポート",
+  "library.delete_selected": "選択を削除",
+  "library.toggle_active": "アクティブを切り替え",
+  "library.clear_all": "すべての履歴をクリア",
+  "library.details_title": "実行の詳細",
+  "library.detail_export": "この実行をエクスポート",
+  "library.detail_toggle": "アクティブを切り替え",
+  "library.detail_delete": "削除"
 }

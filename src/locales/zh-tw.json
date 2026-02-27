@@ -396,5 +396,19 @@
   "sysspec.import_success": "Belarc 報告匯入成功！請檢查欄位並點選儲存。",
   "sysspec.import_partial": "無法擷取所有欄位。部分資料可能已匯入——請檢查並手動補充。",
   "sysspec.import_error": "解析 Belarc 報告失敗。請檢查檔案格式。",
-  "sysspec.import_read_error": "讀取檔案失敗。"
+  "sysspec.import_read_error": "讀取檔案失敗。",
+  "library.title": "結果庫",
+  "library.subtitle": "瀏覽、篩選和管理所有測試執行記錄。",
+  "library.nav_dashboard": "← 返回儀表板",
+  "library.nav_summary": "查看摘要",
+  "library.import_btn": "匯入結果",
+  "library.make_imported_active": "將所有匯入的設為啟用",
+  "library.export_selected": "匯出選取",
+  "library.delete_selected": "刪除選取",
+  "library.toggle_active": "切換啟用狀態",
+  "library.clear_all": "清除所有歷史",
+  "library.details_title": "執行詳細資訊",
+  "library.detail_export": "匯出此執行",
+  "library.detail_toggle": "切換啟用狀態",
+  "library.detail_delete": "刪除"
 }
