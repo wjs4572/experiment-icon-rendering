@@ -110,15 +110,35 @@ test.describe('Summary Page - Locale-Independent Structure', () => {
 
   test('no-data message is hidden when data is present', async ({ page }) => {
     await page.evaluate(() => {
-      localStorage.setItem('iconTestResults_css', JSON.stringify({
-        css_font_square: { mean: 1.5, stdDev: 0.2, iterations: 100 }
-      }));
+      const mockRecord = {
+        schemaVersion: 2,
+        testResultId: 'test-result-i18n',
+        runId: 'run-i18n',
+        suiteRunId: 'suite-i18n',
+        format: 'css',
+        source: 'local',
+        importedFileName: null,
+        active: true,
+        startTime: new Date().toISOString(),
+        endTime: new Date().toISOString(),
+        durationMs: 1000,
+        testType: 'single',
+        iterations: 100,
+        testDuration: 1,
+        results: { css_font_square: { mean: 1.5, stdDev: 0.2, iterations: 100 } },
+        statisticalAnalysis: {},
+        performanceRanking: [{ iconType: 'css_font_square', rank: 1, averageTime: 1.5, confidenceInterval: { lower: 1.3, upper: 1.7 }, standardDeviation: 0.2, sampleSize: 100 }],
+        testMetadata: {},
+        testConfiguration: { testType: 'single', iterations: 100 },
+        systemSpecifications: {}
+      };
+      localStorage.setItem('iconTestRunRecords', JSON.stringify([mockRecord]));
     });
     await page.goto('summary.html');
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('#noDataMessage')).toBeHidden();
-    await page.evaluate(() => localStorage.removeItem('iconTestResults_css'));
+    await page.evaluate(() => localStorage.removeItem('iconTestRunRecords'));
   });
 
   test('last updated display exists', async ({ page }) => {

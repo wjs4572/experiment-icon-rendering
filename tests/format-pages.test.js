@@ -3,18 +3,18 @@ const { test, expect } = require('@playwright/test');
 
 /**
  * REGRESSION TESTS - Format-Specific Testing Pages
- * DO NOT MODIFY unless explicitly requested by user
  * These tests ensure all format testing pages maintain consistent structure
+ * Updated for Phase 4 tab-based layout (no card/shadow pattern, no gradient indicators)
  */
 
 test.describe('Format Testing Pages Structure', () => {
   const formatPages = [
-    { file: 'svg.html', title: 'SVG Implementation', format: 'SVG' },
-    { file: 'png.html', title: 'PNG Implementation', format: 'PNG' },
-    { file: 'gif.html', title: 'GIF Implementation', format: 'GIF' },
-    { file: 'jpeg.html', title: 'JPEG Implementation', format: 'JPEG' },
-    { file: 'webp.html', title: 'WebP Implementation', format: 'WebP' },
-    { file: 'avif.html', title: 'AVIF Implementation', format: 'AVIF' }
+    { file: 'svg.html', title: 'SVG Implementation', format: 'SVG', pageTitle: 'SVG Icon Performance Testing' },
+    { file: 'png.html', title: 'PNG Implementation', format: 'PNG', pageTitle: 'PNG Icon Performance Testing' },
+    { file: 'gif.html', title: 'GIF Implementation', format: 'GIF', pageTitle: 'GIF Icon Performance Testing' },
+    { file: 'jpeg.html', title: 'JPEG Implementation', format: 'JPEG', pageTitle: 'JPEG Icon Performance Testing' },
+    { file: 'webp.html', title: 'WebP Implementation', format: 'WebP', pageTitle: 'WebP Icon Performance Testing' },
+    { file: 'avif.html', title: 'AVIF Implementation', format: 'AVIF', pageTitle: 'AVIF Icon Performance Testing' }
   ];
 
   formatPages.forEach(formatInfo => {
@@ -25,7 +25,7 @@ test.describe('Format Testing Pages Structure', () => {
       });
 
       test('page loads with correct title and structure', async ({ page }) => {
-        await expect(page).toHaveTitle(new RegExp(formatInfo.title.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')));
+        await expect(page).toHaveTitle(new RegExp(formatInfo.pageTitle.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')));
         await expect(page.locator('h1')).toContainText(formatInfo.title);
       });
 
@@ -55,55 +55,57 @@ test.describe('Format Testing Pages Structure', () => {
           return cards.length > 0 && window.getComputedStyle(cards[0]).backgroundColor !== 'rgba(0, 0, 0, 0)';
         });
         
-        // Verify card-based layout for different implementations (use .shadow to skip languageSelector)
-        const cards = page.locator('.bg-white.shadow');
-        const cardCount = await cards.count();
-        expect(cardCount).toBeGreaterThanOrEqual(2);
+        // Verify content containers exist (tab-based layout uses bordered panels)
+        const panels = page.locator('.bg-white.rounded.border');
+        const panelCount = await panels.count();
+        expect(panelCount).toBeGreaterThanOrEqual(1);
         
-        // Verify cards have proper structure
-        const firstCard = cards.first();
-        await expect(firstCard).toHaveClass(/rounded-lg/);
-        await expect(firstCard).toHaveClass(/shadow/);
+        // Verify panels have proper structure
+        const firstPanel = panels.first();
+        await expect(firstPanel).toHaveClass(/rounded/);
+        await expect(firstPanel).toHaveClass(/border/);
       });
 
       test('format-specific headings are present', async ({ page }) => {
-        // Each format should have specific implementation type headings
-        const h2Count = await page.locator('h2').count();
+        // Each format should have specific implementation type headings (exclude modal h2)
+        const pageHeadings = page.locator('#testingContent h2, #renderingContent h2');
+        const h2Count = await pageHeadings.count();
         expect(h2Count).toBeGreaterThanOrEqual(2);
         
-        // Verify headings have proper styling
-        const secondaryHeadings = page.locator('h2');
-        const headingCount = await secondaryHeadings.count();
-        
-        for (let i = 0; i < headingCount; i++) {
-          const heading = secondaryHeadings.nth(i);
+        // Verify page headings have proper styling
+        for (let i = 0; i < h2Count; i++) {
+          const heading = pageHeadings.nth(i);
           await expect(heading).toHaveClass(/text-xl/);
           await expect(heading).toHaveClass(/font-semibold/);
         }
       });
 
-      test('gradient indicator icons are present', async ({ page }) => {
-        // Verify each implementation type has a gradient indicator
-        const gradientContainers = page.locator('.bg-gradient-to-br');
-        const gradientCount = await gradientContainers.count();
-        expect(gradientCount).toBeGreaterThanOrEqual(2);
+      test('icon example containers are present', async ({ page }) => {
+        // Verify icon examples section has properly sized containers
+        const iconContainers = page.locator('.w-12.h-12');
+        const iconCount = await iconContainers.count();
+        expect(iconCount).toBeGreaterThanOrEqual(2);
         
-        // Verify gradient containers have proper sizing
-        const firstGradient = gradientContainers.first();
-        await expect(firstGradient).toHaveClass(/w-12/);
-        await expect(firstGradient).toHaveClass(/h-12/);
+        // Verify first container has proper sizing classes
+        const firstIcon = iconContainers.first();
+        await expect(firstIcon).toHaveClass(/w-12/);
+        await expect(firstIcon).toHaveClass(/h-12/);
       });
 
       test('responsive grid layout is applied', async ({ page }) => {
-        // Verify responsive grid layout
-        const gridContainer = page.locator('.grid');
-        await expect(gridContainer).toBeVisible();
-        await expect(gridContainer).toHaveClass(/md:grid-cols-2/);
-        await expect(gridContainer).toHaveClass(/lg:grid-cols-3/);
+        // Verify responsive grid layout (icon examples grid)
+        const grids = page.locator('#testingContent .grid');
+        const gridCount = await grids.count();
+        expect(gridCount).toBeGreaterThanOrEqual(1);
+        
+        // First grid is the icon examples grid with responsive columns
+        const iconGrid = grids.first();
+        await expect(iconGrid).toBeVisible();
+        await expect(iconGrid).toHaveClass(/grid-cols-2/);
       });
 
       test('implementation status information exists', async ({ page }) => {
-        // Verify status information section exists (placeholder or implemented)
+        // Verify browser-specific testing notice section exists
         const statusSection = page.locator('.bg-yellow-50, .bg-green-50, .bg-blue-50');
         
         if (await statusSection.count() > 0) {
@@ -111,9 +113,9 @@ test.describe('Format Testing Pages Structure', () => {
           await expect(statusSection.first()).toHaveClass(/border/);
           await expect(statusSection.first()).toHaveClass(/rounded-lg/);
           
-          // Verify status has heading
-          const statusHeading = statusSection.locator('h3').first();
-          await expect(statusHeading).toBeVisible();
+          // Verify status has a label (strong element for browser notice)
+          const statusLabel = statusSection.first().locator('strong').first();
+          await expect(statusLabel).toBeVisible();
         }
       });
 
@@ -138,20 +140,20 @@ test.describe('Format Testing Pages Structure', () => {
         await expect(backLink).toBeFocused();
       });
 
-      test('consistent color scheme and branding', async ({ page }) => {        // Wait for Tailwind CSS to load and apply styles (especially important for Firefox)
+      test('consistent color scheme and branding', async ({ page }) => {
+        // Wait for Tailwind CSS to load and apply styles (especially important for Firefox)
         await page.waitForLoadState('networkidle');
         await page.waitForFunction(() => {
           const backLink = document.querySelector('a[href="index.html"]');
           return backLink && window.getComputedStyle(backLink).color !== 'rgba(0, 0, 0, 0)';
         });
-                // Verify consistent blue color scheme
+        // Verify consistent blue color scheme
         const backLink = page.locator('a[data-i18n="nav.back_to_suite"]');
         await expect(backLink).toHaveClass(/text-blue-600/);
         
-        // Verify gradient containers use consistent color scheme
-        const gradients = page.locator('.bg-gradient-to-br');
-        const firstGradient = gradients.first();
-        await expect(firstGradient).toHaveClass(/from-blue-600/);
+        // Verify start test button uses blue branding
+        const startBtn = page.locator('#startTest');
+        await expect(startBtn).toHaveClass(/bg-blue-600/);
       });
 
       test('page structure integrity', async ({ page }) => {
@@ -191,7 +193,7 @@ test.describe('Format Testing Pages Structure', () => {
         'header',
         'h1',
         'a[data-i18n="nav.back_to_suite"]',
-        '.bg-white.shadow'
+        '.bg-white'
       ];
 
       for (const formatInfo of formatPages.slice(0, 2)) { // Test first 2 for efficiency

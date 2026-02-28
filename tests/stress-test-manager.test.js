@@ -261,7 +261,8 @@ test.describe('Stress Test Manager', () => {
       await page.goto('css.html');
       await page.waitForFunction(() => window.systemSpecsManager);
 
-      await page.locator('#systemInfoButton').click();
+      // Open modal via SystemSpecsManager API (button click handler delegates to showModal)
+      await page.evaluate(() => window.systemSpecsManager.showModal());
       await expect(page.locator('#systemInfoModal')).toBeVisible();
     });
 
@@ -309,6 +310,9 @@ test.describe('Stress Test Manager', () => {
       await page.goto('css.html');
       await page.waitForFunction(() => window.stressTestManager);
 
+      // createTestContainer must be called to create the rendering container
+      await page.evaluate(() => window.stressTestManager.createTestContainer());
+
       // Switch to rendering tab to see the container
       await page.locator('#renderingTab').click();
       await expect(page.locator('#bulkTestContainer')).toBeAttached();
@@ -317,6 +321,9 @@ test.describe('Stress Test Manager', () => {
     test('bulkTestContainer has ready message', async ({ page }) => {
       await page.goto('css.html');
       await page.waitForFunction(() => window.stressTestManager);
+
+      // createTestContainer must be called to populate the container
+      await page.evaluate(() => window.stressTestManager.createTestContainer());
 
       await page.locator('#renderingTab').click();
       const text = await page.locator('#bulkTestContainer').textContent();

@@ -60,12 +60,31 @@ test.describe('Performance Summary Dashboard', () => {
   });
 
   test('no-data message is hidden when test data exists', async ({ page }) => {
-    // Inject minimal mock data into localStorage before navigating
+    // Inject a minimal RunRecord into the RunStateStore storage key before navigating
     await page.evaluate(() => {
-      const mockData = {
-        css_font_square: { mean: 1.5, stdDev: 0.2, iterations: 100 }
+      const mockRecord = {
+        schemaVersion: 2,
+        testResultId: 'test-result-001',
+        runId: 'run-001',
+        suiteRunId: 'suite-001',
+        format: 'css',
+        source: 'local',
+        importedFileName: null,
+        active: true,
+        startTime: new Date().toISOString(),
+        endTime: new Date().toISOString(),
+        durationMs: 1000,
+        testType: 'single',
+        iterations: 100,
+        testDuration: 1,
+        results: { css_font_square: { mean: 1.5, stdDev: 0.2, iterations: 100 } },
+        statisticalAnalysis: {},
+        performanceRanking: [{ iconType: 'css_font_square', rank: 1, averageTime: 1.5, confidenceInterval: { lower: 1.3, upper: 1.7 }, standardDeviation: 0.2, sampleSize: 100 }],
+        testMetadata: {},
+        testConfiguration: { testType: 'single', iterations: 100 },
+        systemSpecifications: {}
       };
-      localStorage.setItem('iconTestResults_css', JSON.stringify(mockData));
+      localStorage.setItem('iconTestRunRecords', JSON.stringify([mockRecord]));
     });
     await page.goto('summary.html');
     await page.waitForLoadState('networkidle');
@@ -79,7 +98,7 @@ test.describe('Performance Summary Dashboard', () => {
     await expect(header.locator('a[href="past-results.html"]')).toBeVisible();
 
     // Clean up
-    await page.evaluate(() => localStorage.removeItem('iconTestResults_css'));
+    await page.evaluate(() => localStorage.removeItem('iconTestRunRecords'));
   });
 
   test('data export controls are available', async ({ page }) => {

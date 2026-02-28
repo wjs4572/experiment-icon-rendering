@@ -12,6 +12,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js for visualizations -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Foundation Modules -->
+    <script src="js/run-id.js"></script>
+    <script src="js/run-record.js"></script>
+    <script src="js/run-state.js"></script>
     <!-- Internationalization System -->
     <script src="js/i18n.js"></script>
 </head>
@@ -233,10 +237,8 @@
             constructor() {
                 this.testFormats = ['css', 'svg', 'png', 'gif', 'jpeg', 'webp', 'avif'];
                 this.results = {};
-                this.archiveHistory = [];
                 this.chartInstance = null;
                 this.excludedTests = new Set();
-                this.loadArchiveHistory();
                 this.loadExcludedTests();
                 this.loadResults();
                 this.setupEventListeners();
@@ -263,29 +265,12 @@
                 return typeof num === 'number' ? num.toLocaleString(this.getLocale()) : num;
             }
 
-            inferFormatFromResults(results) {
-                if (!results || typeof results !== 'object') return null;
-                const keys = Object.keys(results);
-                if (keys.length === 0) return null;
-                const firstKey = keys[0].toLowerCase();
-                if (firstKey.includes('css'))   return 'css';
-                if (firstKey.includes('svg'))   return 'svg';
-                if (firstKey.includes('png'))   return 'png';
-                if (firstKey.includes('gif'))   return 'gif';
-                if (firstKey.includes('jpeg'))  return 'jpeg';
-                if (firstKey.includes('webp'))  return 'webp';
-                if (firstKey.includes('avif'))  return 'avif';
-                return null;
-            }
-
-            loadArchiveHistory() {
-                try {
-                    const raw = localStorage.getItem('iconTestHistory');
-                    this.archiveHistory = raw ? JSON.parse(raw) : [];
-                } catch (e) {
-                    console.error('Error loading archive history:', e);
-                    this.archiveHistory = [];
-                }
+            /**
+             * Get all active RunRecords from the Run State Store.
+             * @returns {Array<Object>}
+             */
+            getActiveRunRecords() {
+                return window.RunStateStore ? window.RunStateStore.getActiveRecords() : [];
             }
 
             getFilterState() {
@@ -304,14 +289,18 @@
                 return !!(f.testType || f.dateRange || f.significance || f.originalSource || f.inputSource || f.fileName || this.excludedTests.size > 0);
             }
 
-            filterArchiveEntries(entries) {
+            /**
+             * Filter RunRecords based on the current filter state.
+             * @param {Array<Object>} records – Active RunRecords
+             * @returns {Array<Object>}
+             */
+            filterRecords(records) {
                 const f = this.getFilterState();
-                if (!f.testType && !f.dateRange && !f.significance && !f.originalSource && !f.inputSource && !f.fileName) {
-                    return entries;
-                }
-                let filtered = [...entries];
+                let filtered = [...records];
                 if (f.testType) {
-                    filtered = filtered.filter(r => r.testConfiguration?.testType === f.testType);
+                    filtered = filtered.filter(r =>
+                        r.testType === f.testType || r.testConfiguration?.testType === f.testType
+                    );
                 }
                 if (f.dateRange) {
                     const now = new Date();
@@ -319,117 +308,100 @@
                     if (f.dateRange === 'today') cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                     else if (f.dateRange === 'week') cutoff = new Date(now.getTime() - 7*24*60*60*1000);
                     else if (f.dateRange === 'month') cutoff = new Date(now.getTime() - 30*24*60*60*1000);
-                    if (cutoff) filtered = filtered.filter(r => new Date(r.timestamp) >= cutoff);
+                    if (cutoff) filtered = filtered.filter(r => new Date(r.startTime || r.endTime) >= cutoff);
                 }
                 if (f.significance === 'significant') {
-                    filtered = filtered.filter(r => r.summary?.significantDifferences > 0);
-                } else if (f.significance === 'not-significant') {
-                    filtered = filtered.filter(r => !r.summary?.significantDifferences || r.summary.significantDifferences === 0);
-                }
-                if (f.originalSource) {
                     filtered = filtered.filter(r => {
-                        const src = r.sourceInfo?.originalSource || (this.inferFormatFromResults(r.results) + '.html');
-                        return src === f.originalSource;
+                        const sa = r.statisticalAnalysis || {};
+                        return Object.values(sa).some(s => s.isSignificant);
+                    });
+                } else if (f.significance === 'not-significant') {
+                    filtered = filtered.filter(r => {
+                        const sa = r.statisticalAnalysis || {};
+                        const entries = Object.values(sa);
+                        return entries.length === 0 || entries.every(s => !s.isSignificant);
                     });
                 }
+                if (f.originalSource) {
+                    filtered = filtered.filter(r => `${r.format}.html` === f.originalSource);
+                }
                 if (f.inputSource === 'Current Data') {
-                    filtered = filtered.filter(r => !r.sourceInfo?.fileName || r.sourceInfo.fileName === 'Current Data');
+                    filtered = filtered.filter(r => r.source === 'local');
                 } else if (f.inputSource === 'file') {
-                    filtered = filtered.filter(r => r.sourceInfo?.fileName && r.sourceInfo.fileName !== 'Current Data');
+                    filtered = filtered.filter(r => r.source === 'imported');
                 }
                 if (f.fileName) {
-                    filtered = filtered.filter(r => r.sourceInfo?.fileName === f.fileName);
+                    filtered = filtered.filter(r => r.importedFileName === f.fileName);
                 }
                 return filtered;
             }
 
+            /**
+             * Load active RunRecords from the Run State Store, apply filters,
+             * group by format and pick the latest per format.
+             */
             loadResults() {
                 this.results = {};
-                let hasData = false;
-                const f = this.getFilterState();
-                const inputFilter = f.inputSource;
-                const fileFilter = f.fileName;
+                const activeRecords = this.getActiveRunRecords();
+                const filtered = this.filterRecords(activeRecords);
 
-                // 1. Load per-format keys (from live test sessions) — skip if filtering to imported only
-                if (inputFilter !== 'file' && !fileFilter) {
-                    this.testFormats.forEach(format => {
-                        try {
-                            const data = localStorage.getItem(`iconTestResults_${format}`);
-                            if (data) {
-                                const parsed = JSON.parse(data);
-                                // Apply source filter to live data
-                                if (f.originalSource && f.originalSource !== `${format}.html`) return;
-                                parsed._sourceInfo = {
-                                    originalSource: `${format}.html`,
-                                    fileName: 'Current Data',
-                                    importedAt: null
-                                };
-                                parsed._dataOrigin = 'live';
-                                this.results[format] = parsed;
-                                hasData = true;
-                            }
-                        } catch (error) {
-                            console.error(`Error loading ${format} results:`, error);
-                        }
-                    });
-                }
+                // Group by format, pick latest per format
+                const latestByFormat = {};
+                filtered.forEach(record => {
+                    const fmt = record.format;
+                    if (!fmt) return;
+                    const ts = record.startTime || record.endTime || '';
+                    if (!latestByFormat[fmt] || ts > (latestByFormat[fmt].startTime || latestByFormat[fmt].endTime || '')) {
+                        latestByFormat[fmt] = record;
+                    }
+                });
 
-                // 2. Load from iconTestHistory archive — apply filters, then pick latest per format
-                try {
-                    const filteredHistory = this.filterArchiveEntries(this.archiveHistory);
-                    const latestByFormat = {};
-                    filteredHistory.forEach(entry => {
-                        const format = this.inferFormatFromResults(entry.results);
-                        if (!format) return;
-                        if (!latestByFormat[format] || new Date(entry.timestamp) > new Date(latestByFormat[format].timestamp)) {
-                            latestByFormat[format] = entry;
-                        }
-                    });
+                // Convert RunRecords to the display shape expected by render methods
+                Object.entries(latestByFormat).forEach(([format, record]) => {
+                    this.results[format] = this.convertRecordToDisplay(record);
+                });
 
-                    Object.entries(latestByFormat).forEach(([format, entry]) => {
-                        const converted = this.convertHistoryToResult(entry);
-                        const existing = this.results[format];
-                        if (!existing || (existing._dataOrigin !== 'live')) {
-                            this.results[format] = converted;
-                            hasData = true;
-                        } else if (existing && new Date(entry.timestamp) > new Date(existing.testDate)) {
-                            this.results[format] = converted;
-                            hasData = true;
-                        }
-                    });
-                } catch (error) {
-                    console.error('Error loading archive results:', error);
-                }
-
+                const hasData = Object.keys(this.results).length > 0;
                 if (hasData) {
                     this.updateLastUpdated();
                 }
-
                 return hasData;
             }
 
-            convertHistoryToResult(entry) {
-                const sourceInfo = entry.sourceInfo || {};
+            /**
+             * Convert a RunRecord into the display shape used by render methods.
+             * Preserves a `_record` reference to the original RunRecord for exports.
+             */
+            convertRecordToDisplay(record) {
                 return {
-                    testDate: entry.testDate || entry.timestamp,
-                    testType: entry.testConfiguration?.testType || 'unknown',
-                    iterations: entry.testConfiguration?.iterations || 0,
-                    testDuration: entry.testConfiguration?.testDuration || 0,
-                    results: entry.results,
-                    statisticalAnalysis: entry.statisticalAnalysis || {},
-                    performanceRanking: entry.performanceRanking || [],
-                    testMetadata: {
-                        userAgent: entry.systemInfo?.userAgent || 'Unknown',
-                        timestamp: entry.systemInfo?.timestamp || 0,
-                        testingEnvironment: 'Archive',
-                        browserSpecific: true
-                    },
+                    // RunRecord identity fields (used in exports)
+                    runId:        record.runId,
+                    suiteRunId:   record.suiteRunId,
+                    testResultId: record.testResultId,
+
+                    // Display fields
+                    testDate:      record.startTime || record.endTime,
+                    testStartedAt: record.startTime,
+                    testEndedAt:   record.endTime,
+                    durationMs:    record.durationMs,
+                    testType:      record.testType || record.testConfiguration?.testType || 'unknown',
+                    iterations:    record.iterations || record.testConfiguration?.iterations || 0,
+                    testDuration:  record.testDuration || (record.durationMs ? record.durationMs / 1000 : 0),
+
+                    results:              record.results              || {},
+                    statisticalAnalysis:  record.statisticalAnalysis  || {},
+                    performanceRanking:   record.performanceRanking   || [],
+                    testMetadata:         record.testMetadata         || {},
+                    testConfiguration:    record.testConfiguration    || {},
+                    systemSpecifications: record.systemSpecifications || {},
+
                     _sourceInfo: {
-                        originalSource: sourceInfo.originalSource || (this.inferFormatFromResults(entry.results) + '.html'),
-                        fileName: sourceInfo.fileName || 'Current Data',
-                        importedAt: sourceInfo.importedAt || null
+                        originalSource: `${record.format}.html`,
+                        fileName: record.importedFileName || (record.source === 'imported' ? 'Imported' : 'Current Data'),
+                        importedAt: record.source === 'imported' ? record.startTime : null
                     },
-                    _dataOrigin: 'archive'
+                    _dataOrigin: record.source === 'imported' ? 'archive' : 'live',
+                    _record: record
                 };
             }
 
@@ -463,11 +435,13 @@
             }
 
             populateFilterDropdowns() {
+                const allRecords = this.getActiveRunRecords();
+
                 // Test type
                 const typeSelect = document.getElementById('summaryFilterTestType');
                 const types = new Set();
-                this.archiveHistory.forEach(r => {
-                    const t = r.testConfiguration?.testType;
+                allRecords.forEach(r => {
+                    const t = r.testType || r.testConfiguration?.testType;
                     if (t) types.add(t);
                 });
                 const order = ['single', 'bulk', 'stress', 'statistical', 'massive', 'ultra', 'extreme', 'css'];
@@ -488,15 +462,8 @@
                 // Original source
                 const srcSelect = document.getElementById('summaryFilterOriginalSource');
                 const sources = new Set();
-                this.archiveHistory.forEach(r => {
-                    const src = r.sourceInfo?.originalSource || (this.inferFormatFromResults(r.results) + '.html');
-                    if (src && src !== 'null.html' && src !== 'unknown') sources.add(src);
-                });
-                // Also add from live per-format keys
-                this.testFormats.forEach(f => {
-                    try {
-                        if (localStorage.getItem(`iconTestResults_${f}`)) sources.add(`${f}.html`);
-                    } catch(e) {}
+                allRecords.forEach(r => {
+                    if (r.format) sources.add(`${r.format}.html`);
                 });
                 Array.from(sources).sort().forEach(src => {
                     const opt = document.createElement('option');
@@ -505,12 +472,11 @@
                     srcSelect.appendChild(opt);
                 });
 
-                // File name
+                // File name (imported records only)
                 const fnSelect = document.getElementById('summaryFilterFileName');
                 const fnames = new Set();
-                this.archiveHistory.forEach(r => {
-                    const fn = r.sourceInfo?.fileName;
-                    if (fn && fn !== 'Current Data') fnames.add(fn);
+                allRecords.forEach(r => {
+                    if (r.importedFileName) fnames.add(r.importedFileName);
                 });
                 Array.from(fnames).sort().forEach(fn => {
                     const opt = document.createElement('option');
@@ -602,7 +568,21 @@
                 const groups = new Map();
                 const ensure = (fmt) => { if (!groups.has(fmt)) groups.set(fmt, new Set()); return groups.get(fmt); };
 
-                // Live results — keyed by format name directly
+                // All active records (unfiltered, for global icon type list)
+                const allRecords = this.getActiveRunRecords();
+                allRecords.forEach(record => {
+                    const fmt = record.format;
+                    if (!fmt) return;
+                    const grp = ensure(fmt);
+                    if (record.performanceRanking) {
+                        record.performanceRanking.forEach(r => grp.add(r.iconType));
+                    }
+                    if (record.results) {
+                        Object.keys(record.results).forEach(k => grp.add(k));
+                    }
+                });
+
+                // Also include current display results (already loaded)
                 Object.entries(this.results).forEach(([format, data]) => {
                     const grp = ensure(format);
                     if (data.performanceRanking) {
@@ -613,19 +593,6 @@
                     }
                 });
 
-                // Archive — derive format from sourceInfo.originalSource (e.g. "css.html" → "css")
-                this.archiveHistory.forEach(entry => {
-                    const src = entry.sourceInfo?.originalSource || '';
-                    const format = src.replace(/\.html$/i, '') || this.inferFormatFromResults(entry.results);
-                    if (!format) return;
-                    const grp = ensure(format);
-                    if (entry.performanceRanking) {
-                        entry.performanceRanking.forEach(r => grp.add(r.iconType));
-                    }
-                    if (entry.results) {
-                        Object.keys(entry.results).forEach(k => grp.add(k));
-                    }
-                });
                 return groups;
             }
 
@@ -734,8 +701,8 @@
             render() {
                 const hasData = Object.keys(this.results).length > 0;
                 const filterSection = document.getElementById('summaryFilterSection');
-                // Show filters whenever there's any underlying data (archive or live), even if current filters yield nothing
-                const hasAnyData = this.archiveHistory.length > 0 || this.testFormats.some(f => { try { return !!localStorage.getItem(`iconTestResults_${f}`); } catch(e) { return false; } });
+                // Show filters whenever there's any underlying active records, even if current filters yield nothing
+                const hasAnyData = this.getActiveRunRecords().length > 0;
                 
                 if (filterSection) {
                     if (hasAnyData) {
@@ -1061,7 +1028,7 @@
                 }
 
                 const rows = [
-                    ['Format', 'Test Started', 'Test Completed', 'Duration (s)', 'Iterations', 'Implementation', 'Rank', 'Average Time (ms)', 'CI Lower', 'CI Upper', 'Std Dev', 'Memory Used Avg (bytes)', 'Sample Size', 'Source Page', 'Data Source', 'Imported']
+                    ['Format', 'Run ID', 'Suite Run ID', 'Test Result ID', 'Test Started', 'Test Completed', 'Duration (ms)', 'Duration (s)', 'Iterations', 'Implementation', 'Rank', 'Average Time (ms)', 'CI Lower', 'CI Upper', 'Std Dev', 'Memory Used Avg (bytes)', 'Sample Size', 'Source Page', 'Data Source', 'Imported']
                 ];
 
                 Object.entries(this.results).forEach(([format, data]) => {
@@ -1076,8 +1043,12 @@
                             }
                             rows.push([
                                 format.toUpperCase(),
+                                data.runId || 'N/A',
+                                data.suiteRunId || 'N/A',
+                                data.testResultId || 'N/A',
                                 data.testStartedAt || 'N/A',
-                                new Date(data.testDate).toISOString(),
+                                data.testEndedAt || new Date(data.testDate).toISOString(),
+                                data.durationMs != null ? data.durationMs : 'N/A',
                                 (data.testDuration || 0).toFixed(1),
                                 data.iterations || 0,
                                 result.iconType,
@@ -1211,7 +1182,21 @@
                         hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
                         memoryApi: !!performance.memory
                     },
-                    sourceData: this.results
+                    sourceData: Object.fromEntries(
+                        Object.entries(this.results).map(([format, data]) => {
+                            // Strip internal _record reference, add RunRecord identity fields
+                            const { _record, ...rest } = data;
+                            return [format, {
+                                ...rest,
+                                runId:        data.runId        || null,
+                                suiteRunId:   data.suiteRunId   || null,
+                                testResultId: data.testResultId || null,
+                                startTime:    data.testStartedAt || null,
+                                endTime:      data.testEndedAt   || null,
+                                durationMs:   data.durationMs    || null
+                            }];
+                        })
+                    )
                 };
 
                 const jsonContent = JSON.stringify(exportData, null, 2);
@@ -1232,9 +1217,18 @@
 
             clearAllData() {
                 if (confirm(this.t('summary.clear_confirm'))) {
+                    // Clear per-format transition keys
                     this.testFormats.forEach(format => {
                         localStorage.removeItem(`iconTestResults_${format}`);
                     });
+                    // Clear RunStateStore records
+                    if (window.RunStateStore) {
+                        const allRecords = window.RunStateStore.getActiveRecords();
+                        const ids = allRecords.map(r => r.testResultId).filter(Boolean);
+                        if (ids.length > 0) {
+                            window.RunStateStore.deleteRecords(ids);
+                        }
+                    }
                     this.results = {};
                     this.render();
                     alert(this.t('summary.clear_success'));

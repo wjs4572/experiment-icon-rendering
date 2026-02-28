@@ -169,11 +169,11 @@ test.describe('CSS Performance Testing Page', () => {
       // Wait a moment for JavaScript to update the container content
       await page.waitForTimeout(500);
       
-      // Verify initial state messaging (JavaScript sets this content dynamically)
+      // Verify initial state messaging (static HTML content before any test runs)
       const renderingContainer = page.locator('#renderingTabContainer');
       await expect(renderingContainer).toBeVisible();
-      await expect(renderingContainer).toContainText('Ready to show live icon rendering');
-      await expect(renderingContainer).toContainText('Start a test to see icons');
+      await expect(renderingContainer).toContainText('No test running');
+      await expect(renderingContainer).toContainText('Start a performance test to see live rendering');
     });
 
     test('rendering container has proper styling', async ({ page }) => {
