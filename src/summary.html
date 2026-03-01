@@ -1241,6 +1241,7 @@
         function initDashboard() {
             if (!dashboardInstance) {
                 dashboardInstance = new SummaryDashboard();
+                window.summaryDashboard = dashboardInstance;
             } else {
                 // Re-render on language change
                 dashboardInstance.loadResults();
