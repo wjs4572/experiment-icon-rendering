@@ -23,7 +23,7 @@ test.describe('Performance Summary Dashboard', () => {
     // Header links are always visible regardless of data state
     const header = page.locator('header');
     const backToSuiteLink = header.locator('a[href="index.html"]');
-    const pastResultsLink = header.locator('a[href="past-results.html"]');
+    const pastResultsLink = header.locator('a[href="results-library.html"]');
 
     await expect(backToSuiteLink).toBeVisible();
     await expect(pastResultsLink).toBeVisible();
@@ -34,7 +34,7 @@ test.describe('Performance Summary Dashboard', () => {
     await page.goBack();
 
     await pastResultsLink.click();
-    await expect(page).toHaveURL(/past-results\.html$/);
+    await expect(page).toHaveURL(/results-library\.html$/);
     await page.goBack();
   });
 
@@ -44,7 +44,7 @@ test.describe('Performance Summary Dashboard', () => {
     await expect(noDataMsg).toBeVisible();
 
     const runTestsLink = noDataMsg.locator('a[href="index.html"]');
-    const pastResultsLink = noDataMsg.locator('a[href="past-results.html"]');
+    const pastResultsLink = noDataMsg.locator('a[href="results-library.html"]');
 
     await expect(runTestsLink).toBeVisible();
     await expect(pastResultsLink).toBeVisible();
@@ -55,7 +55,7 @@ test.describe('Performance Summary Dashboard', () => {
     await page.goBack();
 
     await pastResultsLink.click();
-    await expect(page).toHaveURL(/past-results\.html$/);
+    await expect(page).toHaveURL(/results-library\.html$/);
     await page.goBack();
   });
 
@@ -95,7 +95,7 @@ test.describe('Performance Summary Dashboard', () => {
     // Header links should still be visible
     const header = page.locator('header');
     await expect(header.locator('a[href="index.html"]')).toBeVisible();
-    await expect(header.locator('a[href="past-results.html"]')).toBeVisible();
+    await expect(header.locator('a[href="results-library.html"]')).toBeVisible();
 
     // Clean up
     await page.evaluate(() => localStorage.removeItem('iconTestRunRecords'));

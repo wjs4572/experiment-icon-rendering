@@ -56,7 +56,7 @@ test.describe('Index Page - Locale-Independent Structure', () => {
 
     const archiveLink = page.locator('a[data-i18n="archive.view_button"]');
     await expect(archiveLink).toBeVisible();
-    await expect(archiveLink).toHaveAttribute('href', 'past-results.html');
+    await expect(archiveLink).toHaveAttribute('href', 'results-library.html');
   });
 
   test('methodology section is present', async ({ page }) => {
@@ -84,13 +84,13 @@ test.describe('Summary Page - Locale-Independent Structure', () => {
   test('header navigation has correct link targets', async ({ page }) => {
     const header = page.locator('header');
     const backLink = header.locator('a[href="index.html"]');
-    const pastLink = header.locator('a[href="past-results.html"]');
+    const pastLink = header.locator('a[href="results-library.html"]');
 
     await expect(backLink).toBeVisible();
     await expect(backLink).toHaveAttribute('data-i18n', 'summary.back_to_tests');
 
     await expect(pastLink).toBeVisible();
-    await expect(pastLink).toHaveAttribute('data-i18n', 'summary.view_past_results');
+    await expect(pastLink).toHaveAttribute('data-i18n', 'summary.view_results_library');
   });
 
   test('export controls exist with correct IDs', async ({ page }) => {
@@ -105,7 +105,7 @@ test.describe('Summary Page - Locale-Independent Structure', () => {
     await expect(noData).toBeVisible();
 
     await expect(noData.locator('a[href="index.html"]')).toBeVisible();
-    await expect(noData.locator('a[href="past-results.html"]')).toBeVisible();
+    await expect(noData.locator('a[href="results-library.html"]')).toBeVisible();
   });
 
   test('no-data message is hidden when data is present', async ({ page }) => {
