@@ -205,5 +205,30 @@ test.describe('Format Testing Pages Structure', () => {
         }
       }
     });
+
+    test('foundation module scripts are loaded on each format page', async ({ page }) => {
+      const requiredScripts = [
+        'js/icon-configs.js',
+        'js/reporters.js',
+        'js/suite-runner.js',
+        'js/run-state.js'
+      ];
+      for (const formatInfo of formatPages.slice(0, 3)) { // Test first 3 for efficiency
+        await page.goto(formatInfo.file);
+        for (const src of requiredScripts) {
+          const count = await page.locator(`script[src="${src}"]`).count();
+          expect(count).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    test('SuiteRunner global is available on format pages', async ({ page }) => {
+      for (const formatInfo of formatPages.slice(0, 2)) {
+        await page.goto(formatInfo.file);
+        await page.waitForLoadState('domcontentloaded');
+        const hasSuiteRunner = await page.evaluate(() => typeof window.SuiteRunner === 'object');
+        expect(hasSuiteRunner).toBe(true);
+      }
+    });
   });
 });

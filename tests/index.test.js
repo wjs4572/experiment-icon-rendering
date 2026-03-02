@@ -97,4 +97,62 @@ test.describe('Index Page - Navigation Hub', () => {
     const linkCount = await links.count();
     expect(linkCount).toBeGreaterThan(0);
   });
+
+  /* ─── Results Library Navigation (Phase 8) ───────────── */
+
+  test('Results Library navigation link is present', async ({ page }) => {
+    const link = page.locator('a[href="results-library.html"]');
+    await expect(link).toBeVisible();
+    await link.click();
+    await expect(page).toHaveURL(/results-library\.html$/);
+  });
+
+  /* ─── Batch Runner Controls (Phase 5 — no iframes) ───── */
+
+  test('batch runner start and stop buttons exist', async ({ page }) => {
+    await expect(page.locator('#startBatchTest')).toBeVisible();
+    await expect(page.locator('#stopBatchTest')).toBeAttached();
+  });
+
+  test('batch runner test type selector is present', async ({ page }) => {
+    const select = page.locator('#batchTestType');
+    await expect(select).toBeVisible();
+    const optionCount = await select.locator('option').count();
+    expect(optionCount).toBeGreaterThanOrEqual(4);
+  });
+
+  test('batch suite checkboxes are present for all formats', async ({ page }) => {
+    const container = page.locator('#batchSuiteSelection');
+    await expect(container).toBeVisible();
+    const checkboxes = container.locator('input[type="checkbox"]');
+    const count = await checkboxes.count();
+    expect(count).toBe(7); // css, svg, png, gif, jpeg, webp, avif
+  });
+
+  test('no iframes are used for batch execution', async ({ page }) => {
+    const iframeCount = await page.locator('iframe').count();
+    expect(iframeCount).toBe(0);
+  });
+
+  test('foundation modules are loaded', async ({ page }) => {
+    const modules = await page.evaluate(() => ({
+      SuiteRunner: typeof window.SuiteRunner === 'object',
+      RunStateStore: typeof window.RunStateStore === 'object',
+      RunId: typeof window.RunId === 'object',
+      IconConfigs: typeof window.IconConfigs === 'object'
+    }));
+    expect(modules.SuiteRunner).toBe(true);
+    expect(modules.RunStateStore).toBe(true);
+    expect(modules.RunId).toBe(true);
+    expect(modules.IconConfigs).toBe(true);
+  });
+
+  test('batch progress UI elements exist', async ({ page }) => {
+    await expect(page.locator('#batchProgress')).toBeAttached();
+    await expect(page.locator('#batchOverallBar')).toBeAttached();
+    await expect(page.locator('#batchCurrentBar')).toBeAttached();
+    await expect(page.locator('#batchSuiteStatus')).toBeAttached();
+    await expect(page.locator('#batchElapsed')).toBeAttached();
+    await expect(page.locator('#batchEta')).toBeAttached();
+  });
 });

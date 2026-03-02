@@ -318,4 +318,76 @@ test.describe('Performance Summary Dashboard', () => {
 
     await page.evaluate(() => localStorage.removeItem('iconTestRunRecords'));
   });
+
+  /* ─── Active-Only Filtering (Phase 7 / Todo 21) ─────── */
+
+  test('only active records drive the dashboard; inactive records are excluded', async ({ page }) => {
+    // Seed 2 active records (css, svg) + 1 inactive record (png)
+    const records = [
+      {
+        schemaVersion: 2, testResultId: 'tr-active-css', runId: 'run-1',
+        suiteRunId: 'suite-1', format: 'css', source: 'local', active: true,
+        startTime: '2025-07-01T10:00:00.000Z', endTime: '2025-07-01T10:00:05.000Z',
+        durationMs: 5000, testType: 'bulk', iterations: 200, testDuration: 5,
+        results: { 'Remix Icon (Square)': { renderTime: { mean: 1.5 }, memoryUsage: { mean: 100 },
+          bulkMetrics: { totalRenderTime: 150, averageRenderTime: 1.5, minRenderTime: 1.0, maxRenderTime: 2.0 } } },
+        statisticalAnalysis: {}, performanceRanking: [{ rank: 1, iconType: 'font_square', averageTime: 1.5 }],
+        testMetadata: { browser: 'Chromium' }, testConfiguration: { testType: 'bulk' },
+        systemSpecifications: {}
+      },
+      {
+        schemaVersion: 2, testResultId: 'tr-active-svg', runId: 'run-1',
+        suiteRunId: 'suite-2', format: 'svg', source: 'local', active: true,
+        startTime: '2025-07-01T10:01:00.000Z', endTime: '2025-07-01T10:01:04.000Z',
+        durationMs: 4000, testType: 'bulk', iterations: 200, testDuration: 4,
+        results: { 'Inline SVG': { renderTime: { mean: 2.0 }, memoryUsage: { mean: 120 },
+          bulkMetrics: { totalRenderTime: 200, averageRenderTime: 2.0, minRenderTime: 1.5, maxRenderTime: 2.5 } } },
+        statisticalAnalysis: {}, performanceRanking: [{ rank: 1, iconType: 'svg_inline', averageTime: 2.0 }],
+        testMetadata: { browser: 'Chromium' }, testConfiguration: { testType: 'bulk' },
+        systemSpecifications: {}
+      },
+      {
+        schemaVersion: 2, testResultId: 'tr-inactive-png', runId: 'run-1',
+        suiteRunId: 'suite-3', format: 'png', source: 'local', active: false,
+        startTime: '2025-07-01T10:02:00.000Z', endTime: '2025-07-01T10:02:06.000Z',
+        durationMs: 6000, testType: 'bulk', iterations: 200, testDuration: 6,
+        results: { 'Standard PNG': { renderTime: { mean: 3.0 }, memoryUsage: { mean: 150 },
+          bulkMetrics: { totalRenderTime: 300, averageRenderTime: 3.0, minRenderTime: 2.0, maxRenderTime: 4.0 } } },
+        statisticalAnalysis: {}, performanceRanking: [{ rank: 1, iconType: 'png_standard', averageTime: 3.0 }],
+        testMetadata: { browser: 'Chromium' }, testConfiguration: { testType: 'bulk' },
+        systemSpecifications: {}
+      }
+    ];
+
+    await page.evaluate((recs) => {
+      localStorage.setItem('iconTestRunRecords', JSON.stringify(recs));
+    }, records);
+
+    await page.goto('summary.html');
+    await page.waitForLoadState('networkidle');
+
+    // RunStateStore.getActiveRecords() is the data source the dashboard uses.
+    // Verify it returns only active=true records.
+    const dashState = await page.evaluate(() => {
+      const activeRecords = window.RunStateStore.getActiveRecords();
+      return {
+        totalStored: JSON.parse(localStorage.getItem('iconTestRunRecords') || '[]').length,
+        activeCount: activeRecords.length,
+        activeFormats: activeRecords.map(r => r.format).sort()
+      };
+    });
+
+    // All 3 records are stored
+    expect(dashState.totalStored).toBe(3);
+    // But only 2 active records are returned
+    expect(dashState.activeCount).toBe(2);
+    expect(dashState.activeFormats).toEqual(['css', 'svg']);
+    // PNG (active: false) must not appear
+    expect(dashState.activeFormats).not.toContain('png');
+
+    // The no-data message should be hidden since active data exists
+    await expect(page.locator('#noDataMessage')).toBeHidden();
+
+    await page.evaluate(() => localStorage.removeItem('iconTestRunRecords'));
+  });
 });

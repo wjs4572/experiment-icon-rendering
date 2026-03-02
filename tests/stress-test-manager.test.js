@@ -367,4 +367,63 @@ test.describe('Stress Test Manager', () => {
       expect(text).toContain('stopped by user');
     });
   });
+
+  /* ─── Reporter Injection (Phase 2 pattern) ────────────── */
+
+  test.describe('Reporter Injection', () => {
+    test('constructor accepts reporter via options', async ({ page }) => {
+      await page.goto('css.html');
+      await page.waitForFunction(() => window.StressTestManager && window.Reporters);
+
+      const result = await page.evaluate(() => {
+        const reporter = new window.Reporters.NoopReporter();
+        const mgr = new window.StressTestManager({
+          iconConfigs: window.IconConfigs.allIconConfigs.css,
+          format: 'css',
+          reporter: reporter
+        });
+        return {
+          hasReporter: mgr.reporter === reporter,
+          reporterType: mgr.reporter.constructor.name || 'NoopReporter'
+        };
+      });
+      expect(result.hasReporter).toBe(true);
+    });
+
+    test('constructor accepts format and iconConfigs', async ({ page }) => {
+      await page.goto('css.html');
+      await page.waitForFunction(() => window.StressTestManager && window.IconConfigs);
+
+      const result = await page.evaluate(() => {
+        const mgr = new window.StressTestManager({
+          iconConfigs: window.IconConfigs.allIconConfigs.svg,
+          format: 'svg',
+          reporter: new window.Reporters.NoopReporter()
+        });
+        return {
+          format: mgr.format,
+          configCount: mgr.iconConfigs.length
+        };
+      });
+      expect(result.format).toBe('svg');
+      expect(result.configCount).toBe(3); // SVG has 3 configs
+    });
+
+    test('page initializes stressTestManager with DOMReporter', async ({ page }) => {
+      await page.goto('css.html');
+      await page.waitForFunction(() => window.stressTestManager);
+
+      const hasDomReporter = await page.evaluate(() => {
+        const reporter = window.stressTestManager.reporter;
+        // DOMReporter has setManager method and onProgress that writes to DOM
+        return (
+          reporter !== null &&
+          typeof reporter === 'object' &&
+          typeof reporter.onProgress === 'function' &&
+          typeof reporter.setManager === 'function'
+        );
+      });
+      expect(hasDomReporter).toBe(true);
+    });
+  });
 });

@@ -335,4 +335,37 @@ test.describe('CSS Performance Testing Page', () => {
       await expect(tabNav).toBeVisible();
     });
   });
+
+  /* ─── Foundation Module Integration (Phase 4 init pattern) ── */
+
+  test.describe('Foundation Module Integration', () => {
+    test('foundation module scripts are loaded', async ({ page }) => {
+      const scripts = [
+        'js/icon-configs.js',
+        'js/run-id.js',
+        'js/run-record.js',
+        'js/reporters.js',
+        'js/run-state.js',
+        'js/run-handle.js',
+        'js/suite-runner.js'
+      ];
+      for (const src of scripts) {
+        const count = await page.locator(`script[src="${src}"]`).count();
+        expect(count).toBeGreaterThan(0);
+      }
+    });
+
+    test('SuiteRunner and RunStateStore globals are available', async ({ page }) => {
+      const globals = await page.evaluate(() => ({
+        SuiteRunner: typeof window.SuiteRunner === 'object',
+        RunStateStore: typeof window.RunStateStore === 'object',
+        Reporters: typeof window.Reporters === 'object',
+        IconConfigs: typeof window.IconConfigs === 'object'
+      }));
+      expect(globals.SuiteRunner).toBe(true);
+      expect(globals.RunStateStore).toBe(true);
+      expect(globals.Reporters).toBe(true);
+      expect(globals.IconConfigs).toBe(true);
+    });
+  });
 });

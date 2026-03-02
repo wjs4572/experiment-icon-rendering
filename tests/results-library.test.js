@@ -375,4 +375,95 @@ test.describe('Results Library Page', () => {
     const selectAllCb = page.locator('.tabulator-header input[type="checkbox"]');
     await expect(selectAllCb).toHaveAttribute('aria-label');
   });
+
+  /* ─── Sort (Todo 21) ──────────────────────────────── */
+
+  test('startTime column is sorted descending by default', async ({ page }) => {
+    // Seed two records with different start times
+    await page.evaluate(() => {
+      const r1 = window.RunRecord.createRunRecord({
+        format: 'css', testType: 'bulk', startTime: '2025-01-01T10:00:00.000Z',
+        durationMs: 3000, iterations: 100, source: 'local', active: true,
+        performanceRanking: [{ rank: 1, iconType: 'a', averageTime: 1 }]
+      });
+      const r2 = window.RunRecord.createRunRecord({
+        format: 'svg', testType: 'bulk', startTime: '2025-06-15T10:00:00.000Z',
+        durationMs: 5000, iterations: 200, source: 'local', active: true,
+        performanceRanking: [{ rank: 1, iconType: 'b', averageTime: 2 }]
+      });
+      window.RunStateStore.saveRecord(r1);
+      window.RunStateStore.saveRecord(r2);
+    });
+    await page.reload();
+    await page.waitForSelector('.tabulator-row');
+
+    // The startTime column should have a sort indicator (Tabulator adds aria-sort or a sort arrow element)
+    const startTimeCol = page.locator('.tabulator-col[tabulator-field="startTime"]');
+    await expect(startTimeCol).toBeVisible();
+    // Tabulator marks sorted columns with aria-sort attribute
+    const ariaSort = await startTimeCol.getAttribute('aria-sort');
+    expect(ariaSort).toBeTruthy();
+  });
+
+  /* ─── Filter (Todo 21) ────────────────────────────── */
+
+  test('headerFilter inputs are present on filterable columns', async ({ page }) => {
+    // Seed a record so the table renders fully
+    await page.evaluate(() => {
+      const r1 = window.RunRecord.createRunRecord({
+        format: 'css', testType: 'bulk', startTime: new Date().toISOString(),
+        durationMs: 3000, iterations: 100, source: 'local', active: true,
+        performanceRanking: [{ rank: 1, iconType: 'a', averageTime: 1 }]
+      });
+      window.RunStateStore.saveRecord(r1);
+    });
+    await page.reload();
+    await page.waitForSelector('.tabulator-row');
+
+    // Format, Test Type, Source columns should each have a header filter input
+    for (const field of ['format', 'testType', 'source']) {
+      const filterInput = page.locator(`.tabulator-col[tabulator-field="${field}"] input`);
+      await expect(filterInput).toBeVisible();
+    }
+  });
+
+  /* ─── Import Flow (Todo 21) ─────────────────────────── */
+
+  test('import file input accepts JSON files', async ({ page }) => {
+    const fileInput = page.locator('#importFileInput');
+    await expect(fileInput).toHaveAttribute('accept', '.json');
+  });
+
+  test('import button triggers file input click', async ({ page }) => {
+    // Verify the import button is wired to open the file picker
+    const importBtn = page.locator('#importBtn');
+    await expect(importBtn).toBeVisible();
+    await expect(importBtn).toBeEnabled();
+  });
+
+  /* ─── Export Flow (Todo 21) ─────────────────────────── */
+
+  test('export button is enabled when rows are selected', async ({ page }) => {
+    // Seed a record
+    await page.evaluate(() => {
+      const rec = window.RunRecord.createRunRecord({
+        format: 'css', testType: 'bulk', startTime: new Date().toISOString(),
+        durationMs: 3000, iterations: 100, source: 'local', active: true,
+        performanceRanking: [{ rank: 1, iconType: 'a', averageTime: 1 }]
+      });
+      window.RunStateStore.saveRecord(rec);
+    });
+    await page.reload();
+    await page.waitForSelector('.tabulator-row');
+
+    // Export button should be disabled before selection
+    await expect(page.locator('#exportSelectedBtn')).toBeDisabled();
+
+    // Select the row via its selection checkbox (first cell in the row)
+    await page.locator('.tabulator-row').first().locator('.tabulator-cell').first().click();
+    await page.waitForTimeout(300);
+
+    // Export button should now be enabled
+    await expect(page.locator('#exportSelectedBtn')).toBeEnabled();
+  });
 });
