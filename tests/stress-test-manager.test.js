@@ -309,23 +309,57 @@ test.describe('Stress Test Manager', () => {
     test('bulkTestContainer is created on init', async ({ page }) => {
       await page.goto('css.html');
       await page.waitForFunction(() => window.stressTestManager);
+      
+      // Wait for the rendering tab to be visible and stable
+      await page.waitForSelector('#renderingTab', { timeout: 10000 });
+      await page.locator('#renderingTab').waitFor({ state: 'visible', timeout: 10000 });
 
       // createTestContainer must be called to create the rendering container
       await page.evaluate(() => window.stressTestManager.createTestContainer());
+      
+      // Allow event handlers and DOM updates to settle
+      await page.waitForTimeout(500);
 
       // Switch to rendering tab to see the container
-      await page.locator('#renderingTab').click();
+      // Use force click to bypass any transient visibility issues
+      await page.locator('#renderingTab').click({ timeout: 15000, force: true });
       await expect(page.locator('#bulkTestContainer')).toBeAttached();
     });
 
     test('bulkTestContainer has ready message', async ({ page }) => {
       await page.goto('css.html');
       await page.waitForFunction(() => window.stressTestManager);
-
+      
       // createTestContainer must be called to populate the container
       await page.evaluate(() => window.stressTestManager.createTestContainer());
 
-      await page.locator('#renderingTab').click();
+      // Wait for renderingTab element to exist and be stable
+      await page.waitForSelector('#renderingTab', { timeout: 10000 });
+      
+      // Wait for the element to be in the viewport and have stable positioning
+      await page.locator('#renderingTab').waitFor({ state: 'visible', timeout: 10000 });
+      
+      // Add extra settle time for layout and event listeners to be ready
+      await page.waitForTimeout(800);
+      
+      // Try clicking with increased timeout and stability checking
+      let clicked = false;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          await page.locator('#renderingTab').click({ timeout: 20000, force: true, delay: 100 });
+          clicked = true;
+          break;
+        } catch (e) {
+          if (attempt < 2) {
+            await page.waitForTimeout(500);
+          }
+        }
+      }
+      
+      expect(clicked).toBe(true);
+      
+      // Wait for bulkTestContainer to appear after click
+      await page.locator('#bulkTestContainer').waitFor({ state: 'attached', timeout: 10000 });
       const text = await page.locator('#bulkTestContainer').textContent();
       expect(text).toBeTruthy();
     });

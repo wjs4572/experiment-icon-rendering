@@ -12,14 +12,16 @@ test.describe('CSS Performance Testing Page', () => {
     // Handle external CDN timeouts more gracefully
     await page.goto('css.html', { waitUntil: 'domcontentloaded' });
     
-    // Wait for essential page structure (not CDN resources)
-    try {
-      await page.waitForSelector('h1', { timeout: 5000 });
-      await page.waitForSelector('#testingTab', { timeout: 3000 });
-      await page.waitForSelector('#renderingTab', { timeout: 3000 });
-    } catch (e) {
-      // Continue if some elements are missing - individual tests will catch specifics
-    }
+    // Wait for essential page structure with sufficient timeout for WebKit under load
+    await page.waitForSelector('h1', { timeout: 15000 });
+    await page.waitForSelector('#testingTab', { timeout: 15000 });
+    await page.waitForSelector('#renderingTab', { timeout: 15000 });
+    // Ensure tab elements are fully attached and visible before tests proceed
+    await page.waitForFunction(() => {
+      const t = document.getElementById('testingTab');
+      const r = document.getElementById('renderingTab');
+      return t && r && t.offsetParent !== null && r.offsetParent !== null;
+    }, { timeout: 15000 });
   });
 
   test('page loads with correct title and structure', async ({ page }) => {

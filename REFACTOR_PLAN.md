@@ -339,20 +339,20 @@
 
 ### Phase 10: Verification Checklist
 
-- [ ] Suite run started on suite page produces full results with all RunRecord fields
-- [ ] Batch run on index.html runs all suites sequentially, no iframe, pills update correctly
-- [ ] During batch, opening suite page in another tab shows live progress via Run State Store
-- [ ] Batch-produced results appear on suite page without rerunning
-- [ ] Results Library: Tabulator table loads, paginated, sortable, filterable
-- [ ] Results Library: active checkbox toggles and persists
-- [ ] Results Library: row click shows details panel
-- [ ] Results Library: bulk select (all filtered), export, delete, toggle active work
-- [ ] Results Library: import reads JSON, normalizes to RunRecord, saves importedFileName, appears in table
-- [ ] Summary dashboard shows only active runs
-- [ ] Export JSON includes all RunRecord fields
-- [ ] Import → export round-trip preserves all fields
-- [ ] No existing result fields missing from new runs
-- [ ] All Playwright tests pass across 3 browsers
+- [x] Suite run started on suite page produces full results with all RunRecord fields
+- [x] Batch run on index.html runs all suites sequentially, no iframe, pills update correctly
+- [x] During batch, opening suite page in another tab shows live progress via Run State Store
+- [x] Batch-produced results appear on suite page without rerunning
+- [x] Results Library: Tabulator table loads, paginated, sortable, filterable
+- [x] Results Library: active checkbox toggles and persists
+- [x] Results Library: row click shows details panel
+- [x] Results Library: bulk select (all filtered), export, delete, toggle active work
+- [x] Results Library: import reads JSON, normalizes to RunRecord, saves importedFileName, appears in table
+- [x] Summary dashboard shows only active runs
+- [x] Export JSON includes all RunRecord fields
+- [x] Import → export round-trip preserves all fields
+- [x] No existing result fields missing from new runs
+- [x] All Playwright tests pass across 3 browsers
 
 ---
 

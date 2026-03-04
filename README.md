@@ -118,6 +118,190 @@ src/
    npm run test:commit   # Smart commit testing with rotation
    ```
 
+## Build Pipeline
+
+This section describes the standard workflow for developing, testing, and committing changes to the project.
+
+### Phase 1: Start the HTTP Server
+
+The HTTP server hosts the test suite interface and is automatically started by Playwright during tests. However, you can also start it manually for development:
+
+```bash
+npm run serve
+```
+
+This launches the server at `http://localhost:3000` serving files from the `src/` directory.
+
+**Configuration:**
+
+- **Command**: `npx http-server src -p 3000 --cors`
+- **Port**: 3000
+- **CORS**: Enabled for cross-origin requests
+- **Auto-start**: Playwright automatically starts this during test runs
+
+### Phase 2: Full Test Suite Verification
+
+After making changes, run the complete test suite to verify all functionality:
+
+```bash
+npm test
+```
+
+**What this does:**
+
+- Starts the HTTP server (if not already running)
+- Runs all 1497 tests across 3 browser engines (Chromium, Firefox, WebKit)
+- Generates an HTML report in `playwright-report/`
+- Retries failed tests once to handle transient failures
+- Reports final pass/fail status
+
+**Expected output:**
+
+```bash
+Running 1497 tests using 2 workers
+✅ All tests passed (X passed)
+```
+
+**On failure:**
+
+If tests fail, the command exits with code 1. Check the HTML report:
+
+```bash
+npm run test:report
+```
+
+### Phase 3: Pre-Commit Testing
+
+Before committing changes, run the change-aware regression tests to validate only affected functionality:
+
+```bash
+npm run test:commit
+```
+
+**What this does:**
+
+- Detects all modified files in your working directory
+- Maps changed files to their corresponding test suites
+- Runs only the tests that cover your changes (typically ~54-162 tests)
+- Includes rotation coverage to ensure full suite gets exercised over time
+- Fast feedback (usually completes in 1-3 minutes)
+
+**Optional: Dry run** (see what would be tested without running):
+
+```bash
+npm run test:commit:dry
+```
+
+**Optional: Force full rotation** (ensure all test files exercised):
+
+```bash
+npm run test:rotation
+```
+
+### Phase 4: Commit Changes
+
+Once pre-commit tests pass, stage and commit your changes:
+
+```bash
+# Stage all changes (or use your preferred git tool)
+git add tests/*.test.js
+
+# Commit with descriptive message
+git commit -m "Short description of changes"
+```
+
+**Pre-Commit Hook:**
+A git pre-commit hook automatically runs `npm run test:commit` when you try to commit. If tests fail, the commit is blocked. You can bypass this with:
+
+```bash
+git commit --no-verify  # Use with caution!
+```
+
+**Suggested commit message format:**
+
+```bash
+Brief one-line summary
+
+More detailed explanation of:
+- What changed
+- Why it changed
+- Any test improvements or fixes
+```
+
+### Phase 5: Verify Commit
+
+After committing, check the commit status:
+
+```bash
+npm run test:status
+```
+
+This shows which test files were exercised in recent commits and helps you understand rotation coverage.
+
+### Complete Workflow Example
+
+Here's the standard development workflow:
+
+```bash
+# 1. Make your code changes
+#    (edit test files, fix bugs, add features, etc.)
+
+# 2. Start HTTP server (if developing locally)
+npm run serve
+
+# 3. Run pre-commit tests
+npm run test:commit
+#    ✅ If all pass, proceed to step 4
+#    ❌ If failures, fix them and repeat step 3
+
+# 4. Stage your changes
+git add tests/my-changed-test.js
+
+# 5. Commit (pre-commit hook automatically runs tests)
+git commit -m "Fix test timeout issues for cross-browser compatibility"
+#    ✅ If tests pass, commit succeeds
+#    ❌ If tests fail, commit is blocked
+
+# 6. Verify commit in git log
+git log --oneline -1
+```
+
+### Testing During Development
+
+For iterative development, use faster test subsets:
+
+```bash
+# Quick validation during active development
+npm run test:quick        # Core tests only (54 tests, ~2 min)
+
+# Test specific format or browser
+npm run test:browser:firefox          # Firefox only
+npm run test:format:css              # CSS-related tests
+
+# Watch mode for interactive development
+npm run test:ui           # Opens Playwright test UI
+npm run test:headed       # Show browser windows during tests
+```
+
+### Troubleshooting Test Issues
+
+**Tests fail on your machine but passed elsewhere:**
+
+- Check that the HTTP server is running or accessible at `http://localhost:3000`
+- On Windows, verify WebKit hasn't crashed (it requires specific launch options)
+- Increase test timeouts if running under heavy system load
+
+**Browser hangs or crashes:**
+
+- WebKit on Windows needs specific launch options (configured in `playwright.config.js`)
+- Close other resource-intensive applications to free up memory
+- Check available disk space (tests generate temporary files)
+
+**Port 3000 already in use:**
+
+- Find the process: `netstat -no | findstr :3000` (Windows)
+- Kill it or configure a different port in `playwright.config.js`
+
 ## Testing Architecture
 
 This project employs **two distinct testing systems** with different purposes:

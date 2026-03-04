@@ -5,13 +5,15 @@
  *
  * In-memory map of active (in-progress) runs keyed by suiteRunId.
  * Completed runs are persisted to localStorage under `iconTestRunRecords`.
- * Cross-tab sync via the native `storage` event on localStorage.
+ * Cross-tab live progress via BroadcastChannel (ephemeral, high-frequency).
+ * Cross-tab completion sync via the native `storage` event on localStorage.
  */
 
 'use strict';
 
 const _STORAGE_KEY       = 'iconTestRunRecords';
 const _LATEST_PREFIX     = 'iconTestResults_';   // per-format latest (transition compat)
+const _CHANNEL_NAME      = 'icon-test-progress';
 
 class RunStateStore {
 
@@ -25,7 +27,17 @@ class RunStateStore {
         /** @type {Map<string, Set<Function>>} format → Set of callbacks */
         this._completionListeners = new Map();
 
-        // Listen for cross-tab localStorage changes
+        // BroadcastChannel for cross-tab live progress (ephemeral, real-time)
+        /** @type {BroadcastChannel|null} */
+        this._channel = null;
+        try {
+            this._channel = new BroadcastChannel(_CHANNEL_NAME);
+            this._channel.onmessage = (e) => this._onChannelMessage(e);
+        } catch (_) {
+            // BroadcastChannel not available — cross-tab progress gracefully unavailable
+        }
+
+        // Listen for cross-tab localStorage changes (completion sync)
         window.addEventListener('storage', (e) => this._onStorageEvent(e));
     }
 
@@ -46,12 +58,22 @@ class RunStateStore {
 
     /**
      * Update progress snapshot for an active run.
+     * Also broadcasts to other tabs via BroadcastChannel.
      */
     updateProgress(suiteRunId, progressData) {
         const run = this._active.get(suiteRunId);
         if (!run) return;
         run.progress = { ...run.progress, ...progressData };
         this._notifyProgress(run.format, run);
+
+        // Broadcast live progress to other tabs
+        this._broadcast({
+            type: 'progress',
+            format: run.format,
+            suiteRunId: run.suiteRunId,
+            runId: run.runId,
+            progress: run.progress
+        });
     }
 
     /**
@@ -67,10 +89,12 @@ class RunStateStore {
         // Also write latest-per-format for transition compatibility
         this._writeLatest(runRecord);
 
-        // Notify completion listeners
+        // Notify completion listeners (same-tab)
         const format = runRecord.format || (run && run.format);
         if (format) {
             this._notifyCompletion(format, runRecord);
+            // Broadcast completion to other tabs
+            this._broadcast({ type: 'completion', format, runRecord });
         }
     }
 
@@ -231,15 +255,49 @@ class RunStateStore {
         }
     }
 
+    /* ─── Cross-tab BroadcastChannel ──────────────────────── */
+
     /**
-     * Handle cross-tab localStorage changes.
+     * Send a message to other tabs via BroadcastChannel.
+     * @param {Object} msg
+     */
+    _broadcast(msg) {
+        if (this._channel) {
+            try { this._channel.postMessage(msg); } catch (_) { /* swallow */ }
+        }
+    }
+
+    /**
+     * Handle incoming BroadcastChannel messages from other tabs.
+     * Delivers live progress and completion events to local listeners.
+     */
+    _onChannelMessage(e) {
+        const msg = e.data;
+        if (!msg || !msg.format) return;
+
+        if (msg.type === 'progress') {
+            // Build a runState-like object for progress listeners
+            this._notifyProgress(msg.format, {
+                suiteRunId: msg.suiteRunId,
+                format:     msg.format,
+                runId:      msg.runId,
+                progress:   msg.progress,
+                crossTab:   true
+            });
+        } else if (msg.type === 'completion') {
+            this._notifyCompletion(msg.format, msg.runRecord);
+        }
+    }
+
+    /**
+     * Handle cross-tab localStorage changes (completion sync).
      */
     _onStorageEvent(e) {
         if (e.key !== _STORAGE_KEY) return;
 
-        // A different tab wrote new records — we could diff and fire completion events.
-        // For now, listeners should re-read if they need fresh data.
-        // Fire generic progress events for any format that has listeners.
+        // A different tab wrote new records — fire generic events.
+        // BroadcastChannel handles real-time progress; this is a fallback
+        // for completion events when BroadcastChannel is unavailable.
         for (const [format, listeners] of this._progressListeners) {
             for (const cb of listeners) {
                 try { cb({ crossTabUpdate: true, format }); } catch (err) { /* swallow */ }

@@ -466,4 +466,68 @@ test.describe('Results Library Page', () => {
     // Export button should now be enabled
     await expect(page.locator('#exportSelectedBtn')).toBeEnabled();
   });
+
+  /* ─── Import → Export Round-Trip (Todo 21 / V12) ───────── */
+
+  test('import-export round-trip preserves all RunRecord fields except testResultId', async ({ page }) => {
+    // Original record with all fields populated
+    const original = {
+      schemaVersion: 2,
+      testResultId: 'tr-original-123',
+      runId: 'run-rt-1',
+      suiteRunId: 'suite-rt-1',
+      format: 'svg',
+      source: 'local',
+      importedFileName: null,
+      active: true,
+      startTime: '2025-03-01T10:00:00.000Z',
+      endTime: '2025-03-01T10:05:00.000Z',
+      durationMs: 300000,
+      testType: 'bulk',
+      iterations: 250,
+      testDuration: 300,
+      results: { 'Inline SVG': { renderTime: { mean: 2.5 }, memoryUsage: { mean: 120 } } },
+      statisticalAnalysis: { pairwise: [{ a: 'x', b: 'y', pValue: 0.03 }] },
+      performanceRanking: [{ rank: 1, iconType: 'svg_inline', averageTime: 2.5 }],
+      testMetadata: { browser: 'Chromium', iterationsPerSecond: 50 },
+      testConfiguration: { testType: 'bulk', iterations: 250, iconsPerTest: 100 },
+      systemSpecifications: { cores: 8, memory: '16GB' }
+    };
+
+    // Import the record via RunRecord.normalizeImportedRecord + RunStateStore.importRecords
+    const imported = await page.evaluate((rec) => {
+      const normalized = window.RunRecord.normalizeImportedRecord(rec, 'roundtrip-test.json');
+      window.RunStateStore.importRecords([normalized]);
+      // Read back from store
+      const all = window.RunStateStore.getAllCompleted();
+      return all[all.length - 1];
+    }, original);
+
+    // testResultId is intentionally regenerated — should differ
+    expect(imported.testResultId).not.toBe(original.testResultId);
+    expect(imported.testResultId).toBeTruthy();
+
+    // source and importedFileName are set by normalization
+    expect(imported.source).toBe('imported');
+    expect(imported.importedFileName).toBe('roundtrip-test.json');
+
+    // All other fields must be preserved exactly
+    expect(imported.schemaVersion).toBe(original.schemaVersion);
+    expect(imported.runId).toBe(original.runId);
+    expect(imported.suiteRunId).toBe(original.suiteRunId);
+    expect(imported.format).toBe(original.format);
+    expect(imported.active).toBe(original.active);
+    expect(imported.startTime).toBe(original.startTime);
+    expect(imported.endTime).toBe(original.endTime);
+    expect(imported.durationMs).toBe(original.durationMs);
+    expect(imported.testType).toBe(original.testType);
+    expect(imported.iterations).toBe(original.iterations);
+    expect(imported.testDuration).toBe(original.testDuration);
+    expect(imported.results).toEqual(original.results);
+    expect(imported.statisticalAnalysis).toEqual(original.statisticalAnalysis);
+    expect(imported.performanceRanking).toEqual(original.performanceRanking);
+    expect(imported.testMetadata).toEqual(original.testMetadata);
+    expect(imported.testConfiguration).toEqual(original.testConfiguration);
+    expect(imported.systemSpecifications).toEqual(original.systemSpecifications);
+  });
 });

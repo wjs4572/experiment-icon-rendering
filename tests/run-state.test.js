@@ -319,4 +319,91 @@ test.describe('RunStateStore Module', () => {
             expect(count).toBe(0);
         });
     });
+
+    test.describe('BroadcastChannel Cross-Tab', () => {
+        test('RunStateStore has _channel property (BroadcastChannel instance)', async ({ page }) => {
+            const hasChannel = await page.evaluate(() => {
+                return window.RunStateStore._channel instanceof BroadcastChannel;
+            });
+            expect(hasChannel).toBe(true);
+        });
+
+        test('updateProgress broadcasts message via BroadcastChannel', async ({ page }) => {
+            // Set up a second BroadcastChannel to listen for messages
+            const received = await page.evaluate(() => {
+                return new Promise((resolve) => {
+                    const listener = new BroadcastChannel('icon-test-progress');
+                    listener.onmessage = (e) => {
+                        listener.close();
+                        resolve(e.data);
+                    };
+
+                    // Register and update progress
+                    window.RunStateStore.registerRun('suite-bc-1', 'css', 'run-bc-1');
+                    window.RunStateStore.updateProgress('suite-bc-1', {
+                        percentage: 42,
+                        message: 'Testing BroadcastChannel',
+                        completedIterations: 42,
+                        totalIterations: 100
+                    });
+                });
+            });
+
+            expect(received.type).toBe('progress');
+            expect(received.format).toBe('css');
+            expect(received.suiteRunId).toBe('suite-bc-1');
+            expect(received.progress.percentage).toBe(42);
+            expect(received.progress.message).toBe('Testing BroadcastChannel');
+        });
+
+        test('incoming BroadcastChannel progress message fires progress listeners', async ({ page }) => {
+            const result = await page.evaluate(() => {
+                return new Promise((resolve) => {
+                    // Subscribe to progress on 'svg' format
+                    window.RunStateStore.onProgressChange('svg', (runState) => {
+                        resolve(runState);
+                    });
+
+                    // Simulate incoming message from another tab
+                    const sender = new BroadcastChannel('icon-test-progress');
+                    sender.postMessage({
+                        type: 'progress',
+                        format: 'svg',
+                        suiteRunId: 'suite-remote-1',
+                        runId: 'run-remote-1',
+                        progress: { percentage: 75, message: 'Remote progress' }
+                    });
+                    sender.close();
+                });
+            });
+
+            expect(result.format).toBe('svg');
+            expect(result.crossTab).toBe(true);
+            expect(result.progress.percentage).toBe(75);
+        });
+
+        test('completeRun broadcasts completion message via BroadcastChannel', async ({ page }) => {
+            const received = await page.evaluate(() => {
+                return new Promise((resolve) => {
+                    const listener = new BroadcastChannel('icon-test-progress');
+                    listener.onmessage = (e) => {
+                        if (e.data.type === 'completion') {
+                            listener.close();
+                            resolve(e.data);
+                        }
+                    };
+
+                    window.RunStateStore.registerRun('suite-bc-c', 'png', 'run-bc-c');
+                    const record = window.RunRecord.createRunRecord({
+                        format: 'png', testType: 'bulk', source: 'local', active: true
+                    });
+                    window.RunStateStore.completeRun('suite-bc-c', record);
+                });
+            });
+
+            expect(received.type).toBe('completion');
+            expect(received.format).toBe('png');
+            expect(received.runRecord.format).toBe('png');
+        });
+    });
 });

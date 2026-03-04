@@ -10,7 +10,8 @@ test.describe('SuiteRunner Module', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('css.html');
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForFunction(() => window.SuiteRunner && window.RunHandle);
+    // Allow sufficient time for all scripts to execute on slower browsers (WebKit)
+    await page.waitForFunction(() => window.SuiteRunner && window.RunHandle, { timeout: 15000 });
   });
 
   /* ─── Global Exposure ──────────────────────────────────── */
