@@ -8,8 +8,8 @@
     <meta http-equiv="Expires" content="0">
     <title>Results Library - Icon Performance Testing</title>
     <link rel="icon" href="https://simpsonconcepts.com/img/favicon_io/favicon.ico" type="image/x-icon">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="css/tailwind.css">
     <!-- Tabulator CSS + JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tabulator-tables/dist/css/tabulator.min.css">
     <script src="https://cdn.jsdelivr.net/npm/tabulator-tables/dist/js/tabulator.min.js"></script>
@@ -204,6 +204,21 @@
             const self = this;
             const records = this._loadRecords();
 
+            // Build Tabulator locale configuration from i18n
+            const tabulatorLocale = {
+                "pagination": {
+                    "page_size": window.i18n ? window.i18n.translate('table.page_size') : 'Page Size',
+                    "first": window.i18n ? window.i18n.translate('table.first') : 'First',
+                    "first_title": window.i18n ? window.i18n.translate('table.first_page') : 'First Page',
+                    "last": window.i18n ? window.i18n.translate('table.last') : 'Last',
+                    "last_title": window.i18n ? window.i18n.translate('table.last_page') : 'Last Page',
+                    "prev": window.i18n ? window.i18n.translate('table.prev') : 'Prev',
+                    "prev_title": window.i18n ? window.i18n.translate('table.prev_page') : 'Prev Page',
+                    "next": window.i18n ? window.i18n.translate('table.next') : 'Next',
+                    "next_title": window.i18n ? window.i18n.translate('table.next_page') : 'Next Page'
+                }
+            };
+
             this.table = new Tabulator('#results-table', {
                 data: records,
                 layout: 'fitColumns',
@@ -212,8 +227,12 @@
                 paginationSize: 25,
                 paginationSizeSelector: [10, 25, 50, 100],
                 selectable: true,
-                placeholder: 'No test results found. Run a test or import results to get started.',
+                placeholder: window.i18n ? window.i18n.translate('table.no_results') : 'No test results found. Run a test or import results to get started.',
                 initialSort: [{ column: 'startTime', dir: 'desc' }],
+                langs: {
+                    "default": tabulatorLocale
+                },
+                locale: "default",
                 columns: [
                     /* Selection checkbox */
                     {
@@ -221,7 +240,7 @@
                         titleFormatter: function () {
                             var cb = document.createElement('input');
                             cb.type = 'checkbox';
-                            cb.setAttribute('aria-label', 'Select all rows');
+                            cb.setAttribute('aria-label', window.i18n ? window.i18n.translate('table.select_all') : 'Select all rows');
                             cb.addEventListener('change', function () {
                                 if (cb.checked) {
                                     self.table.getRows('active').forEach(function (r) { r.select(); });
@@ -239,7 +258,7 @@
                     },
                     /* Active toggle */
                     {
-                        title: 'Active',
+                        title: window.i18n ? window.i18n.translate('table.active') : 'Active',
                         field: 'active',
                         formatter: 'tickCross',
                         editor: 'tickCross',
@@ -253,7 +272,7 @@
                     },
                     /* Format */
                     {
-                        title: 'Format',
+                        title: window.i18n ? window.i18n.translate('table.format') : 'Format',
                         field: 'format',
                         headerFilter: 'input',
                         width: 90,
@@ -263,14 +282,14 @@
                     },
                     /* Test Type */
                     {
-                        title: 'Test Type',
+                        title: window.i18n ? window.i18n.translate('table.test_type') : 'Test Type',
                         field: 'testType',
                         headerFilter: 'input',
                         width: 110
                     },
                     /* Start Time */
                     {
-                        title: 'Start Time',
+                        title: window.i18n ? window.i18n.translate('table.start_time') : 'Start Time',
                         field: 'startTime',
                         sorter: 'datetime',
                         formatter: function (cell) {
@@ -280,7 +299,7 @@
                     },
                     /* Duration */
                     {
-                        title: 'Duration',
+                        title: window.i18n ? window.i18n.translate('table.duration') : 'Duration',
                         field: 'durationMs',
                         sorter: 'number',
                         hozAlign: 'right',
@@ -293,7 +312,7 @@
                     },
                     /* Iterations */
                     {
-                        title: 'Iterations',
+                        title: window.i18n ? window.i18n.translate('table.iterations') : 'Iterations',
                         field: 'iterations',
                         sorter: 'number',
                         hozAlign: 'right',
@@ -305,14 +324,14 @@
                     },
                     /* Source */
                     {
-                        title: 'Source',
+                        title: window.i18n ? window.i18n.translate('table.source') : 'Source',
                         field: 'source',
                         headerFilter: 'input',
                         width: 95
                     },
                     /* Imported file name */
                     {
-                        title: 'File',
+                        title: window.i18n ? window.i18n.translate('table.file') : 'File',
                         field: 'importedFileName',
                         headerFilter: 'input',
                         width: 120,
@@ -322,7 +341,7 @@
                     },
                     /* Run ID (first 8 chars, copyable) */
                     {
-                        title: 'Run ID',
+                        title: window.i18n ? window.i18n.translate('table.run_id') : 'Run ID',
                         field: 'runId',
                         width: 95,
                         formatter: function (cell) {
@@ -330,7 +349,8 @@
                             return val ? self._esc(val.substring(0, 8)) : '\u2014';
                         },
                         tooltip: function (_e, cell) {
-                            return 'Click to copy: ' + (cell.getValue() || '');
+                            const baseText = window.i18n ? window.i18n.translate('table.copy_tooltip') : 'Click to copy';
+                            return baseText + ': ' + (cell.getValue() || '');
                         },
                         cellClick: function (_e, cell) {
                             var val = cell.getValue();
@@ -343,7 +363,7 @@
                     },
                     /* Fastest icon */
                     {
-                        title: 'Fastest',
+                        title: window.i18n ? window.i18n.translate('table.fastest') : 'Fastest',
                         field: 'performanceRanking',
                         headerSort: false,
                         width: 100,
@@ -397,6 +417,15 @@
             document.getElementById('detailExportBtn').addEventListener('click', function () { self._exportDetail(); });
             document.getElementById('detailToggleBtn').addEventListener('click', function () { self._toggleActiveDetail(); });
             document.getElementById('detailDeleteBtn').addEventListener('click', function () { self._deleteDetail(); });
+
+            // Language change listener - rebuild table with new translations
+            document.addEventListener('languageChanged', function () {
+                // Destroy and rebuild the table to update column headers
+                if (self.table) {
+                    self.table.destroy();
+                }
+                self._buildTable();
+            });
         }
 
         /* ────────────────────────────────────────────────────────────

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Icon Rendering Performance Test Suite</title>
     <link rel="icon" href="https://simpsonconcepts.com/img/favicon_io/favicon.ico" type="image/x-icon">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="css/tailwind.css">
     <!-- Internationalization System -->
     <script src="js/i18n.js"></script>
     <!-- Foundation modules -->
@@ -53,24 +53,24 @@
 
         <!-- Batch Test Runner -->
         <div class="max-w-6xl mx-auto mb-12 bg-white rounded-xl shadow-lg p-6 border-2 border-blue-200">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-2">Run All Test Suites</h2>
-            <p class="text-gray-600 text-sm mb-4">Execute all format tests sequentially with a single click. Each suite will run to completion before the next begins.</p>
+            <h2 class="text-2xl font-semibold text-gray-800 mb-2" data-i18n="batch.title">Run All Test Suites</h2>
+            <p class="text-gray-600 text-sm mb-4" data-i18n="batch.description">Execute all format tests sequentially with a single click. Each suite will run to completion before the next begins.</p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Test Type:</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="batch.test_type_label">Test Type:</label>
                     <select id="batchTestType" class="w-full p-2 border border-gray-300 rounded text-sm">
-                        <option value="single">Single Icon Test (2,000 iterations per type)</option>
-                        <option value="bulk" selected>Bulk Icon Test (50 iterations × 100 icons)</option>
-                        <option value="stress">Stress Test (200 iterations × 500 icons)</option>
-                        <option value="statistical">Statistical Power Test (200 iterations × 100 icons)</option>
-                        <option value="massive">High Power Test (1,000 iterations × 100 icons)</option>
-                        <option value="ultra">Ultra Power Test (10,000 iterations × 100 icons)</option>
-                        <option value="extreme">Extreme Power Test (20,000 iterations × 100 icons)</option>
+                        <option value="single" data-i18n="batch.single_test">Single Icon Test (2,000 iterations per type)</option>
+                        <option value="bulk" selected data-i18n="batch.bulk_test">Bulk Icon Test (50 iterations × 100 icons)</option>
+                        <option value="stress" data-i18n="batch.stress_test">Stress Test (200 iterations × 500 icons)</option>
+                        <option value="statistical" data-i18n="batch.statistical_test">Statistical Power Test (200 iterations × 100 icons)</option>
+                        <option value="massive" data-i18n="batch.massive_test">High Power Test (1,000 iterations × 100 icons)</option>
+                        <option value="ultra" data-i18n="batch.ultra_test">Ultra Power Test (10,000 iterations × 100 icons)</option>
+                        <option value="extreme" data-i18n="batch.extreme_test">Extreme Power Test (20,000 iterations × 100 icons)</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Test Suites:</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="batch.test_suites_label">Test Suites:</label>
                     <div id="batchSuiteSelection" class="flex flex-wrap gap-2">
                         <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-1.5 rounded" value="css" checked> CSS</label>
                         <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-1.5 rounded" value="svg" checked> SVG</label>
@@ -82,7 +82,7 @@
                     </div>
                 </div>
                 <div class="flex items-end">
-                    <button id="startBatchTest" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition text-sm font-medium w-full">
+                    <button id="startBatchTest" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition text-sm font-medium w-full" data-i18n="batch.run_button">
                         ▶ Run All Selected Tests
                     </button>
                 </div>
@@ -94,7 +94,7 @@
                     <!-- Overall progress -->
                     <div class="mb-3">
                         <div class="flex justify-between text-sm mb-1">
-                            <span id="batchOverallLabel" class="font-medium text-gray-700">Overall Progress</span>
+                            <span id="batchOverallLabel" class="font-medium text-gray-700" data-i18n="batch.progress_overall">Overall Progress</span>
                             <span id="batchOverallPercent" class="text-gray-600">0 / 7 suites</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-3">
@@ -105,7 +105,7 @@
                     <!-- Current suite progress -->
                     <div class="mb-3">
                         <div class="flex justify-between text-sm mb-1">
-                            <span id="batchCurrentLabel" class="text-gray-600">Waiting...</span>
+                            <span id="batchCurrentLabel" class="text-gray-600" data-i18n="batch.progress_current">Current Suite</span>
                             <span id="batchCurrentPercent" class="text-gray-500">0%</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2">
@@ -117,11 +117,15 @@
                     <div id="batchSuiteStatus" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 text-xs mt-3"></div>
 
                     <div class="flex gap-2 mt-4">
-                        <button id="stopBatchTest" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">
-                            ■ Stop Batch
+                        <button id="stopBatchTest" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600" data-i18n="batch.stop_button">
+                            ■ Stop
                         </button>
                         <span id="batchElapsed" class="text-sm text-gray-500 self-center ml-2">Elapsed: 0s</span>
                         <span id="batchEta" class="text-sm text-gray-500 self-center ml-2">ETA: --</span>
+                    </div>
+
+                    <div id="batchThrottleWarning" class="hidden mt-3 p-2 rounded border border-amber-300 bg-amber-50 text-amber-800 text-sm">
+                        Background throttling detected while batch is running. Progress may appear paused until focus returns.
                     </div>
                 </div>
             </div>
@@ -387,10 +391,18 @@
         let selectedSuites = [];
         let completedSuiteCount = 0;
         let currentHandle = null;
+        let lastProgressAt = 0;
+        let lastElapsedTickAt = 0;
 
         const startBtn = document.getElementById('startBatchTest');
         const stopBtn = document.getElementById('stopBatchTest');
         const progressDiv = document.getElementById('batchProgress');
+        const throttleWarning = document.getElementById('batchThrottleWarning');
+
+        function setThrottleWarning(visible) {
+            if (!throttleWarning) return;
+            throttleWarning.classList.toggle('hidden', !visible);
+        }
 
         startBtn.addEventListener('click', startBatch);
         stopBtn.addEventListener('click', stopBatch);
@@ -412,6 +424,9 @@
             completedSuiteCount = 0;
             currentHandle = null;
             batchStartTime = performance.now();
+            lastProgressAt = performance.now();
+            lastElapsedTickAt = performance.now();
+            setThrottleWarning(false);
 
             // Show progress, disable start
             progressDiv.classList.remove('hidden');
@@ -454,15 +469,29 @@
                 // ── Launch suite via SuiteRunner ──
                 const handle = window.SuiteRunner.runSuite(format, testType, { runId: runId });
                 currentHandle = handle;
+                const activeHandle = handle;
 
                 // Subscribe to progress from the handle
                 handle.onProgress(function(progress) {
-                    const pct = Math.min(100, progress.percentage).toFixed(0);
+                    if (currentHandle !== activeHandle) return;
+
+                    lastProgressAt = performance.now();
+                    setThrottleWarning(false);
+
+                    const rawPct = Number(progress && progress.percentage);
+                    const completed = Number(progress && progress.completed);
+                    const total = Number(progress && progress.total);
+                    const fallbackPct = total > 0 ? (completed / total) * 100 : 0;
+                    const pctValue = Number.isFinite(rawPct)
+                        ? Math.max(0, Math.min(100, rawPct))
+                        : Math.max(0, Math.min(100, fallbackPct));
+                    const pct = pctValue.toFixed(0);
+
                     document.getElementById('batchCurrentLabel').textContent =
                         `${suiteLabels[format]}: ${progress.message || 'Running...'}`;
                     document.getElementById('batchCurrentPercent').textContent = `${pct}%`;
                     document.getElementById('batchCurrentBar').style.width = `${pct}%`;
-                    updateBatchEta(i, parseFloat(pct));
+                    updateBatchEta(i, pctValue);
                 });
 
                 // Await completion
@@ -472,6 +501,12 @@
                     // cancelled or errored — stop loop if user cancelled
                     if (batchShouldStop) break;
                 }
+
+                // Force current-suite UI to completed state to avoid stale partial percentages
+                document.getElementById('batchCurrentLabel').textContent =
+                    `${suiteLabels[format]}: Complete`;
+                document.getElementById('batchCurrentPercent').textContent = '100%';
+                document.getElementById('batchCurrentBar').style.width = '100%';
 
                 completedSuiteCount++;
                 updateSuitePill(format, 'done');
@@ -492,6 +527,7 @@
         function finishBatch(message) {
             batchRunning = false;
             clearInterval(batchElapsedInterval);
+            setThrottleWarning(false);
 
             // Update overall bar to final state
             document.getElementById('batchOverallLabel').textContent = message;
@@ -531,8 +567,22 @@
         }
 
         function updateBatchElapsed() {
-            const secs = ((performance.now() - batchStartTime) / 1000).toFixed(0);
+            const now = performance.now();
+            const secs = ((now - batchStartTime) / 1000).toFixed(0);
             document.getElementById('batchElapsed').textContent = `Elapsed: ${secs}s`;
+
+            // Show warning only when actual throttling symptoms are detected.
+            // Symptoms: timer drift (interval delayed) or progress stall while hidden and running.
+            const tickDriftMs = now - lastElapsedTickAt;
+            lastElapsedTickAt = now;
+            const progressStallMs = now - lastProgressAt;
+            const likelyThrottled =
+                batchRunning &&
+                document.hidden &&
+                !!currentHandle &&
+                (tickDriftMs > 2500 || progressStallMs > 8000);
+
+            setThrottleWarning(likelyThrottled);
         }
 
         function updateBatchEta(currentIndex, currentPct) {

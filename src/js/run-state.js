@@ -7,17 +7,32 @@
  * Completed runs are persisted to localStorage under `iconTestRunRecords`.
  * Cross-tab live progress via BroadcastChannel (ephemeral, high-frequency).
  * Cross-tab completion sync via the native `storage` event on localStorage.
+ * In-progress runs also persisted to `iconTestProgressState` for cross-tab batch visibility.
  */
 
 'use strict';
 
 const _STORAGE_KEY       = 'iconTestRunRecords';
-const _LATEST_PREFIX     = 'iconTestResults_';   // per-format latest (transition compat)
+const _PROGRESS_KEY      = 'iconTestProgressState';    // Active runs + progress for cross-tab visibility
+const _LATEST_PREFIX     = 'iconTestResults_';         // per-format latest (transition compat)
 const _CHANNEL_NAME      = 'icon-test-progress';
 
 class RunStateStore {
 
     constructor() {
+        this._tabId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+        this._seenCompletedIds = new Set();
+        try {
+            for (const record of this._readStore()) {
+                if (record && record.testResultId) {
+                    this._seenCompletedIds.add(record.testResultId);
+                }
+            }
+        } catch (_) {
+            // ignore initialization failures
+        }
+
         /** @type {Map<string, Object>} suiteRunId → { format, runId, progress, startTime } */
         this._active = new Map();
 
@@ -39,14 +54,19 @@ class RunStateStore {
 
         // Listen for cross-tab localStorage changes (completion sync)
         window.addEventListener('storage', (e) => this._onStorageEvent(e));
+
+        // Restore in-progress runs from previous session/other tabs
+        this.restoreProgressFromStorage();
     }
 
     /* ─── Active Run Management ─────────────────────────────── */
 
     /**
      * Register a new run as live/in-progress.
+     * Saves initial marker to localStorage so cross-tab pages can detect the running batch.
      */
     registerRun(suiteRunId, format, runId) {
+        console.log(`[RunStateStore] Registering run: format=${format}, suiteRunId=${suiteRunId}, runId=${runId}`);
         this._active.set(suiteRunId, {
             suiteRunId,
             format,
@@ -54,19 +74,32 @@ class RunStateStore {
             startTime: new Date().toISOString(),
             progress: { percentage: 0, message: 'Starting...', completedIterations: 0, totalIterations: 0 }
         });
+        // Save to localStorage immediately so cross-tab pages can discover the running batch
+        this._saveProgressState();
+        console.log(`[RunStateStore] Active runs now:`, Array.from(this._active.values()).map(r => r.format));
     }
 
     /**
      * Update progress snapshot for an active run.
-     * Also broadcasts to other tabs via BroadcastChannel.
+     * Broadcasts live updates via BroadcastChannel (no localStorage writes during run).
+     * localStorage only updated on registration (to mark batch started) and completion.
      */
     updateProgress(suiteRunId, progressData) {
         const run = this._active.get(suiteRunId);
-        if (!run) return;
+        if (!run) {
+            console.warn('[RunStateStore] updateProgress called for unknown suiteRunId:', suiteRunId);
+            return;
+        }
+        
         run.progress = { ...run.progress, ...progressData };
+        console.log(`[RunStateStore] Progress updated for ${run.format}: ${progressData.percentage}% - ${progressData.message}`);
+        
+        // Notify local listeners immediately (for same-tab subscribers like index.html)
         this._notifyProgress(run.format, run);
 
-        // Broadcast live progress to other tabs
+        // Broadcast live progress to other tabs via BroadcastChannel
+        // NOTE: We do NOT save to localStorage on every update (too expensive)
+        // localStorage is for persistent data (registration marker + completed results)
         this._broadcast({
             type: 'progress',
             format: run.format,
@@ -77,11 +110,14 @@ class RunStateStore {
     }
 
     /**
-     * Mark a run as completed: remove from active, persist RunRecord.
+     * Mark a run as completed: remove from active, persist RunRecord, clear progress.
      */
     completeRun(suiteRunId, runRecord) {
         const run = this._active.get(suiteRunId);
         this._active.delete(suiteRunId);
+
+        // Clear progress state from localStorage
+        this._saveProgressState();
 
         // Persist the RunRecord
         this.saveRecord(runRecord);
@@ -137,6 +173,17 @@ class RunStateStore {
         }
         this._completionListeners.get(format).add(callback);
         return () => this._completionListeners.get(format).delete(callback);
+    }
+
+    /**
+     * Ask peer tabs for current active run snapshots.
+     * Useful when a suite page opens mid-run and wants immediate state.
+     */
+    requestActiveStateFromPeers() {
+        this._broadcast({
+            type: 'state_request',
+            senderId: this._tabId
+        });
     }
 
     /* ─── Persisted Records (localStorage) ──────────────────── */
@@ -237,6 +284,103 @@ class RunStateStore {
         }
     }
 
+    /**
+     * Persist current active-run markers to localStorage for cross-tab discovery.
+     * Intentionally stores minimal metadata (no high-frequency progress payload).
+     */
+    _saveProgressState() {
+        try {
+            const activeRuns = Array.from(this._active.values()).map((run) => ({
+                suiteRunId: run.suiteRunId,
+                format: run.format,
+                runId: run.runId,
+                startTime: run.startTime,
+                status: 'running'
+            }));
+            localStorage.setItem(_PROGRESS_KEY, JSON.stringify(activeRuns));
+        } catch (e) {
+            console.error('[RunStateStore] Error saving progress state:', e);
+        }
+    }
+
+    /**
+     * Read progress state from localStorage (used when page loads).
+     * Returns an array of { suiteRunId, format, runId, progress, startTime }.
+     */
+    _readProgressState() {
+        try {
+            const raw = localStorage.getItem(_PROGRESS_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            console.error('[RunStateStore] Error reading progress state:', e);
+            return [];
+        }
+    }
+
+    /**
+     * Restore in-progress runs from localStorage (called on page load).
+     * This allows suite pages to see batch progress that's already underway.
+     *
+     * Entries older than MAX_STALE_MS are treated as orphaned (the originating
+     * tab crashed or was refreshed mid-run) and are discarded + cleared from storage.
+     */
+    restoreProgressFromStorage() {
+        const MAX_STALE_MS = 2 * 60 * 60 * 1000; // 2 hours — no test should run longer than this
+        const now = Date.now();
+        const activeRuns = this._readProgressState();
+        const freshRuns = [];
+
+        console.log(`[RunStateStore] Checking ${activeRuns.length} stored run(s) on page load`);
+        for (const run of activeRuns) {
+            if (!run || !run.suiteRunId || !run.format) continue;
+
+            const age = run.startTime ? now - new Date(run.startTime).getTime() : Infinity;
+            if (age > MAX_STALE_MS) {
+                console.warn(`[RunStateStore] Discarding stale run for "${run.format}" (started ${Math.round(age / 60000)}m ago)`);
+                continue; // skip — do not restore to _active
+            }
+
+            this._active.set(run.suiteRunId, run);
+            freshRuns.push(run);
+            console.log(`[RunStateStore]   ✓ Restored ${run.format}: ${run.progress?.percentage || 0}%`);
+        }
+
+        // If any entries were pruned, rewrite storage with only fresh ones
+        if (freshRuns.length < activeRuns.length) {
+            try {
+                localStorage.setItem(_PROGRESS_KEY, JSON.stringify(
+                    freshRuns.map(r => ({
+                        suiteRunId: r.suiteRunId,
+                        format:     r.format,
+                        runId:      r.runId,
+                        startTime:  r.startTime,
+                        status:     'running'
+                    }))
+                ));
+            } catch (_) { /* ignore write errors */ }
+        }
+
+        if (freshRuns.length === 0) {
+            console.log(`[RunStateStore] No active runs to restore`);
+        }
+    }
+
+    /**
+     * Get the current progress for a specific format (if running).
+     * Returns runState { suiteRunId, format, runId, progress, startTime } or null.
+     */
+    getProgressForFormat(format) {
+        for (const run of this._active.values()) {
+            if (run.format === format) {
+                const pct = typeof run.progress?.percentage === 'number' ? run.progress.percentage : 'n/a';
+                console.log(`[RunStateStore] getProgressForFormat(${format}) → ${pct}%`);
+                return run;
+            }
+        }
+        console.log(`[RunStateStore] getProgressForFormat(${format}) → null (no active run)`);
+        return null;
+    }
+
     _notifyProgress(format, runState) {
         const listeners = this._progressListeners.get(format);
         if (listeners) {
@@ -270,21 +414,88 @@ class RunStateStore {
     /**
      * Handle incoming BroadcastChannel messages from other tabs.
      * Delivers live progress and completion events to local listeners.
+     * Updates the local _active map to keep in-memory state in sync with other tabs.
      */
     _onChannelMessage(e) {
         const msg = e.data;
-        if (!msg || !msg.format) return;
+        if (!msg || !msg.type) {
+            console.warn('[RunStateStore] Received malformed BroadcastChannel message:', e.data);
+            return;
+        }
+
+        if (msg.type === 'state_request') {
+            if (msg.senderId && msg.senderId !== this._tabId && this._active.size > 0) {
+                this._broadcast({
+                    type: 'state_response',
+                    targetId: msg.senderId,
+                    senderId: this._tabId,
+                    runs: Array.from(this._active.values())
+                });
+            }
+            return;
+        }
+
+        if (msg.type === 'state_response') {
+            if (!msg.targetId || msg.targetId !== this._tabId || !Array.isArray(msg.runs)) {
+                return;
+            }
+
+            for (const run of msg.runs) {
+                if (!run || !run.suiteRunId || !run.format) continue;
+                this._active.set(run.suiteRunId, run);
+                this._notifyProgress(run.format, {
+                    ...run,
+                    crossTab: true,
+                    snapshot: true
+                });
+            }
+            return;
+        }
+
+        if (!msg.format) {
+            console.warn('[RunStateStore] Received message without format:', e.data);
+            return;
+        }
 
         if (msg.type === 'progress') {
-            // Build a runState-like object for progress listeners
-            this._notifyProgress(msg.format, {
-                suiteRunId: msg.suiteRunId,
-                format:     msg.format,
-                runId:      msg.runId,
-                progress:   msg.progress,
-                crossTab:   true
-            });
+            console.log(`[RunStateStore] 📡 Progress message from other tab: ${msg.format} → ${msg.progress?.percentage}%`);
+            // First, update our local _active map with the fresh data from the other tab
+            // This ensures we're always working with current, consistent state
+            if (msg.suiteRunId) {
+                const existingRun = this._active.get(msg.suiteRunId);
+                if (existingRun) {
+                    // Update the existing run with fresh progress data
+                    existingRun.progress = { ...existingRun.progress, ...msg.progress };
+                } else if (!existingRun && msg.runId) {
+                    // This run doesn't exist locally yet, add it
+                    // (in case this tab joined mid-batch)
+                    console.log(`[RunStateStore] Creating new active run from broadcast: ${msg.format}`);
+                    this._active.set(msg.suiteRunId, {
+                        suiteRunId: msg.suiteRunId,
+                        format: msg.format,
+                        runId: msg.runId,
+                        progress: msg.progress,
+                        startTime: new Date().toISOString()
+                    });
+                }
+            }
+            
+            // Now notify listeners with the actual run state from _active
+            const actualRun = this._active.get(msg.suiteRunId);
+            if (actualRun) {
+                this._notifyProgress(msg.format, {
+                    ...actualRun,
+                    crossTab: true
+                });
+            }
         } else if (msg.type === 'completion') {
+            console.log(`[RunStateStore] 📡 Completion message from other tab: ${msg.format}`);
+            // Remove from active map on completion
+            if (msg.runRecord && msg.runRecord.suiteRunId) {
+                this._active.delete(msg.runRecord.suiteRunId);
+                // Also update localStorage to reflect completion
+                this._saveProgressState();
+            }
             this._notifyCompletion(msg.format, msg.runRecord);
         }
     }
@@ -295,14 +506,35 @@ class RunStateStore {
     _onStorageEvent(e) {
         if (e.key !== _STORAGE_KEY) return;
 
-        // A different tab wrote new records — fire generic events.
-        // BroadcastChannel handles real-time progress; this is a fallback
-        // for completion events when BroadcastChannel is unavailable.
-        for (const [format, listeners] of this._progressListeners) {
-            for (const cb of listeners) {
-                try { cb({ crossTabUpdate: true, format }); } catch (err) { /* swallow */ }
+        let newRecords = [];
+        try {
+            newRecords = e.newValue ? JSON.parse(e.newValue) : [];
+        } catch (_) {
+            newRecords = [];
+        }
+
+        for (const record of newRecords) {
+            if (!record || !record.testResultId || this._seenCompletedIds.has(record.testResultId)) {
+                continue;
+            }
+
+            this._seenCompletedIds.add(record.testResultId);
+
+            if (record.suiteRunId) {
+                this._active.delete(record.suiteRunId);
+            }
+
+            if (record.format) {
+                this._notifyCompletion(record.format, {
+                    ...record,
+                    crossTab: true,
+                    viaStorageEvent: true
+                });
             }
         }
+
+        // keep minimal marker storage in sync after completion detection
+        this._saveProgressState();
     }
 }
 

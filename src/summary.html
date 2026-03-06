@@ -8,8 +8,8 @@
     <meta http-equiv="Expires" content="0">
     <title>Performance Summary Dashboard - Icon Rendering Tests</title>
     <link rel="icon" href="https://simpsonconcepts.com/img/favicon_io/favicon.ico" type="image/x-icon">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="css/tailwind.css">
     <!-- Chart.js for visualizations -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Foundation Modules -->
@@ -239,9 +239,11 @@
                 this.results = {};
                 this.chartInstance = null;
                 this.excludedTests = new Set();
+                this._refreshTimer = null;
                 this.loadExcludedTests();
                 this.loadResults();
                 this.setupEventListeners();
+                this.setupLiveDataSync();
                 this.populateFilterDropdowns();
                 this.restoreFilterState();
                 this.render();
@@ -431,6 +433,39 @@
                 const filterIds = ['summaryFilterTestType', 'summaryFilterDate', 'summaryFilterSignificance', 'summaryFilterOriginalSource', 'summaryFilterInputSource', 'summaryFilterFileName'];
                 filterIds.forEach(id => {
                     document.getElementById(id).addEventListener('change', () => this.onFilterChange());
+                });
+            }
+
+            scheduleRefresh() {
+                if (this._refreshTimer) {
+                    clearTimeout(this._refreshTimer);
+                }
+                this._refreshTimer = setTimeout(() => {
+                    this.loadResults();
+                    this.render();
+                }, 100);
+            }
+
+            setupLiveDataSync() {
+                // Cross-tab: records written by index/suite pages in another tab
+                window.addEventListener('storage', (e) => {
+                    if (e.key === 'iconTestRunRecords' || (e.key && e.key.startsWith('iconTestResults_'))) {
+                        this.scheduleRefresh();
+                    }
+                });
+
+                // Same-tab: if summary shares context with a run source tab
+                if (window.RunStateStore) {
+                    this.testFormats.forEach((format) => {
+                        window.RunStateStore.onCompletion(format, () => this.scheduleRefresh());
+                    });
+                }
+
+                // Refresh after returning to summary tab (covers missed events)
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') {
+                        this.scheduleRefresh();
+                    }
                 });
             }
 
@@ -907,8 +942,10 @@
                 let html = '';
 
                 Object.entries(this.results).forEach(([format, data]) => {
-                    const statusClass = data.iterations > 1000 ? 'text-green-600' : 'text-yellow-600';
-                    const status = data.iterations > 1000 ? this.t('summary.status.complete') : this.t('summary.status.partial');
+                    // Status based on test completion (presence of endTime indicates completion)
+                    const isComplete = !!data.testEndedAt;
+                    const statusClass = isComplete ? 'text-green-600' : 'text-yellow-600';
+                    const status = isComplete ? this.t('summary.status.complete') : this.t('summary.status.partial');
                     
                     const filteredRanking = this.getFilteredRanking(data);
                     const bestResult = filteredRanking.length > 0 ? [...filteredRanking].sort((a, b) => a.averageTime - b.averageTime)[0] : null;

@@ -8,9 +8,8 @@
     <meta http-equiv="Expires" content="0">
     <title data-i18n="png.page_title">PNG Icon Performance Testing</title>
     <link rel="icon" href="https://simpsonconcepts.com/img/favicon_io/favicon.ico" type="image/x-icon">
-    <!-- Tailwind CSS CDN - Intentionally used for testing/research project per minimal approach policy -->
-    <!-- CDN warning is expected and acceptable for non-production performance testing tool -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="css/tailwind.css">
     <!-- Internationalization System -->
     <script src="js/i18n.js"></script>
 
@@ -245,6 +244,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const FORMAT = 'png';
             let currentHandle = null;
+            let isLocalRun = false; // true while a locally-initiated run is in flight
 
             // ── Tab listeners ──────────────────────────────────
             const testingTab  = document.getElementById('testingTab');
@@ -272,11 +272,13 @@
             const startBtn = document.getElementById('startTest');
             const stopBtn  = document.getElementById('stopTest');
             const clearBtn = document.getElementById('clearResults');
+            const testProgress = document.getElementById('testProgress');
 
             if (startBtn) {
                 startBtn.addEventListener('click', function() {
                     const testTypeEl = document.getElementById('testType');
                     const testType = testTypeEl ? testTypeEl.value : 'bulk';
+                    isLocalRun = true;
                     currentHandle = window.SuiteRunner.runSuite(FORMAT, testType, { reporter: reporter });
                 });
             }
@@ -301,19 +303,157 @@
                 });
             }
 
-            // ── Cross-tab: attach to active run from RunStateStore ──
-            const activeRun = window.RunStateStore.getActiveRun(FORMAT);
+            // ── Cross-tab batch progress monitoring ──
+            let currentBatchRunId = null; // Track current batch to prevent stale data override
+            let lastDisplayedPercentage = -1; // Prevent redundant UI updates
+            let batchStartedFromChannelUpdate = false; // Only display progress after first live broadcast update
+            const renderingTabContainer = document.getElementById('renderingTabContainer');
+
+            const updateUIForBatchStatus = () => {
+                const isBatchRunning = window.RunStateStore.getProgressForFormat(FORMAT) !== null;
+                if (startBtn) {
+                    startBtn.disabled = isBatchRunning;
+                    startBtn.classList.toggle('opacity-50', isBatchRunning);
+                    startBtn.classList.toggle('cursor-not-allowed', isBatchRunning);
+                }
+                if (testProgress) {
+                    testProgress.classList.toggle('hidden', !isBatchRunning && !currentHandle);
+                }
+                if (stopBtn) {
+                    stopBtn.classList.toggle('hidden', !isBatchRunning && !currentHandle);
+                }
+            };
+
+            const updateLiveRenderingStatus = (state, message = '') => {
+                if (!renderingTabContainer) return;
+
+                if (state === 'running') {
+                    renderingTabContainer.innerHTML = `<div class="text-blue-600 text-center py-8">Live batch update: ${message || 'Running...'}</div>`;
+                    return;
+                }
+
+                if (state === 'waiting') {
+                    renderingTabContainer.innerHTML = `<div class="text-gray-500 text-center py-8">Batch is running in another tab. Waiting for live updates...</div>`;
+                    return;
+                }
+
+                if (state === 'completed') {
+                    renderingTabContainer.innerHTML = `<div class="text-green-600 text-center py-8">Batch completed. Results rendered below.</div>`;
+                }
+            };
+
+            const displayBatchProgress = (runState, isFromBroadcast) => {
+                // Validate that we have complete, valid progress data
+                if (!runState || !runState.progress) {
+                    console.warn(`[${FORMAT}] Received invalid progress data:`, runState);
+                    return;
+                }
+                
+                // Only display progress from BroadcastChannel (live updates)
+                // Don't display stale restored data (which is at 0%)
+                if (!isFromBroadcast && batchStartedFromChannelUpdate) {
+                    console.log(`[${FORMAT}] Ignoring stale restored data in favor of live broadcast`);
+                    return;
+                }
+                
+                // On first display of a batch, track its runId
+                if (!currentBatchRunId && runState.runId) {
+                    currentBatchRunId = runState.runId;
+                    console.log(`[${FORMAT}] Starting batch tracking for runId:`, currentBatchRunId);
+                }
+                
+                // Only update if this is from the current batch we're tracking
+                if (runState.runId && runState.runId !== currentBatchRunId) {
+                    console.warn(`[${FORMAT}] Ignoring progress from different batch (${runState.runId} vs ${currentBatchRunId})`);
+                    return;
+                }
+                
+                // Validate that progress data has required fields
+                if (typeof runState.progress.percentage !== 'number' || !runState.progress.message) {
+                    console.warn(`[${FORMAT}] Progress data missing required fields:`, runState.progress);
+                    return;
+                }
+                
+                // Only update UI if percentage actually changed (avoid redundant updates)
+                if (runState.progress.percentage === lastDisplayedPercentage) {
+                    console.debug(`[${FORMAT}] Skipping redundant update at ${runState.progress.percentage}%`);
+                    return;
+                }
+                
+                lastDisplayedPercentage = runState.progress.percentage;
+                updateUIForBatchStatus();
+                reporter.onProgress(runState.progress.percentage, runState.progress.message,
+                    runState.progress.completedIterations, runState.progress.totalIterations);
+                updateLiveRenderingStatus('running', `${Math.round(runState.progress.percentage)}% — ${runState.progress.message}`);
+            };
+
+            // Check for existing batch run from localStorage/restoration
+            // NOTE: Don't display this yet - it's stale (at 0%). Wait for BroadcastChannel to deliver current state.
+            const activeRun = window.RunStateStore.getProgressForFormat(FORMAT);
             if (activeRun) {
-                reporter.onProgress(activeRun.progress.percentage, activeRun.progress.message,
-                    activeRun.progress.completedIterations, activeRun.progress.totalIterations);
+                console.log(`[${FORMAT}] Detected batch already running from storage - waiting for live update via BroadcastChannel`, activeRun);
+                currentBatchRunId = activeRun.runId; // Initialize batch tracking
+                updateUIForBatchStatus(); // Show UI is waiting for batch
+                updateLiveRenderingStatus('waiting');
+
+                // If no peer confirms this run is alive within 3s, treat it as orphaned
+                setTimeout(function() {
+                    if (!batchStartedFromChannelUpdate && currentBatchRunId === activeRun.runId) {
+                        console.warn(`[${FORMAT}] No live update received — clearing orphaned run state`);
+                        window.RunStateStore._active.delete(activeRun.suiteRunId);
+                        window.RunStateStore._saveProgressState();
+                        currentBatchRunId = null;
+                        updateUIForBatchStatus();
+                        updateLiveRenderingStatus('waiting');
+                    }
+                }, 3000);
             }
 
+            // Subscribe to progress updates from batch runs (live updates only)
             window.RunStateStore.onProgressChange(FORMAT, function(runState) {
-                if (runState && runState.progress) {
-                    reporter.onProgress(runState.progress.percentage, runState.progress.message,
-                        runState.progress.completedIterations, runState.progress.totalIterations);
+                console.log(`[${FORMAT}] Progress update via BroadcastChannel:`, runState);
+                batchStartedFromChannelUpdate = true; // Mark that we're receiving live updates
+                displayBatchProgress(runState, true); // isFromBroadcast = true
+            });
+
+            // Subscribe to completion to hide progress UI
+            window.RunStateStore.onCompletion(FORMAT, function(runRecord) {
+                if (isLocalRun) { isLocalRun = false; currentHandle = null; return; }
+                console.log(`[${FORMAT}] Batch completed`);
+                const total = runRecord?.iterations || 0;
+                reporter.onProgress(100, 'Completed', total, total);
+                currentBatchRunId = null; // Clear batch tracking
+                lastDisplayedPercentage = -1;
+                batchStartedFromChannelUpdate = false;
+                updateUIForBatchStatus();
+                updateLiveRenderingStatus('completed');
+
+                if (runRecord && runRecord.results && window.stressTestManager) {
+                    window.stressTestManager.results = runRecord.results || {};
+                    window.stressTestManager.statisticalAnalysis = runRecord.statisticalAnalysis || {};
+                    window.stressTestManager.performanceRanking = runRecord.performanceRanking || [];
+                    window.stressTestManager.testMetadata = runRecord.testMetadata || {};
+                    window.stressTestManager.testConfiguration = runRecord.testConfiguration || {};
+                    window.stressTestManager.systemInfo = runRecord.systemSpecifications || {};
+                    window.stressTestManager.completedIterations = runRecord.iterations || 0;
+                    window.stressTestManager.testStartedAt = runRecord.startTime || null;
+
+                    window.stressTestManager
+                        .displayAggregatedResults({
+                            fromSaved: true,
+                            savedDuration: typeof runRecord.durationMs === 'number'
+                                ? runRecord.durationMs / 1000
+                                : (runRecord.testDuration || null)
+                        })
+                        .catch((err) => {
+                            console.error(`[${FORMAT}] Failed to render completion results:`, err);
+                        });
                 }
             });
+
+            if (typeof window.RunStateStore.requestActiveStateFromPeers === 'function') {
+                window.RunStateStore.requestActiveStateFromPeers();
+            }
         });
     </script>
 </body>

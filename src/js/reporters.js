@@ -46,8 +46,8 @@ class DOMReporter extends NoopReporter {
     }
 
     onTestStart(format, config) {
-        const progressSection = document.getElementById('progressSection');
-        if (progressSection) progressSection.classList.remove('hidden');
+        const testProgress = document.getElementById('testProgress');
+        if (testProgress) testProgress.classList.remove('hidden');
     }
 
     /**
@@ -57,18 +57,13 @@ class DOMReporter extends NoopReporter {
      * @param {number} totalIterations
      */
     onProgress(percentage, message, completedIterations, totalIterations) {
-        const bar  = document.getElementById('progressBar');
-        const text = document.getElementById('progressText');
-        const pct  = document.getElementById('progressPercent');
-
+        // StressTestManager.updateProgress() already writes directly to #currentIcon (message),
+        // #progressText (percentage), and #progressBar (width) — so DOMReporter only needs
+        // to update #progressBar as a redundancy-safe fallback. Writing to #progressText here
+        // would overwrite the percentage value that STM just set.
+        const bar = document.getElementById('progressBar');
         if (bar) {
             bar.style.width = `${Math.min(100, percentage)}%`;
-        }
-        if (pct) {
-            pct.textContent = `${Math.round(percentage)}%`;
-        }
-        if (text) {
-            text.textContent = message || '';
         }
     }
 
@@ -87,8 +82,8 @@ class DOMReporter extends NoopReporter {
      */
     onTestComplete(results, duration, extra = {}) {
         // Hide progress section now that results are shown
-        const progressSection = document.getElementById('progressSection');
-        if (progressSection) progressSection.classList.add('hidden');
+        const testProgress = document.getElementById('testProgress');
+        if (testProgress) testProgress.classList.add('hidden');
     }
 
     onError(error) {

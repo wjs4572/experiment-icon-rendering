@@ -7,11 +7,29 @@ class SystemSpecsManager {
     constructor() {
         this.systemInfo = this.loadSystemInfo();
         this.modalInitialized = false;
+        this.buttonHandlerBound = false;
+        this.bindSystemInfoButtonHandler();
+    }
+
+    bindSystemInfoButtonHandler() {
+        if (this.buttonHandlerBound) return;
+        document.addEventListener('click', (event) => {
+            const button = event.target.closest('#systemInfoButton');
+            if (!button) return;
+            event.preventDefault();
+            this.showModal();
+        });
+        this.buttonHandlerBound = true;
     }
 
     // ─── i18n helper ─────────────────────────────────────────────
     t(key, fallback) {
-        if (window.i18n && typeof window.i18n.translate === 'function') {
+        if (
+            window.i18n
+            && typeof window.i18n.translate === 'function'
+            && window.i18n.translations
+            && Object.keys(window.i18n.translations).length > 0
+        ) {
             const val = window.i18n.translate(key);
             if (val && val !== key) return val;
         }

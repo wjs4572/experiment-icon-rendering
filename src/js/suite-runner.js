@@ -56,6 +56,7 @@ function runSuite(format, testType, opts = {}) {
     const manager = new window.StressTestManager({
         iconConfigs,
         format,
+        testType,
         reporter
     });
 
@@ -67,11 +68,19 @@ function runSuite(format, testType, opts = {}) {
         cancelFn: () => manager.stopTest()
     });
 
-    // Wire reporter progress into the handle (for onProgress subscribers)
+    // Wire reporter progress into the handle and RunStateStore (for cross-tab sync)
     const origOnProgress = reporter.onProgress.bind(reporter);
     reporter.onProgress = function(percentage, message, completedIterations, totalIterations) {
+        const progressData = { percentage, message, completedIterations, totalIterations };
+        
+        // Update reporter (internal handling)
         origOnProgress(percentage, message, completedIterations, totalIterations);
-        handle._updateProgress({ percentage, message, completedIterations, totalIterations });
+        
+        // Update handle (for local onProgress subscribers)
+        handle._updateProgress(progressData);
+        
+        // Update RunStateStore (persists to localStorage + broadcasts to other tabs)
+        RunStateStore.updateProgress(suiteRunId, progressData);
     };
 
     // ── 6. Register with RunStateStore ──────────────────────────
@@ -122,7 +131,7 @@ async function _execute(manager, handle, ctx) {
             startTime:      startedAt,
             endTime:        endedAt,
             durationMs:     durationMs,
-            testType:       ctx.testType,
+            testType:       manager.activeTestType || ctx.testType,
             iterations:     manager.completedIterations,
             testDuration:   durationMs / 1000,
             results:              manager.results || {},
