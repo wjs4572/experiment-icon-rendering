@@ -418,7 +418,6 @@
                         window.RunStateStore._saveProgressState();
                         currentBatchRunId = null;
                         updateUIForBatchStatus();
-                        updateLiveRenderingStatus('waiting');
                     }
                 }, 3000);
             }
@@ -426,7 +425,11 @@
             // Subscribe to progress updates from batch runs (live updates only)
            window.RunStateStore.onProgressChange(FORMAT, function(runState) {
                 console.log(`[${FORMAT}] Progress update via BroadcastChannel:`, runState);
-                batchStartedFromChannelUpdate = true; // Mark that we're receiving live updates
+                // Only treat non-snapshot updates as live confirmation (snapshots are from
+                // state_request replies and may reflect stale data in peer tabs)
+                if (!runState.snapshot) {
+                    batchStartedFromChannelUpdate = true;
+                }
                 displayBatchProgress(runState, true); // isFromBroadcast = true
             });
 
