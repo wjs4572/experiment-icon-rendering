@@ -1618,6 +1618,23 @@ class StressTestManager {
     }
 
     delay(ms) {
+        if (ms === 0) {
+            // MessageChannel yields to the macrotask queue without timer throttling.
+            // setTimeout(0) in background tabs gets clamped to ~1s by browsers, which
+            // slows the iteration loop to a crawl and makes progress updates infrequent.
+            // MessageChannel.postMessage fires immediately in the next event-loop tick,
+            // unaffected by background-tab timer clamping in Chrome and Firefox.
+            //
+            // A single reusable channel is kept on the instance to avoid per-call
+            // allocation overhead (no GC pressure on the measurement hot loop).
+            if (!this._yieldChannel) {
+                this._yieldChannel = new MessageChannel();
+            }
+            return new Promise(resolve => {
+                this._yieldChannel.port1.onmessage = resolve;
+                this._yieldChannel.port2.postMessage(null);
+            });
+        }
         return new Promise(resolve => setTimeout(resolve, ms));
     }
     
