@@ -151,7 +151,7 @@ test.describe('Results Library Page', () => {
       window.RunStateStore.saveRecord(rec);
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForSelector('.tabulator-row');
 
     const rowCount = await page.locator('.tabulator-row').count();
@@ -200,7 +200,7 @@ test.describe('Results Library Page', () => {
       window.RunStateStore.saveRecord(rec);
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForSelector('.tabulator-row');
 
     // Click the row (on the Format cell to avoid checkboxes)
@@ -228,7 +228,7 @@ test.describe('Results Library Page', () => {
       window.RunStateStore.saveRecord(rec);
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForSelector('.tabulator-row');
     await page.locator('.tabulator-row').first().locator('.tabulator-cell').nth(2).click();
     await expect(page.locator('#detailsPanel')).toBeVisible();
@@ -246,7 +246,7 @@ test.describe('Results Library Page', () => {
       window.RunStateStore.saveRecord(rec);
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForSelector('.tabulator-row');
 
     // Click the row selection checkbox (first cell)
@@ -264,7 +264,7 @@ test.describe('Results Library Page', () => {
       window.RunStateStore.saveRecord(rec);
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForSelector('.tabulator-row');
 
     // Select the row
@@ -287,7 +287,7 @@ test.describe('Results Library Page', () => {
       window.RunStateStore.saveRecord(rec);
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForSelector('.tabulator-row');
 
     // Select the row
@@ -310,7 +310,7 @@ test.describe('Results Library Page', () => {
       }
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForSelector('.tabulator-row');
     expect(await page.locator('.tabulator-row').count()).toBe(3);
 

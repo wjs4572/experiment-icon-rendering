@@ -219,7 +219,9 @@ test.describe('CSS Page - Locale-Independent Structure', () => {
 test.describe('Results Library Page - Locale-Independent Structure', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('results-library.html');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    // Wait for Tabulator to finish rendering (CDN-loaded; networkidle never settles)
+    await page.waitForSelector('.tabulator-header', { timeout: 15000 });
   });
 
   test('page has h1 with the library title i18n key', async ({ page }) => {
