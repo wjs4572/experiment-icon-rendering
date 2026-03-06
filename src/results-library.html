@@ -82,6 +82,17 @@
                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                     <span data-i18n="library.make_imported_active">Make all imported active</span>
                 </label>
+                <!-- Data-directory loader -->
+                <div class="flex items-center gap-2 ml-auto">
+                    <label for="loadDataFileSelect" class="text-sm text-gray-600 whitespace-nowrap" data-i18n="library.load_data_label">Load example data:</label>
+                    <select id="loadDataFileSelect"
+                            class="text-sm border border-gray-300 rounded px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[14rem]">
+                        <option value="" data-i18n="library.load_data_placeholder">— select a file —</option>
+                    </select>
+                    <button id="loadDataFileBtn" disabled
+                            class="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            data-i18n="library.load_data_btn">Load</button>
+                </div>
             </div>
         </div>
 
@@ -403,6 +414,13 @@
             document.getElementById('importBtn').addEventListener('click', function () {
                 document.getElementById('importFileInput').click();
             });
+
+            // Data-directory loader
+            this._loadDataFileDropdown();
+            document.getElementById('loadDataFileBtn').addEventListener('click', function () {
+                var sel = document.getElementById('loadDataFileSelect');
+                self._loadFromDataFile(sel.value);
+            });
             document.getElementById('importFileInput').addEventListener('change', function (e) {
                 self._handleImport(e);
             });
@@ -492,6 +510,64 @@
         /* ────────────────────────────────────────────────────────────
          * Import
          * ──────────────────────────────────────────────────────────── */
+
+        /* ────────────────────────────────────────────────────────────
+         * Data-directory loader
+         * ──────────────────────────────────────────────────────────── */
+
+        _loadDataFileDropdown() {
+            var self = this;
+            var sel = document.getElementById('loadDataFileSelect');
+            var btn = document.getElementById('loadDataFileBtn');
+            fetch('data/index.json')
+                .then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.json();
+                })
+                .then(function (manifest) {
+                    var files = Array.isArray(manifest.files) ? manifest.files : [];
+                    files.forEach(function (entry) {
+                        var opt = document.createElement('option');
+                        opt.value = entry.name || entry;
+                        opt.textContent = entry.label || entry.name || entry;
+                        sel.appendChild(opt);
+                    });
+                    if (files.length > 0) sel.disabled = false;
+                })
+                .catch(function () {
+                    var opt = document.createElement('option');
+                    opt.value = '';
+                    opt.textContent = window.i18n ? window.i18n.translate('library.load_data_error') : 'Failed to load file list';
+                    opt.disabled = true;
+                    sel.appendChild(opt);
+                });
+
+            // Enable/disable Load button based on selection
+            sel.addEventListener('change', function () {
+                btn.disabled = !sel.value;
+            });
+        }
+
+        _loadFromDataFile(fileName) {
+            var self = this;
+            if (!fileName) return;
+            fetch('data/' + encodeURIComponent(fileName))
+                .then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.json();
+                })
+                .then(function (data) {
+                    self._processImport(data, fileName);
+                    // Reset select + button
+                    var sel = document.getElementById('loadDataFileSelect');
+                    if (sel) sel.value = '';
+                    var btn = document.getElementById('loadDataFileBtn');
+                    if (btn) btn.disabled = true;
+                })
+                .catch(function () {
+                    self._showImportStatus('error', 'Failed to fetch ' + self._esc(fileName));
+                });
+        }
 
         _handleImport(event) {
             var self = this;

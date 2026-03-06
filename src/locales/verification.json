@@ -1,27 +1,27 @@
 {
     "sourceLocale": "en",
     "generatedAt": "2026-03-06",
-    "totalKeys": 422,
+    "totalKeys": 426,
     "description": "Keys are unverified until a native speaker confirms correctness. Source locale (en) is verified by default. Regional English variants (en-us, en-gb) are verified as the maintainer speaks English.",
     "locales": {
         "en": {
-            "totalVerified": 422,
+            "totalVerified": 426,
             "totalUnverified": 0,
             "unverifiedKeys": []
         },
         "en-us": {
-            "totalVerified": 422,
+            "totalVerified": 426,
             "totalUnverified": 0,
             "unverifiedKeys": []
         },
         "en-gb": {
-            "totalVerified": 422,
+            "totalVerified": 426,
             "totalUnverified": 0,
             "unverifiedKeys": []
         },
         "es": {
             "totalVerified": 0,
-            "totalUnverified": 422,
+            "totalUnverified": 426,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -150,6 +150,10 @@
                 "library.details_title",
                 "library.export_selected",
                 "library.import_btn",
+                "library.load_data_btn",
+                "library.load_data_error",
+                "library.load_data_label",
+                "library.load_data_placeholder",
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
@@ -449,7 +453,7 @@
         },
         "fr": {
             "totalVerified": 0,
-            "totalUnverified": 422,
+            "totalUnverified": 426,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -578,6 +582,10 @@
                 "library.details_title",
                 "library.export_selected",
                 "library.import_btn",
+                "library.load_data_btn",
+                "library.load_data_error",
+                "library.load_data_label",
+                "library.load_data_placeholder",
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
@@ -877,7 +885,7 @@
         },
         "de": {
             "totalVerified": 0,
-            "totalUnverified": 422,
+            "totalUnverified": 426,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -1006,6 +1014,10 @@
                 "library.details_title",
                 "library.export_selected",
                 "library.import_btn",
+                "library.load_data_btn",
+                "library.load_data_error",
+                "library.load_data_label",
+                "library.load_data_placeholder",
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
@@ -1305,7 +1317,7 @@
         },
         "ja": {
             "totalVerified": 0,
-            "totalUnverified": 422,
+            "totalUnverified": 426,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -1434,6 +1446,10 @@
                 "library.details_title",
                 "library.export_selected",
                 "library.import_btn",
+                "library.load_data_btn",
+                "library.load_data_error",
+                "library.load_data_label",
+                "library.load_data_placeholder",
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
@@ -1733,7 +1749,7 @@
         },
         "zh": {
             "totalVerified": 0,
-            "totalUnverified": 422,
+            "totalUnverified": 426,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -1862,6 +1878,10 @@
                 "library.details_title",
                 "library.export_selected",
                 "library.import_btn",
+                "library.load_data_btn",
+                "library.load_data_error",
+                "library.load_data_label",
+                "library.load_data_placeholder",
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
@@ -2161,7 +2181,7 @@
         },
         "zh-tw": {
             "totalVerified": 0,
-            "totalUnverified": 422,
+            "totalUnverified": 426,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -2290,6 +2310,10 @@
                 "library.details_title",
                 "library.export_selected",
                 "library.import_btn",
+                "library.load_data_btn",
+                "library.load_data_error",
+                "library.load_data_label",
+                "library.load_data_placeholder",
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
@@ -2589,7 +2613,7 @@
         },
         "pt": {
             "totalVerified": 0,
-            "totalUnverified": 422,
+            "totalUnverified": 426,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -2718,6 +2742,10 @@
                 "library.details_title",
                 "library.export_selected",
                 "library.import_btn",
+                "library.load_data_btn",
+                "library.load_data_error",
+                "library.load_data_label",
+                "library.load_data_placeholder",
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
@@ -3017,7 +3045,7 @@
         },
         "pt-br": {
             "totalVerified": 0,
-            "totalUnverified": 422,
+            "totalUnverified": 426,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -3146,6 +3174,10 @@
                 "library.details_title",
                 "library.export_selected",
                 "library.import_btn",
+                "library.load_data_btn",
+                "library.load_data_error",
+                "library.load_data_label",
+                "library.load_data_placeholder",
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
@@ -3445,7 +3477,7 @@
         },
         "pt-pt": {
             "totalVerified": 0,
-            "totalUnverified": 422,
+            "totalUnverified": 426,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -3574,6 +3606,10 @@
                 "library.details_title",
                 "library.export_selected",
                 "library.import_btn",
+                "library.load_data_btn",
+                "library.load_data_error",
+                "library.load_data_label",
+                "library.load_data_placeholder",
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
