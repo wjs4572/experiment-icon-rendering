@@ -7,22 +7,44 @@
 
 ## Table of Contents
 
-- [Technology Stack](#technology-stack)
-- [System Overview](#system-overview)
-- [Module Architecture](#module-architecture)
-  - [Runtime Module Map](#runtime-module-map)
-  - [Module Responsibilities](#module-responsibilities)
-- [Page Architecture](#page-architecture)
-- [Call Hierarchy](#call-hierarchy)
-  - [User-Initiated Batch Run](#user-initiated-batch-run)
-  - [Progress Propagation](#progress-propagation)
-  - [Cross-Tab Synchronisation](#cross-tab-synchronisation)
-  - [Run Completion & Persistence](#run-completion--persistence)
-- [Data Flow Diagrams](#data-flow-diagrams)
-- [Design Patterns](#design-patterns)
-- [State Management](#state-management)
-- [Storage Schema](#storage-schema)
-- [Testing Infrastructure Architecture](#testing-infrastructure-architecture)
+- [Architecture \& Technology Reference](#architecture--technology-reference)
+  - [Table of Contents](#table-of-contents)
+  - [Technology Stack](#technology-stack)
+    - [Runtime (Browser — no build step)](#runtime-browser--no-build-step)
+    - [Tooling (Node.js — dev/test only)](#tooling-nodejs--devtest-only)
+    - [Zero-Dependency Policy](#zero-dependency-policy)
+  - [System Overview](#system-overview)
+  - [Module Architecture](#module-architecture)
+    - [Runtime Module Map](#runtime-module-map)
+    - [Module Responsibilities](#module-responsibilities)
+      - [`run-id.js` — ID Generation](#run-idjs--id-generation)
+      - [`icon-configs.js` — Format Configuration](#icon-configsjs--format-configuration)
+      - [`run-record.js` — Data Schema](#run-recordjs--data-schema)
+      - [`run-handle.js` — Async Run Token](#run-handlejs--async-run-token)
+      - [`reporters.js` — Reporter Strategy](#reportersjs--reporter-strategy)
+      - [`stress-test-manager.js` — Measurement Engine](#stress-test-managerjs--measurement-engine)
+      - [`suite-runner.js` — Orchestration Facade](#suite-runnerjs--orchestration-facade)
+      - [`run-state.js` — State Store Singleton](#run-statejs--state-store-singleton)
+      - [`batch-progress-monitor.js` — Format-Page Subscriber](#batch-progress-monitorjs--format-page-subscriber)
+      - [`i18n.js` — Internationalisation](#i18njs--internationalisation)
+      - [`system-specs.js` / `system-specs-utils.js` — System Specifications](#system-specsjs--system-specs-utilsjs--system-specifications)
+  - [Page Architecture](#page-architecture)
+  - [Call Hierarchy](#call-hierarchy)
+    - [User-Initiated Batch Run](#user-initiated-batch-run)
+    - [Progress Propagation](#progress-propagation)
+    - [Cross-Tab Synchronisation](#cross-tab-synchronisation)
+    - [Run Completion \& Persistence](#run-completion--persistence)
+  - [Data Flow Diagrams](#data-flow-diagrams)
+    - [Performance Measurement Pipeline](#performance-measurement-pipeline)
+    - [i18n Data Flow](#i18n-data-flow)
+  - [Design Patterns](#design-patterns)
+  - [State Management](#state-management)
+  - [Storage Schema](#storage-schema)
+    - [RunRecord (v2)](#runrecord-v2)
+  - [Testing Infrastructure Architecture](#testing-infrastructure-architecture)
+    - [Playwright Configuration](#playwright-configuration)
+    - [Test File Map](#test-file-map)
+    - [Smart Commit Rotation](#smart-commit-rotation)
 
 ---
 
@@ -31,7 +53,7 @@
 ### Runtime (Browser — no build step)
 
 | Technology | Role | Version |
-|------------|------|---------|
+| ------------ | ------ | ------- |
 | **Vanilla HTML/CSS/JS** | All page UI and performance measurement | — |
 | **TailwindCSS** | Utility-first CSS (pre-compiled, committed) | v4 |
 | **Tabulator** | Data table in Results Library (`results-library.html`) | CDN |
@@ -43,7 +65,7 @@
 ### Tooling (Node.js — dev/test only)
 
 | Tool | Role | Version |
-|------|------|---------|
+| ------ | ------ | ------- |
 | **Playwright** | Cross-browser regression test runner | ^1.40.0 |
 | **@playwright/test** | Test framework and assertion library | ^1.40.0 |
 | **http-server** | Static dev server (serves `src/` on port 3000) | ^14.1.1 |
@@ -60,7 +82,7 @@ The browser runtime intentionally has **no npm dependencies** and **no bundler**
 
 The project is two separate systems sharing a codebase:
 
-```
+```text
 ┌────────────────────────────────────────────────────────┐
 │  EXPERIMENTAL PERFORMANCE TESTING (Browser)            │
 │                                                        │
@@ -93,7 +115,7 @@ The project is two separate systems sharing a codebase:
 
 All modules are **IIFE / plain class declarations** assigned to `window.*` globals. No ES modules, no bundler. Load order matters — each page's `<script>` tags are ordered to satisfy dependencies.
 
-```
+```text
 window globals (each file exposes one entry)
 │
 ├── window.RunId                  ← run-id.js
@@ -143,7 +165,7 @@ window globals (each file exposes one entry)
 Pure utility. Generates all ID types used to correlate records across tabs and storage:
 
 | Method | Shape | Purpose |
-|--------|-------|---------|
+| -------- | ------- | ------- |
 | `generateRunId()` | `run-<timestamp>-<rand>` | One per user-initiated batch (shared across formats) |
 | `generateSuiteRunId()` | `suite-<timestamp>-<rand>` | One per format within a run |
 | `generateTestResultId()` | `result-<timestamp>-<rand>` | Stable key for localStorage persistence |
@@ -161,6 +183,7 @@ Static data object. Provides `allIconConfigs[format]` — an array of icon confi
 **Factory pattern.** `createRunRecord(fields)` constructs a complete, schema v2 record with all required keys defaulted. `normalizeImportedRecord(raw, fileName)` maps arbitrary imported JSON onto the same schema for Results Library imports.
 
 Record shape summary:
+
 ```javascript
 {
   schemaVersion: 2,
@@ -209,7 +232,7 @@ interface Reporter {
 ```
 
 | Reporter | Use case |
-|----------|----------|
+| ---------- | ---------- |
 | `NoopReporter` | Default; all methods are no-ops. Used when no reporter is injected. |
 | `DOMReporter` | Writes directly to DOM element IDs on format pages (`#progressBar`, `#progressPercent`, etc.). Holds a back-reference to `StressTestManager` to call HTML-generation methods. |
 | `StoreReporter` | Publishes to `RunStateStore` for batch / cross-tab progress. |
@@ -253,7 +276,7 @@ Key methods: `startStressTest()`, `stopTest()`, `_runIteration()`, `_computeStat
 Responsibilities:
 
 | Concern | Mechanism |
-|---------|-----------|
+| --------- | ----------- |
 | Active run tracking | `_active: Map<suiteRunId, runEntry>` (in-memory) |
 | Completed run persistence | `localStorage['iconTestRunRecords']` (JSON array) |
 | Batch visibility across tabs | `localStorage['iconTestProgressState']` (snapshot on reg/complete) |
@@ -263,6 +286,7 @@ Responsibilities:
 | Local completion subscribers | `_completionListeners: Map<format, Set<fn>>` |
 
 Public subscription API:
+
 - `onProgressChange(format, callback)` → returns unsubscribe fn
 - `onCompletion(format, callback)` → returns unsubscribe fn
 
@@ -288,6 +312,7 @@ Convenience wrapper for format pages (e.g. `css.html`) to monitor an in-progress
 #### `system-specs.js` / `system-specs-utils.js` — System Specifications
 
 `SystemSpecsManager` (singleton `window.systemSpecsManager`) manages:
+
 - Modal UI for entering hardware specs
 - Auto-detection of browser-visible properties (`navigator.*`, `screen.*`)
 - Persistence to `localStorage['systemSpecifications']`
@@ -300,7 +325,7 @@ Convenience wrapper for format pages (e.g. `css.html`) to monitor an in-progress
 ## Page Architecture
 
 | Page | Purpose | Key JS modules loaded |
-|------|---------|----------------------|
+| ------ | --------- | ---------------------- |
 | `index.html` | Home + batch test runner | RunId, RunRecord, RunHandle, RunStateStore, SuiteRunner, IconConfigs, StressTestManager, Reporters, BatchProgressMonitor, i18n |
 | `{format}.html` × 7 | Per-format interactive test | RunId, RunRecord, RunStateStore, SuiteRunner, StressTestManager, IconConfigs, Reporters, BatchProgressMonitor, DOMReporter, SystemSpecsManager, i18n |
 | `summary.html` | Aggregate analysis + charts | RunStateStore, RunRecord, i18n |
@@ -312,7 +337,7 @@ Convenience wrapper for format pages (e.g. `css.html`) to monitor an in-progress
 
 ### User-Initiated Batch Run
 
-```
+```text
 index.html — user clicks "Start All"
 │
 ├── generate sharedRunId via RunId.generateRunId()
@@ -350,7 +375,7 @@ index.html — user clicks "Start All"
 
 ### Progress Propagation
 
-```
+```text
 reporter.onProgress()  [intercept in suite-runner.js]
 │
 ├── original reporter.onProgress()
@@ -375,7 +400,7 @@ reporter.onProgress()  [intercept in suite-runner.js]
 
 ### Cross-Tab Synchronisation
 
-```
+```text
 Tab A (index.html running batch)          Tab B (css.html open)
 │                                         │
 │ RunStateStore.registerRun()             │ BatchProgressMonitor.start()
@@ -398,7 +423,7 @@ Tab A (index.html running batch)          Tab B (css.html open)
 
 ### Run Completion & Persistence
 
-```
+```text
 manager.startStressTest() resolves
 │
 └── suite-runner._execute():
@@ -424,7 +449,7 @@ manager.startStressTest() resolves
 
 ### Performance Measurement Pipeline
 
-```
+```text
 IconConfigs[format]
       │
       ▼
@@ -451,7 +476,7 @@ StressTestManager.startStressTest()
 
 ### i18n Data Flow
 
-```
+```text
 Browser loads page
       │
       ▼
@@ -477,7 +502,7 @@ User selects language:
 ## Design Patterns
 
 | Pattern | Where used | Notes |
-|---------|-----------|-------|
+| --------- | ----------- | ------- |
 | **Singleton** | `RunStateStore`, `systemSpecsManager`, `i18n` | Exposed on `window.*`; one instance per tab |
 | **Observer / Pub-Sub** | `RunStateStore._progressListeners`, `RunStateStore._completionListeners`, `RunHandle._progressListeners` | `Map<format, Set<fn>>`; all return unsubscribe functions |
 | **Strategy** | `Reporters` hierarchy (`NoopReporter`, `DOMReporter`, `StoreReporter`) | Interchangeable reporter implementations injected into `StressTestManager` |
@@ -497,7 +522,7 @@ User selects language:
 All mutable state falls into four layers:
 
 | Layer | Scope | Mechanism | Contents |
-|-------|-------|-----------|----------|
+| ------- | ------- | ----------- | ---------- |
 | **In-memory active** | Single tab | `RunStateStore._active: Map` | Live run entries with latest progress |
 | **In-memory listeners** | Single tab | `_progressListeners`, `_completionListeners` | Subscriber callbacks per format |
 | **Session broadcast** | All tabs (ephemeral) | `BroadcastChannel` | Real-time progress messages (not persisted) |
@@ -506,7 +531,7 @@ All mutable state falls into four layers:
 localStorage keys:
 
 | Key | Owner | Content |
-|-----|-------|---------|
+| ----- | ------- | --------- |
 | `iconTestRunRecords` | `RunStateStore` | Array of completed `RunRecord` objects |
 | `iconTestProgressState` | `RunStateStore` | Map of active `suiteRunId → runEntry` |
 | `iconTestResults_<format>` | `RunStateStore` | Latest result per format (legacy compat) |
@@ -564,7 +589,7 @@ localStorage keys:
 ### Playwright Configuration
 
 | Setting | Value | Rationale |
-|---------|-------|-----------|
+| --------- | ------- | ----------- |
 | `testDir` | `./tests` | All test files |
 | `fullyParallel` | `true` | Tests within a file run in parallel |
 | `workers` | 2 (local), 1 (CI) | Prevents resource exhaustion with WebKit |
@@ -577,7 +602,7 @@ localStorage keys:
 ### Test File Map
 
 | File | Tests | What it covers |
-|------|-------|---------------|
+| ------ | ------- | --------------- |
 | `index.test.js` | ~20 | Batch runner UI, progress bars, Clear Data |
 | `summary.test.js` | ~14 | Statistical analysis, cross-format section, Best Only |
 | `results-library.test.js` | ~67 | Tabulator table, import, Quick Stats sidebar, filters |
@@ -592,11 +617,11 @@ localStorage keys:
 
 `scripts/commit-tests.js` implements change-aware subset selection:
 
-1. `git diff --name-only` → changed file list
-2. Map each file to its owning test suite(s) via a static path→suite table
-3. Read `.test-rotation.json` → select next subset not recently run
-4. `npx playwright test <files> --project=chromium` (single browser for speed)
-5. Write result JSON + Markdown to `commit-reports/`
-6. Update `.test-rotation.json`
+1. `git diff --name-only` → changed file list (staged + unstaged)
+2. Map each file to its owning test suite(s) via a static `SOURCE_TO_TESTS` table
+3. Read `.test-rotation.json` → pick the N "coldest" test files (longest since last run) not already in the regression set (`ROTATION_BATCH_SIZE = 2`)
+4. `npx playwright test <files> --reporter=line` — **no `--project` flag**, so all three configured browsers (Chromium, Firefox, WebKit) run for every commit test
+5. On pass: record timestamps in `.test-rotation.json`; write `commit-reports/latest-*` files
+6. On fail: exit 1, blocking the commit
 
-This gives full coverage over ~5 commits while keeping each pre-commit run to 1–3 minutes.
+This gives full browser coverage on every commit check while keeping the test count low (~54–162 tests × 3 browsers). Infrastructure changes (edits to `playwright.config.js`, `package.json`, etc.) trigger the full suite automatically.

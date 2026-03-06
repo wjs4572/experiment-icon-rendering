@@ -214,8 +214,8 @@ npm run test:commit
 
 The recommended pre-commit check. `scripts/commit-tests.js` inspects your working tree, maps changed files to relevant test suites, and runs those tests plus one rotating subset for broader coverage.
 
-- **Typical scope**: 54–162 tests
-- **Duration**: 1–3 minutes
+- **Typical scope**: 54–162 tests × 3 browsers (Chromium, Firefox, WebKit)
+- **Duration**: 2–5 minutes
 - **Reports**: Written to `commit-reports/latest-commit-results.json` and `commit-reports/latest-commit-summary.md`
 
 ```bash
