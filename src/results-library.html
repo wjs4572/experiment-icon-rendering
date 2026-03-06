@@ -685,19 +685,59 @@
         }
 
         _buildSystemGrid(rec) {
-            var sys = rec.systemSpecifications || rec.testMetadata || {};
+            var sys = rec.systemSpecifications || {};
+            var auto = sys.autoDetected || {};
+            var meta = rec.testMetadata || {};
             var pairs = [];
-            if (sys.userAgent || sys.browser) {
-                pairs.push(['Browser', this._getBrowserName(sys.userAgent || sys.browser || '')]);
+
+            // Browser — from autoDetected or testMetadata fallback
+            var ua = auto.userAgent || meta.userAgent || sys.userAgent || sys.browser;
+            if (ua) pairs.push(['Browser', this._getBrowserName(ua)]);
+
+            // Platform
+            var platform = auto.platform || meta.platform || sys.platform;
+            if (platform) pairs.push(['Platform', platform]);
+
+            // Screen — stored under autoDetected.screen
+            if (auto.screen) {
+                if (auto.screen.resolution) pairs.push(['Screen', auto.screen.resolution]);
+                if (auto.screen.colorDepth) pairs.push(['Color Depth', auto.screen.colorDepth + '-bit']);
+                if (auto.screen.pixelRatio && auto.screen.pixelRatio !== 1)
+                    pairs.push(['Pixel Ratio', auto.screen.pixelRatio + 'x']);
+            } else if (sys.screenResolution) {
+                // Legacy flat structure
+                pairs.push(['Screen', sys.screenResolution]);
+                if (sys.colorDepth) pairs.push(['Color Depth', sys.colorDepth + '-bit']);
             }
-            if (sys.platform)         pairs.push(['Platform', sys.platform]);
-            if (sys.screenResolution) pairs.push(['Screen', sys.screenResolution]);
-            if (sys.colorDepth)       pairs.push(['Color Depth', sys.colorDepth + '-bit']);
-            if (sys.memory) {
+
+            // CPU cores
+            var cores = auto.hardwareConcurrency || meta.hardwareConcurrency;
+            if (cores && cores !== 'unknown') pairs.push(['CPU Cores', String(cores)]);
+
+            // Device memory (auto-detected)
+            if (auto.deviceMemory && auto.deviceMemory !== 'unknown')
+                pairs.push(['Device Memory', auto.deviceMemory]);
+
+            // Language
+            var lang = auto.language || meta.language;
+            if (lang) pairs.push(['Language', lang]);
+
+            // Manual specs if the user filled them in
+            var manual = sys.manual || {};
+            var sysConf = manual.systemConfiguration || {};
+            var proc = manual.processor || {};
+            var mem = manual.memory || {};
+            if (proc.cpu)            pairs.push(['CPU', proc.cpu]);
+            if (mem.totalRAM)        pairs.push(['RAM', mem.totalRAM]);
+            if (sysConf.operatingSystem) pairs.push(['OS', sysConf.operatingSystem]);
+
+            // Legacy: old records that stored memory as a JSHeap object
+            if (sys.memory && sys.memory.usedJSHeapSize) {
                 var used = (sys.memory.usedJSHeapSize / (1024 * 1024)).toFixed(1);
                 var limit = (sys.memory.jsHeapSizeLimit / (1024 * 1024)).toFixed(1);
-                pairs.push(['Memory', used + ' MB / ' + limit + ' MB']);
+                pairs.push(['JS Heap', used + ' MB / ' + limit + ' MB']);
             }
+
             if (pairs.length === 0) pairs.push(['Info', 'No system information available']);
             return this._buildKV(pairs);
         }
