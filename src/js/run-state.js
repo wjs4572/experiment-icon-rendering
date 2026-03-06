@@ -327,6 +327,23 @@ class RunStateStore {
     }
 
     /**
+     * Remove a single run entry from the persisted progress state without
+     * overwriting entries for other formats (avoids race between multiple
+     * format-page tabs each doing orphan cleanup simultaneously).
+     * @param {string} suiteRunId
+     */
+    _removeRunFromProgressState(suiteRunId) {
+        try {
+            const raw = localStorage.getItem(_PROGRESS_KEY);
+            const runs = raw ? JSON.parse(raw) : [];
+            const filtered = runs.filter(r => r.suiteRunId !== suiteRunId);
+            localStorage.setItem(_PROGRESS_KEY, JSON.stringify(filtered));
+        } catch (e) {
+            console.error('[RunStateStore] Error removing run from progress state:', e);
+        }
+    }
+
+    /**
      * Read progress state from localStorage (used when page loads).
      * Returns an array of { suiteRunId, format, runId, progress, startTime }.
      */

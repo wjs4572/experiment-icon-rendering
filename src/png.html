@@ -280,6 +280,8 @@
                     const testTypeEl = document.getElementById('testType');
                     const testType = testTypeEl ? testTypeEl.value : 'bulk';
                     isLocalRun = true;
+                    const atElLocal = document.getElementById('activeTestType');
+                    if (atElLocal) atElLocal.textContent = TEST_TYPE_LABELS[testType] || testType;
                     currentHandle = window.SuiteRunner.runSuite(FORMAT, testType, { reporter: reporter });
                 });
             }
@@ -343,6 +345,16 @@
                 }
             };
 
+            const TEST_TYPE_LABELS = {
+                single:      'Single Icon Test (2,000 iterations per type)',
+                bulk:        'Bulk Icon Test (50 iterations × 100 icons)',
+                stress:      'Stress Test (200 iterations × 500 icons)',
+                statistical: 'Statistical Power Test (200 iterations × 100 icons)',
+                massive:     'High Power Test (1,000 iterations × 100 icons)',
+                ultra:       'Ultra Power Test (10,000 iterations × 100 icons)',
+                extreme:     'Extreme Power Test (20,000 iterations × 100 icons)'
+            };
+
             const displayBatchProgress = (runState, isFromBroadcast) => {
                 // Validate that we have complete, valid progress data
                 if (!runState || !runState.progress) {
@@ -382,31 +394,37 @@
                 }
                 
                 lastDisplayedPercentage = runState.progress.percentage;
-                updateUIForBatchStatus();
+                // Only reveal the progress bar for live broadcasts, not snapshots from peer tabs
+                if (!runState.snapshot) {
+                    updateUIForBatchStatus();
+                }
                 reporter.onProgress(runState.progress.percentage, runState.progress.message,
                     runState.progress.completedIterations, runState.progress.totalIterations);
                 const atEl = document.getElementById('activeTestType');
-                if (atEl && runState.testType) atEl.textContent = runState.testType;
+                if (atEl && runState.testType && !isLocalRun) {
+                    atEl.textContent = TEST_TYPE_LABELS[runState.testType] || runState.testType;
+                    const selEl = document.getElementById('testType');
+                    if (selEl) selEl.value = runState.testType;
+                }
                 updateLiveRenderingStatus('running', `${Math.round(runState.progress.percentage)}% — ${runState.progress.message}`);
             };
 
             // Check for existing batch run from localStorage/restoration
-            // NOTE: Don't display this yet - it's stale (at 0%). Wait for BroadcastChannel to deliver current state.
+            // NOTE: Don't show progress bar yet - wait for a LIVE (non-snapshot) broadcast
+            // to confirm the run is genuinely active. If no confirmation within 3s,
+            // treat as orphaned and clean up silently.
             const activeRun = window.RunStateStore.getProgressForFormat(FORMAT);
             if (activeRun) {
-                console.log(`[${FORMAT}] Detected batch already running from storage - waiting for live update via BroadcastChannel`, activeRun);
+                console.log(`[${FORMAT}] Detected batch in storage - awaiting live confirmation`, activeRun);
                 currentBatchRunId = activeRun.runId; // Initialize batch tracking
-                updateUIForBatchStatus(); // Show UI is waiting for batch
-                updateLiveRenderingStatus('waiting');
 
-                // If no peer confirms this run is alive within 3s, treat it as orphaned
+                // If no live update received within 3s, treat as orphaned
                 setTimeout(function() {
                     if (!batchStartedFromChannelUpdate && currentBatchRunId === activeRun.runId) {
                         console.warn(`[${FORMAT}] No live update received — clearing orphaned run state`);
                         window.RunStateStore._active.delete(activeRun.suiteRunId);
-                        window.RunStateStore._saveProgressState();
+                        window.RunStateStore._removeRunFromProgressState(activeRun.suiteRunId);
                         currentBatchRunId = null;
-                        updateUIForBatchStatus();
                     }
                 }, 3000);
             }
@@ -414,12 +432,11 @@
             // Subscribe to progress updates from batch runs (live updates only)
             window.RunStateStore.onProgressChange(FORMAT, function(runState) {
                 console.log(`[${FORMAT}] Progress update via BroadcastChannel:`, runState);
-                // Only treat non-snapshot updates as live confirmation (snapshots are from
-                // state_request replies and may reflect stale data in peer tabs)
                 if (!runState.snapshot) {
                     batchStartedFromChannelUpdate = true;
+                    lastDisplayedPercentage = -1;
                 }
-                displayBatchProgress(runState, true); // isFromBroadcast = true
+                displayBatchProgress(runState, true);
             });
 
             // Subscribe to completion to hide progress UI

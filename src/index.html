@@ -81,9 +81,12 @@
                         <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-1.5 rounded" value="avif" checked> AVIF</label>
                     </div>
                 </div>
-                <div class="flex items-end">
-                    <button id="startBatchTest" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition text-sm font-medium w-full" data-i18n="batch.run_button">
+                <div class="flex items-end gap-2">
+                    <button id="startBatchTest" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition text-sm font-medium flex-1" data-i18n="batch.run_button">
                         ▶ Run All Selected Tests
+                    </button>
+                    <button id="clearAllData" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition text-sm font-medium whitespace-nowrap" title="Clear all stored test records and progress state">
+                        🗑 Clear Data
                     </button>
                 </div>
             </div>
@@ -406,6 +409,7 @@
 
         startBtn.addEventListener('click', startBatch);
         stopBtn.addEventListener('click', stopBatch);
+        document.getElementById('clearAllData').addEventListener('click', clearAllData);
 
         function getSelectedSuites() {
             const checkboxes = document.querySelectorAll('#batchSuiteSelection input[type="checkbox"]:checked');
@@ -522,6 +526,38 @@
                 window.SuiteRunner.cancelSuite(currentHandle);
                 currentHandle = null;
             }
+        }
+
+        function clearAllData() {
+            if (batchRunning) {
+                alert('Cannot clear data while a batch test is running. Stop the batch first.');
+                return;
+            }
+            if (!confirm('Clear all stored test records and progress state? This cannot be undone.')) return;
+            localStorage.removeItem('iconTestRunRecords');
+            localStorage.removeItem('iconTestProgressState');
+            // Also clean up any per-format latest keys
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('iconTestResults_')) keysToRemove.push(key);
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+            // Clear in-memory active runs from local RunStateStore
+            if (window.RunStateStore && window.RunStateStore._active) {
+                window.RunStateStore._active.clear();
+            }
+            // Reset batch progress UI
+            completedSuiteCount = 0;
+            selectedSuites = [];
+            progressDiv.classList.add('hidden');
+            document.getElementById('batchSuiteStatus').innerHTML = '';
+            document.getElementById('batchOverallLabel').textContent = 'Overall Progress';
+            document.getElementById('batchOverallPercent').textContent = '0 / 0 suites';
+            document.getElementById('batchOverallBar').style.width = '0%';
+            document.getElementById('batchCurrentLabel').textContent = 'Current Suite';
+            document.getElementById('batchCurrentPercent').textContent = '0%';
+            document.getElementById('batchCurrentBar').style.width = '0%';
         }
 
         function finishBatch(message) {

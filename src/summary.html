@@ -1293,21 +1293,18 @@
 
             clearAllData() {
                 if (confirm(this.t('summary.clear_confirm'))) {
-                    // Clear per-format transition keys
+                    // Clear all localStorage keys used by the app
+                    localStorage.removeItem('iconTestRunRecords');
+                    localStorage.removeItem('iconTestProgressState');
                     this.testFormats.forEach(format => {
                         localStorage.removeItem(`iconTestResults_${format}`);
                     });
-                    // Clear RunStateStore records
-                    if (window.RunStateStore) {
-                        const allRecords = window.RunStateStore.getActiveRecords();
-                        const ids = allRecords.map(r => r.testResultId).filter(Boolean);
-                        if (ids.length > 0) {
-                            window.RunStateStore.deleteRecords(ids);
-                        }
+                    // Clear in-memory active runs
+                    if (window.RunStateStore && window.RunStateStore._active) {
+                        window.RunStateStore._active.clear();
                     }
                     this.results = {};
                     this.render();
-                    alert(this.t('summary.clear_success'));
                 }
             }
         }
