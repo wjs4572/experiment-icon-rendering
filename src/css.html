@@ -516,6 +516,15 @@
                 // Skip rendering if this is the completion of a locally-initiated run —
                 // startStressTest() already rendered results with the "Stress Test Complete!" banner.
                 if (isLocalRun) { isLocalRun = false; currentHandle = null; return; }
+                // Handle cancellation — reset UI without rendering results
+                if (runRecord && runRecord.cancelled) {
+                    currentBatchRunId = null;
+                    lastDisplayedPercentage = -1;
+                    batchStartedFromChannelUpdate = false;
+                    currentHandle = null;
+                    updateUIForBatchStatus();
+                    return;
+                }
                 console.log(`[${FORMAT}] ✓ COMPLETION EVENT RECEIVED:`, runRecord);
                 console.log(`[${FORMAT}] Results available:`, runRecord?.results);
                 console.log(`[${FORMAT}] Test type:`, runRecord?.testType);

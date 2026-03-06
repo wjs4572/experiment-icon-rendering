@@ -112,6 +112,26 @@ class RunStateStore {
     }
 
     /**
+     * Mark a run as cancelled: remove from active, clear progress, broadcast cancellation.
+     * Called when a suite is stopped by the user before completion.
+     */
+    cancelRun(suiteRunId) {
+        const run = this._active.get(suiteRunId);
+        if (!run) {
+            console.warn('[RunStateStore] cancelRun called for unknown suiteRunId:', suiteRunId);
+            return;
+        }
+        this._active.delete(suiteRunId);
+        this._saveProgressState();
+        const format = run.format;
+        console.log(`[RunStateStore] Run cancelled: format=${format}, suiteRunId=${suiteRunId}`);
+        // Notify local listeners
+        this._notifyCompletion(format, { cancelled: true, suiteRunId, format });
+        // Broadcast cancellation to other tabs
+        this._broadcast({ type: 'cancellation', suiteRunId, format });
+    }
+
+    /**
      * Mark a run as completed: remove from active, persist RunRecord, clear progress.
      */
     completeRun(suiteRunId, runRecord) {
@@ -296,6 +316,7 @@ class RunStateStore {
                 suiteRunId: run.suiteRunId,
                 format: run.format,
                 runId: run.runId,
+                testType: run.testType,
                 startTime: run.startTime,
                 status: 'running'
             }));
@@ -466,8 +487,9 @@ class RunStateStore {
             if (msg.suiteRunId) {
                 const existingRun = this._active.get(msg.suiteRunId);
                 if (existingRun) {
-                    // Update the existing run with fresh progress data
+                    // Update the existing run with fresh progress data and testType
                     existingRun.progress = { ...existingRun.progress, ...msg.progress };
+                    if (msg.testType) existingRun.testType = msg.testType;
                 } else if (!existingRun && msg.runId) {
                     // This run doesn't exist locally yet, add it
                     // (in case this tab joined mid-batch)
@@ -476,6 +498,7 @@ class RunStateStore {
                         suiteRunId: msg.suiteRunId,
                         format: msg.format,
                         runId: msg.runId,
+                        testType: msg.testType,
                         progress: msg.progress,
                         startTime: new Date().toISOString()
                     });
@@ -489,6 +512,15 @@ class RunStateStore {
                     ...actualRun,
                     crossTab: true
                 });
+            }
+        } else if (msg.type === 'cancellation') {
+            console.log(`[RunStateStore] 📡 Cancellation message from other tab: ${msg.format}`);
+            if (msg.suiteRunId) {
+                this._active.delete(msg.suiteRunId);
+                this._saveProgressState();
+            }
+            if (msg.format) {
+                this._notifyCompletion(msg.format, { cancelled: true, suiteRunId: msg.suiteRunId, format: msg.format });
             }
         } else if (msg.type === 'completion') {
             console.log(`[RunStateStore] 📡 Completion message from other tab: ${msg.format}`);

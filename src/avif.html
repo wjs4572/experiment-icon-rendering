@@ -433,6 +433,15 @@
             // Subscribe to completion to hide progress UI
             window.RunStateStore.onCompletion(FORMAT, function(runRecord) {
                 if (isLocalRun) { isLocalRun = false; currentHandle = null; return; }
+                // Handle cancellation — reset UI without rendering results
+                if (runRecord && runRecord.cancelled) {
+                    currentBatchRunId = null;
+                    lastDisplayedPercentage = -1;
+                    batchStartedFromChannelUpdate = false;
+                    currentHandle = null;
+                    updateUIForBatchStatus();
+                    return;
+                }
                 console.log(`[${FORMAT}] Batch completed`);
                 const total = runRecord?.iterations || 0;
                 reporter.onProgress(100, 'Completed', total, total);

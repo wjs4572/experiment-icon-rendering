@@ -112,8 +112,11 @@ async function _execute(manager, handle, ctx) {
     try {
         await manager.startStressTest();
 
-        // If the user cancelled mid-run, the handle is already CANCELLED
+        // If the user cancelled mid-run, clean up RunStateStore and reject done promise
+        // so that the batch loop's `await handle.done` throws and finishBatch() is called.
         if (handle.status === 'cancelled') {
+            ctx.RunStateStore.cancelRun(ctx.suiteRunId);
+            handle._fail(new Error('Suite cancelled by user'));
             return;
         }
 
