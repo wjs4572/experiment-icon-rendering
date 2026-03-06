@@ -65,12 +65,13 @@ class RunStateStore {
      * Register a new run as live/in-progress.
      * Saves initial marker to localStorage so cross-tab pages can detect the running batch.
      */
-    registerRun(suiteRunId, format, runId) {
-        console.log(`[RunStateStore] Registering run: format=${format}, suiteRunId=${suiteRunId}, runId=${runId}`);
+    registerRun(suiteRunId, format, runId, testType) {
+        console.log(`[RunStateStore] Registering run: format=${format}, suiteRunId=${suiteRunId}, runId=${runId}, testType=${testType}`);
         this._active.set(suiteRunId, {
             suiteRunId,
             format,
             runId,
+            testType: testType || 'bulk',
             startTime: new Date().toISOString(),
             progress: { percentage: 0, message: 'Starting...', completedIterations: 0, totalIterations: 0 }
         });
@@ -105,6 +106,7 @@ class RunStateStore {
             format: run.format,
             suiteRunId: run.suiteRunId,
             runId: run.runId,
+            testType: run.testType,
             progress: run.progress
         });
     }

@@ -84,7 +84,7 @@ function runSuite(format, testType, opts = {}) {
     };
 
     // ── 6. Register with RunStateStore ──────────────────────────
-    RunStateStore.registerRun(suiteRunId, format, runId);
+    RunStateStore.registerRun(suiteRunId, format, runId, testType);
 
     // ── 7. Execute (async) and resolve handle on completion ─────
     _execute(manager, handle, {

@@ -153,11 +153,12 @@
                                 <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-gray-600">
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-xs text-gray-600">
                             <div><span data-i18n="css.iterations">Iterations:</span> <span id="currentIteration" class="font-medium">0</span></div>
                             <div><span data-i18n="css.elapsed">Elapsed:</span> <span id="elapsedTime" class="font-medium">0s</span></div>
                             <div><span data-i18n="css.eta">ETA:</span> <span id="eta" class="font-medium">--</span></div>
                             <div><span data-i18n="css.memory">Memory:</span> <span id="memoryUsage" class="font-medium">0 MB</span></div>
+                            <div><span>Test Type:</span> <span id="activeTestType" class="font-medium">--</span></div>
                         </div>
                         <button id="stopTest" class="mt-3 bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600 hidden" data-i18n="css.stop_test">
                             Stop Test
@@ -384,6 +385,8 @@
                 updateUIForBatchStatus();
                 reporter.onProgress(runState.progress.percentage, runState.progress.message,
                     runState.progress.completedIterations, runState.progress.totalIterations);
+                const atEl = document.getElementById('activeTestType');
+                if (atEl && runState.testType) atEl.textContent = runState.testType;
                 updateLiveRenderingStatus('running', `${Math.round(runState.progress.percentage)}% — ${runState.progress.message}`);
             };
 
