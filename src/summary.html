@@ -16,6 +16,7 @@
     <script src="js/run-id.js"></script>
     <script src="js/run-record.js"></script>
     <script src="js/run-state.js"></script>
+    <script src="js/system-specs-utils.js"></script>
     <!-- Internationalization System -->
     <script src="js/i18n.js"></script>
 </head>
@@ -1029,24 +1030,62 @@
 
             renderTestEnvironment() {
                 const container = document.getElementById('testEnvironment');
-                
-                // Use the first available result for environment info
+
                 const firstResult = Object.values(this.results)[0];
-                if (!firstResult || !firstResult.testMetadata) {
+                if (!firstResult) {
                     container.innerHTML = '<div class="text-gray-500">' + this.t('summary.env.no_info') + '</div>';
                     return;
                 }
 
-                const metadata = firstResult.testMetadata;
-                const timerAvail = performance.timeOrigin ? this.t('summary.env.available') : this.t('summary.env.unavailable');
-                const memoryAvail = performance.memory ? this.t('summary.env.available') : this.t('summary.env.unavailable');
-                const navAvail = performance.navigation ? this.t('summary.env.available') : this.t('summary.env.unavailable');
+                const metadata = firstResult.testMetadata || {};
+                const sys      = firstResult.systemSpecifications || {};
+                const auto     = sys.autoDetected || {};
+                const man      = sys.manual || {};
+                const proc     = man.processor || {};
+                const mem      = man.memory || {};
+                const gfx      = man.graphics || {};
+                const conf     = man.systemConfiguration || {};
+                const screen   = auto.screen || {};
+
+                // Parse browser name from raw UA (live records) or use pre-sanitized value
+                const browserName = auto.browserName
+                    || SystemSpecsUtils.parseBrowserName(auto.userAgent || metadata.userAgent || '');
+
+                // OS: use pre-sanitized value or strip verbose Belarc text
+                const os = SystemSpecsUtils.extractOSName(conf.operatingSystem || '') || auto.platform || '';
+
+                // GPU: prefer named adapters, fall back to WebGL ANGLE string
+                const gpuFromManual = SystemSpecsUtils.extractGPUNames(gfx.integrated || '')
+                    || SystemSpecsUtils.extractGPUNames(gfx.discrete || '');
+                const gpu = gpuFromManual || SystemSpecsUtils.extractAutoGPU(auto.gpu || '');
+
+                const cores      = SystemSpecsUtils.extractCoreCount(proc.cache || '', auto.hardwareConcurrency);
+                const ram        = mem.totalRAM || '';
+                const resolution = screen.resolution || '';
+                const bootMode   = (conf.bootMode || '').replace(/UEFI with successful Secure Boot/i, 'UEFI Secure Boot');
+
+                const timerAvail  = performance.timeOrigin ? this.t('summary.env.available') : this.t('summary.env.unavailable');
+                const memoryAvail = performance.memory     ? this.t('summary.env.available') : this.t('summary.env.unavailable');
+                const navAvail    = performance.navigation ? this.t('summary.env.available') : this.t('summary.env.unavailable');
+
+                const envRows = [
+                    ['Browser',    browserName],
+                    os         ? ['OS',       os]       : null,
+                    ram        ? ['RAM',       ram]      : null,
+                    cores      ? ['CPU Cores', cores]    : null,
+                    gpu        ? ['GPU',       gpu]      : null,
+                    resolution ? ['Display',   resolution] : null,
+                    bootMode   ? ['Boot Mode', bootMode] : null,
+                ].filter(Boolean).map(([label, value]) =>
+                    `<div class="flex justify-between gap-4"><span class="text-gray-500">${label}</span><span class="text-gray-800 font-medium text-right">${value}</span></div>`
+                ).join('');
+
                 container.innerHTML = `
                     <div class="space-y-2">
                         <h4 class="font-medium text-gray-800">${this.t('summary.env.browser_info')}</h4>
-                        <div class="text-gray-600">${metadata.userAgent}</div>
+                        <div class="space-y-1 text-sm">${envRows}</div>
                     </div>
-                    
+
                     <div class="space-y-2">
                         <h4 class="font-medium text-gray-800">${this.t('summary.env.perf_metrics')}</h4>
                         <div class="space-y-1 text-gray-600">

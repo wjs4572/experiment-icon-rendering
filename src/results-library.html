@@ -19,6 +19,7 @@
     <script src="js/run-id.js"></script>
     <script src="js/run-record.js"></script>
     <script src="js/run-state.js"></script>
+    <script src="js/system-specs-utils.js"></script>
     <style>
         /* Tabulator overrides for Tailwind consistency */
         .tabulator { border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; }
@@ -686,7 +687,7 @@
         }
 
         _buildSystemGrid(rec) {
-            var sys  = this._sanitizeSystemSpecs(rec.systemSpecifications || {});
+            var sys  = SystemSpecsUtils.sanitizeSystemSpecs(rec.systemSpecifications || {});
             var auto = sys.autoDetected || {};
             var man  = sys.manual || {};
             var proc = man.processor || {};
@@ -733,15 +734,6 @@
             return this._buildKV(pairs);
         }
 
-        _getBrowserName(ua) {
-            if (!ua) return 'Unknown';
-            if (ua.includes('Edg/') || ua.includes('Edge/')) return 'Edge';
-            if (ua.includes('Firefox')) return 'Firefox';
-            if (ua.includes('Chrome')) return 'Chrome';
-            if (ua.includes('Safari')) return 'Safari';
-            return 'Unknown';
-        }
-
         /* ────────────────────────────────────────────────────────────
          * Record Sanitization
          * Strips PII and compresses verbose Belarc output to the
@@ -757,157 +749,8 @@
                  'testingNote','timestamp','userAgentNote','browserSpecific',
                  'testingEnvironment'].forEach(function (k) { delete r.testMetadata[k]; });
             }
-            r.systemSpecifications = this._sanitizeSystemSpecs(r.systemSpecifications || {});
+            r.systemSpecifications = SystemSpecsUtils.sanitizeSystemSpecs(r.systemSpecifications || {});
             return r;
-        }
-
-        _sanitizeSystemSpecs(sys) {
-            var auto = sys.autoDetected || {};
-            var man  = sys.manual || {};
-            var proc = man.processor || {};
-            var mem  = man.memory || {};
-            var gfx  = man.graphics || {};
-            var stor = man.storage || {};
-            var conf = man.systemConfiguration || {};
-
-            return {
-                lastUpdated: sys.lastUpdated,
-                autoDetected: {
-                    browserName:         this._getBrowserName(auto.userAgent || ''),
-                    hardwareConcurrency: auto.hardwareConcurrency,
-                    screen:              auto.screen,
-                    gpu:                 this._extractAutoGPU(auto.gpu || '')
-                },
-                manual: {
-                    systemConfiguration: {
-                        model:           this._extractSystemModel(conf.model || ''),
-                        operatingSystem: this._extractOSName(conf.operatingSystem || ''),
-                        bootMode:        this._simplifyBootMode(conf.bootMode || conf.operatingSystem || '')
-                    },
-                    processor: {
-                        architecture: (proc.architecture || '').replace(/,.*/, '').trim(),
-                        cores:        this._extractCoreCount(proc.cache || '', auto.hardwareConcurrency),
-                        cache:        this._simplifyCacheInfo(proc.cache || ''),
-                        generation:   proc.generation || ''
-                    },
-                    memory: {
-                        totalRAM: mem.totalRAM || this._extractRAMTotal(mem.configuration || ''),
-                        speed:    mem.speed || ''
-                    },
-                    graphics: {
-                        integrated: this._extractGPUNames(gfx.integrated || '') || this._extractAutoGPU(auto.gpu || ''),
-                        discrete:   this._extractGPUNames(gfx.discrete || '')
-                    },
-                    storage: {
-                        systemDrive: this._extractStorageSummary(stor.systemDrive || '')
-                    }
-                }
-            };
-        }
-
-        /** Extract GPU model from WebGL ANGLE renderer string */
-        _extractAutoGPU(gpuStr) {
-            if (!gpuStr) return '';
-            // ANGLE string: "Google Inc. (Intel) — ANGLE (Intel, Intel(R) HD Graphics 530 (0x0000191B) Direct3D11...)"
-            var m = gpuStr.match(/ANGLE\s*\([^,]+,\s*(.*?)\s*\(0x[0-9a-f]/i);
-            if (m) return m[1].replace(/\(R\)/gi, '').trim();
-            return gpuStr.split(/\s*[—(]/)[0].trim();
-        }
-
-        /** Extract GPU display adapter names from Belarc graphics block, strip monitors+serials */
-        _extractGPUNames(raw) {
-            if (!raw) return '';
-            var results = [];
-            var re = /([^\[\]]+)\[Display adapter\]/g;
-            var m;
-            while ((m = re.exec(raw)) !== null) {
-                var name = m[1].replace(/\(R\)/gi, '').trim();
-                if (name && results.indexOf(name) === -1) results.push(name);
-            }
-            return results.join(', ');
-        }
-
-        /** Classify drives as SSD/HDD with rounded capacity, strip make/model/serial */
-        _extractStorageSummary(raw) {
-            if (!raw) return '';
-            var results = [];
-            var parts = raw.split('[Hard drive]');
-            for (var i = 1; i < parts.length; i++) {
-                var before = parts[i - 1];
-                var after  = parts[i];
-                var modelM = before.match(/(\S+)\s*$/);
-                var model  = modelM ? modelM[1] : '';
-                var capM   = after.match(/\(([0-9.]+)\s*GB\)/);
-                if (!capM) continue;
-                var gb      = parseFloat(capM[1]);
-                var rounded = gb > 900 ? Math.round(gb / 1000) + ' TB' : Math.round(gb) + ' GB';
-                var isSSD   = /THNSNJ|SSDSA|SSDSC|SSDPE|MZNLN|NVMe|M\.2|SSD/i.test(model);
-                results.push((isSSD ? 'SSD' : 'HDD') + ' (' + rounded + ')');
-            }
-            return results.join(', ');
-        }
-
-        /** Sum memory slot sizes from Belarc config string, strip serial numbers */
-        _extractRAMTotal(confStr) {
-            if (!confStr) return '';
-            var total = 0, m;
-            var re = /has\s+(\d+)\s*MB/gi;
-            while ((m = re.exec(confStr)) !== null) total += parseInt(m[1]);
-            if (total > 0) return (total / 1024) + ' GB';
-            m = confStr.match(/(\d+)\s*GB/i);
-            return m ? m[1] + ' GB' : '';
-        }
-
-        /** Extract system make/model, strip serial numbers and revision info */
-        _extractSystemModel(raw) {
-            if (!raw) return '';
-            var stop = raw.search(/REV:|Rev\s*:|System Serial|Asset Tag|Chassis|Serial Number/i);
-            var model = (stop > 0 ? raw.substring(0, stop) : raw).trim();
-            model = model.replace(/Micro-Star International Co\.?,?\s*Ltd\.?\s*/i, 'MSI ').trim();
-            return model;
-        }
-
-        /** Extract OS name + architecture, strip build numbers and install details */
-        _extractOSName(raw) {
-            if (!raw) return '';
-            var m = raw.match(/(Windows\s+\d+(?:\s+\w+)*?)\s*\(([^)]+)\)/i);
-            if (m) {
-                var arch = m[2].includes('64') ? 'x64' : m[2].includes('32') ? 'x32' : m[2].trim();
-                return m[1].trim() + ' ' + arch;
-            }
-            m = raw.match(/(Windows\s+\d+[^(\n]*)/i);
-            if (m) return m[1].trim();
-            m = raw.match(/(macOS\s+[\w.]+)/i);
-            if (m) return m[1].trim();
-            return raw.split(/\n|Version|Build|Install/)[0].trim();
-        }
-
-        /** Generalize boot mode to UEFI Secure Boot / UEFI / Legacy BIOS */
-        _simplifyBootMode(raw) {
-            if (!raw) return '';
-            if (/UEFI/i.test(raw) && /Secure Boot/i.test(raw)) return 'UEFI Secure Boot';
-            if (/UEFI/i.test(raw)) return 'UEFI';
-            if (/Legacy|BIOS/i.test(raw)) return 'Legacy BIOS';
-            return '';
-        }
-
-        /** Reduce cache string to "L1/L2/L3 present" */
-        _simplifyCacheInfo(raw) {
-            if (!raw) return '';
-            var tiers = [];
-            if (/L1\b|primary/i.test(raw))   tiers.push('L1');
-            if (/L2\b|secondary/i.test(raw)) tiers.push('L2');
-            if (/L3\b|tertiary/i.test(raw))  tiers.push('L3');
-            return tiers.length ? tiers.join('/') + ' present' : '';
-        }
-
-        /** Extract logical core count from Belarc cache string or fall back to navigator */
-        _extractCoreCount(cacheStr, hardwareConcurrency) {
-            var m = cacheStr.match(/Hyper-threaded\s*\((\d+)\s*total\)/i);
-            if (m) return m[1];
-            m = cacheStr.match(/Multi-core\s*\((\d+)\s*total\)/i);
-            if (m) return m[1];
-            return (hardwareConcurrency && hardwareConcurrency !== 'unknown') ? String(hardwareConcurrency) : '';
         }
 
         _buildRankingTable(ranking) {
@@ -1023,7 +866,7 @@
 
         _exportDetail() {
             if (!this._detailRecord) return;
-            var safe = this._sanitizeRecord(this._detailRecord);
+            var safe = SystemSpecsUtils.sanitizeRecord(this._detailRecord);
             this._downloadJSON(safe, 'run-' + (this._detailRecord.testResultId || 'export') + '.json');
         }
 

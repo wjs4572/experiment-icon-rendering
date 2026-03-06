@@ -430,7 +430,7 @@ class StressTestManager {
             measurements.elementMetrics = this.measureElementMetrics(referenceElement);
         }
 
-        const testContainer = document.getElementById('bulkTestContainer');
+        const testContainer = document.getElementById('bulkTestContainer') || this.createTestContainer();
         const totalForConfig = endIndex - startIndex;
         let lastLoopProgressUpdateAt = performance.now();
         let lastUiYieldAt = performance.now();
@@ -1419,33 +1419,6 @@ class StressTestManager {
     }
 
     updateProgress(message, percentage) {
-        // Minimal updates during testing to avoid performance interference
-        if (document.getElementById('currentIcon')) {
-            document.getElementById('currentIcon').textContent = message;
-        }
-        if (document.getElementById('progressText')) {
-            document.getElementById('progressText').textContent = `${percentage.toFixed(0)}%`;
-        }
-        if (document.getElementById('progressBar')) {
-            document.getElementById('progressBar').style.width = `${percentage}%`;
-        }
-        if (document.getElementById('currentIteration')) {
-            document.getElementById('currentIteration').textContent = this.completedIterations.toLocaleString();
-        }
-        
-        // Update time-based info — throttling handled by the 2-second setInterval caller
-        if (document.getElementById('elapsedTime')) {
-            const elapsed = (performance.now() - this.startTime) / 1000;
-            document.getElementById('elapsedTime').textContent = `${elapsed.toFixed(1)}s`;
-        }
-        if (document.getElementById('eta') && percentage > 5) {
-            const elapsed = (performance.now() - this.startTime) / 1000;
-            const totalEstimated = (elapsed / percentage) * 100;
-            const remaining = totalEstimated - elapsed;
-            document.getElementById('eta').textContent = remaining > 0 ? `${remaining.toFixed(0)}s` : 'Almost done';
-        }
-
-        // Notify reporter
         this.reporter.onProgress(percentage, message, this.completedIterations, this.totalIterations);
     }
 

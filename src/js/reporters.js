@@ -57,13 +57,31 @@ class DOMReporter extends NoopReporter {
      * @param {number} totalIterations
      */
     onProgress(percentage, message, completedIterations, totalIterations) {
-        // StressTestManager.updateProgress() already writes directly to #currentIcon (message),
-        // #progressText (percentage), and #progressBar (width) — so DOMReporter only needs
-        // to update #progressBar as a redundancy-safe fallback. Writing to #progressText here
-        // would overwrite the percentage value that STM just set.
+        const pct = document.getElementById('progressPercent');
+        if (pct) pct.textContent = `${Math.round(percentage)}%`;
+
+        const text = document.getElementById('progressText');
+        if (text) text.textContent = message;
+
         const bar = document.getElementById('progressBar');
-        if (bar) {
-            bar.style.width = `${Math.min(100, percentage)}%`;
+        if (bar) bar.style.width = `${Math.min(100, percentage)}%`;
+
+        const iter = document.getElementById('currentIteration');
+        if (iter) iter.textContent = (completedIterations || 0).toLocaleString();
+
+        const startTime = this.manager && this.manager.startTime;
+        if (startTime) {
+            const elapsed = (performance.now() - startTime) / 1000;
+            const elapsedEl = document.getElementById('elapsedTime');
+            if (elapsedEl) elapsedEl.textContent = `${elapsed.toFixed(1)}s`;
+            if (percentage > 5) {
+                const etaEl = document.getElementById('eta');
+                if (etaEl) {
+                    const totalEstimated = (elapsed / percentage) * 100;
+                    const remaining = totalEstimated - elapsed;
+                    etaEl.textContent = remaining > 0 ? `${remaining.toFixed(0)}s` : 'Almost done';
+                }
+            }
         }
     }
 

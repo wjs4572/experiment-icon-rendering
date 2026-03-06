@@ -81,7 +81,7 @@ test.describe('Reporters Module', () => {
 
         test('onTestStart removes hidden class from progressSection', async ({ page }) => {
             const hidden = await page.evaluate(() => {
-                const section = document.getElementById('progressSection');
+                const section = document.getElementById('testProgress');
                 section.classList.add('hidden');
                 const r = new window.Reporters.DOMReporter();
                 r.onTestStart('css', {});
@@ -128,7 +128,7 @@ test.describe('Reporters Module', () => {
 
         test('onTestComplete adds hidden class to progressSection', async ({ page }) => {
             const hidden = await page.evaluate(() => {
-                const section = document.getElementById('progressSection');
+                const section = document.getElementById('testProgress');
                 section.classList.remove('hidden');
                 const r = new window.Reporters.DOMReporter();
                 r.onTestComplete({}, 4.2, {});
