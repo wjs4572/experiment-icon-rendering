@@ -171,6 +171,7 @@
                     <div class="flex gap-2">
                         <button id="excludeSelectAll" class="text-xs text-red-600 hover:underline" type="button">Exclude All</button>
                         <button id="excludeDeselectAll" class="text-xs text-green-600 hover:underline" type="button">Include All</button>
+                        <button id="excludeAllButBest" class="text-xs text-blue-600 hover:underline" type="button">Best Only</button>
                     </div>
                 </div>
                 <div id="testExclusionList" class="max-h-60 overflow-y-auto p-2.5 border border-gray-100 rounded-lg bg-gray-50/50 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-3 items-start">
@@ -220,6 +221,14 @@
                 <h2 class="text-2xl font-semibold text-gray-800 mb-6" data-i18n="summary.stats_title">Statistical Analysis Overview</h2>
                 <div id="statisticalAnalysis" class="space-y-4">
                     <!-- Statistical analysis will be populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Cross-Format Best Performer Comparison -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6" data-i18n="summary.cross_format_title">Cross-Format Best Performer Comparison</h2>
+                <div id="crossFormatComparison" class="space-y-4">
+                    <!-- Cross-format comparison populated dynamically -->
                 </div>
             </div>
 
@@ -429,6 +438,7 @@
                 document.getElementById('summaryClearFilters').addEventListener('click', () => this.clearFilters());
                 document.getElementById('excludeSelectAll')?.addEventListener('click', () => this.excludeAllTests());
                 document.getElementById('excludeDeselectAll')?.addEventListener('click', () => this.includeAllTests());
+                document.getElementById('excludeAllButBest')?.addEventListener('click', () => this.excludeAllButBest());
 
                 // Auto-apply filters on change
                 const filterIds = ['summaryFilterTestType', 'summaryFilterDate', 'summaryFilterSignificance', 'summaryFilterOriginalSource', 'summaryFilterInputSource', 'summaryFilterFileName'];
@@ -709,6 +719,23 @@
                 this.render();
             }
 
+            excludeAllButBest() {
+                // Collect the best-performing iconType per format (lowest averageTime)
+                const bestTypes = new Set();
+                Object.values(this.results).forEach(data => {
+                    const ranking = data?.performanceRanking;
+                    if (!Array.isArray(ranking) || ranking.length === 0) return;
+                    const best = [...ranking].sort((a, b) => a.averageTime - b.averageTime)[0];
+                    if (best?.iconType) bestTypes.add(best.iconType);
+                });
+                // Exclude everything that isn't a best-performing type
+                const allTypes = this.collectAllIconTypesFlat();
+                this.excludedTests.clear();
+                allTypes.forEach(t => { if (!bestTypes.has(t)) this.excludedTests.add(t); });
+                this.saveExcludedTests();
+                this.render();
+            }
+
             includeAllTests() {
                 this.excludedTests.clear();
                 this.saveExcludedTests();
@@ -726,8 +753,10 @@
                 if (this.excludedTests.size === 0) return data.statisticalAnalysis;
                 const filtered = {};
                 Object.entries(data.statisticalAnalysis).forEach(([comparison, stats]) => {
-                    const mentionsExcluded = [...this.excludedTests].some(test => comparison.includes(test));
-                    if (!mentionsExcluded) {
+                    // Split "TypeA vs TypeB" and check each side with exact set lookup
+                    const parts = comparison.split(' vs ');
+                    const eitherExcluded = parts.some(p => this.excludedTests.has(p.trim()));
+                    if (!eitherExcluded) {
                         filtered[comparison] = stats;
                     }
                 });
@@ -763,6 +792,7 @@
                 this.renderPerformanceChart();
                 this.renderResultsTable();
                 this.renderStatisticalAnalysis();
+                this.renderCrossFormatComparisons();
                 this.renderTestEnvironment();
             }
 
@@ -1025,6 +1055,105 @@
                     html = '<div class="text-gray-500 text-center">' + this.t('summary.stats.no_data') + '</div>';
                 }
 
+                container.innerHTML = html;
+            }
+
+            computeCrossFormatComparisons() {
+                const bests = [];
+                Object.entries(this.results).forEach(([format, data]) => {
+                    const ranking = this.getFilteredRanking(data);
+                    if (!ranking || ranking.length === 0) return;
+                    const sorted = [...ranking].sort((a, b) => a.averageTime - b.averageTime);
+                    const best = sorted[0];
+                    if (best && best.confidenceInterval) {
+                        bests.push({ format, iconType: best.iconType, mean: best.averageTime, ci: best.confidenceInterval });
+                    }
+                });
+
+                const comparisons = [];
+                for (let i = 0; i < bests.length; i++) {
+                    for (let j = i + 1; j < bests.length; j++) {
+                        const a = bests[i];
+                        const b = bests[j];
+                        const overlap = a.ci.lower <= b.ci.upper && b.ci.lower <= a.ci.upper;
+                        const diff = Math.abs(a.mean - b.mean);
+                        const faster = a.mean <= b.mean ? a : b;
+                        const slower  = a.mean <= b.mean ? b : a;
+                        const halfWidthA = (a.ci.upper - a.ci.lower) / 2;
+                        const halfWidthB = (b.ci.upper - b.ci.lower) / 2;
+                        const pooledSpread = (halfWidthA + halfWidthB) / 2;
+                        const effectSize = pooledSpread > 0 ? diff / pooledSpread : 0;
+                        const diffPct   = slower.mean > 0 ? (diff / slower.mean) * 100 : 0;
+                        comparisons.push({ a, b, overlap, diff, faster, slower, effectSize, diffPct });
+                    }
+                }
+                return { bests, comparisons };
+            }
+
+            renderCrossFormatComparisons() {
+                const container = document.getElementById('crossFormatComparison');
+                if (!container) return;
+
+                const { bests, comparisons } = this.computeCrossFormatComparisons();
+
+                if (bests.length < 2) {
+                    container.innerHTML = `<div class="text-gray-500 text-center">${this.t('summary.cross_format.no_data')}</div>`;
+                    return;
+                }
+
+                let html = `<p class="text-sm text-gray-600 mb-4">${this.t('summary.cross_format.description')}</p>`;
+
+                // Best per format quick-view chips
+                html += `<div class="flex flex-wrap gap-3 mb-6">`;
+                bests.forEach(b => {
+                    html += `<div class="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs">
+                        <span class="font-semibold text-blue-800">${b.format.toUpperCase()}</span>
+                        <span class="text-gray-600 ml-1">${b.iconType}</span>
+                        <span class="font-mono ml-2 text-blue-700">${b.mean.toFixed(3)}ms</span>
+                    </div>`;
+                });
+                html += `</div>`;
+
+                // Pairwise comparison table
+                html += `<div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-gray-50 border-b">
+                                <th class="p-3 text-left">${this.t('summary.cross_format.format_a')}</th>
+                                <th class="p-3 text-left">${this.t('summary.cross_format.format_b')}</th>
+                                <th class="p-3 text-right">${this.t('summary.cross_format.difference')}</th>
+                                <th class="p-3 text-center">${this.t('summary.cross_format.effect_size')}</th>
+                                <th class="p-3 text-center">${this.t('summary.cross_format.verdict')}</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                comparisons.forEach(({ a, b, overlap, diff, faster, slower, effectSize, diffPct }) => {
+                    const verdictClass = overlap
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-green-100 text-green-800';
+                    const verdictText = overlap
+                        ? this.t('summary.cross_format.overlapping')
+                        : this.t('summary.cross_format.no_overlap');
+                    const esClass = effectSize > 1.2 ? 'text-green-600'
+                                  : effectSize > 0.5 ? 'text-yellow-600'
+                                  : 'text-gray-400';
+                    html += `<tr class="border-b hover:bg-gray-50">
+                        <td class="p-3">
+                            <span class="font-semibold">${a.format.toUpperCase()}</span>
+                            <span class="text-gray-500 text-xs ml-1">${a.iconType} (${a.mean.toFixed(3)}ms)</span>
+                        </td>
+                        <td class="p-3">
+                            <span class="font-semibold">${b.format.toUpperCase()}</span>
+                            <span class="text-gray-500 text-xs ml-1">${b.iconType} (${b.mean.toFixed(3)}ms)</span>
+                        </td>
+                        <td class="p-3 text-right font-mono">${diff.toFixed(3)}ms <span class="text-gray-400">(${diffPct.toFixed(1)}%)</span></td>
+                        <td class="p-3 text-center ${esClass}">${effectSize.toFixed(2)}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-medium ${verdictClass}">${verdictText}</span></td>
+                    </tr>`;
+                });
+
+                html += `</tbody></table></div>`;
                 container.innerHTML = html;
             }
 
