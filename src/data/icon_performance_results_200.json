@@ -1,0 +1,4352 @@
+{
+  "exportInfo": {
+    "exportDate": "2026-03-06T22:07:18.493Z",
+    "exportType": "Combined Performance Summary",
+    "formatsIncluded": [
+      "css",
+      "svg",
+      "png",
+      "gif",
+      "jpeg",
+      "webp",
+      "avif"
+    ],
+    "totalFormats": 7
+  },
+  "summaryStatistics": {
+    "bestFormat": {
+      "format": "css",
+      "time": 1.2705000007152558
+    },
+    "worstFormat": {
+      "format": "svg",
+      "time": 3.9555000019073487
+    },
+    "totalIterations": 4600,
+    "totalTestDurationSeconds": 24.19,
+    "perFormatBest": {
+      "css": {
+        "iconType": "Minimal CSS Icon",
+        "averageTime": 1.2705000007152558,
+        "confidenceInterval": {
+          "lower": 1.1332126458071756,
+          "upper": 1.407787355623336
+        },
+        "standardDeviation": 0.9880592328414014,
+        "sampleSize": 200,
+        "memoryUsage": {
+          "min": -1792903,
+          "max": 257637,
+          "average": -4148.695,
+          "stdDev": 131552.86252608147,
+          "median": 0,
+          "standardError": 9302.192117669385,
+          "confidenceInterval": {
+            "lower": -22427.50251122034,
+            "upper": 14130.11251122034
+          },
+          "sampleSize": 200
+        }
+      },
+      "svg": {
+        "iconType": "External SVG",
+        "averageTime": 3.9555000019073487,
+        "confidenceInterval": {
+          "lower": 3.6470164255105835,
+          "upper": 4.263983578304114
+        },
+        "standardDeviation": 2.220161106919401,
+        "sampleSize": 200,
+        "memoryUsage": {
+          "min": -1787552,
+          "max": 402668,
+          "average": -3221.975,
+          "stdDev": 130620.64506909192,
+          "median": 0,
+          "standardError": 9236.274389131606,
+          "confidenceInterval": {
+            "lower": -21371.254174643604,
+            "upper": 14927.304174643605
+          },
+          "sampleSize": 200
+        }
+      },
+      "png": {
+        "iconType": "Compressed PNG",
+        "averageTime": 3.660500002503395,
+        "confidenceInterval": {
+          "lower": 3.27423802985564,
+          "upper": 4.04676197515115
+        },
+        "standardDeviation": 2.779933436882648,
+        "sampleSize": 200,
+        "memoryUsage": {
+          "min": 0,
+          "max": 234579,
+          "average": 5240.335,
+          "stdDev": 24881.308802622,
+          "median": 0,
+          "standardError": 1759.3742179130552,
+          "confidenceInterval": {
+            "lower": 1783.1646618008463,
+            "upper": 8697.505338199153
+          },
+          "sampleSize": 200
+        }
+      },
+      "gif": {
+        "iconType": "Standard GIF",
+        "averageTime": 3.8539999985694884,
+        "confidenceInterval": {
+          "lower": 3.5462370021921115,
+          "upper": 4.161762994946866
+        },
+        "standardDeviation": 2.2149750812899147,
+        "sampleSize": 200,
+        "memoryUsage": {
+          "min": -1508657,
+          "max": 60764,
+          "average": -4956.85,
+          "stdDev": 107429.78881329784,
+          "median": 0,
+          "standardError": 7596.43321713216,
+          "confidenceInterval": {
+            "lower": -19883.841271664696,
+            "upper": 9970.141271664696
+          },
+          "sampleSize": 200
+        }
+      },
+      "jpeg": {
+        "iconType": "Heavy Compression JPEG (q20)",
+        "averageTime": 3.4414999955892562,
+        "confidenceInterval": {
+          "lower": 3.218979405910789,
+          "upper": 3.6640205852677235
+        },
+        "standardDeviation": 1.6014841518093985,
+        "sampleSize": 200,
+        "memoryUsage": {
+          "min": -678967,
+          "max": 228314,
+          "average": -18.87,
+          "stdDev": 51919.174935112525,
+          "median": 0,
+          "standardError": 3671.2400670228694,
+          "confidenceInterval": {
+            "lower": -7232.856731699939,
+            "upper": 7195.116731699939
+          },
+          "sampleSize": 200
+        }
+      },
+      "webp": {
+        "iconType": "Optimized WebP (q50)",
+        "averageTime": 3.618999999165535,
+        "confidenceInterval": {
+          "lower": 3.450594574253677,
+          "upper": 3.7874054240773924
+        },
+        "standardDeviation": 1.2120164676211345,
+        "sampleSize": 200,
+        "memoryUsage": {
+          "min": -277464,
+          "max": 249389,
+          "average": 2656.65,
+          "stdDev": 28762.42880462652,
+          "median": 0,
+          "standardError": 2033.8108451146695,
+          "confidenceInterval": {
+            "lower": -1339.7883106503255,
+            "upper": 6653.088310650326
+          },
+          "sampleSize": 200
+        }
+      },
+      "avif": {
+        "iconType": "Compressed AVIF (q20)",
+        "averageTime": 3.7590000009536744,
+        "confidenceInterval": {
+          "lower": 3.4758256237204836,
+          "upper": 4.042174378186865
+        },
+        "standardDeviation": 2.0380104061055113,
+        "sampleSize": 200,
+        "memoryUsage": {
+          "min": -1405853,
+          "max": 220945,
+          "average": -1852.5,
+          "stdDev": 102077.91203505872,
+          "median": 0,
+          "standardError": 7217.998380935391,
+          "confidenceInterval": {
+            "lower": -16035.866818538043,
+            "upper": 12330.866818538043
+          },
+          "sampleSize": 200
+        }
+      }
+    }
+  },
+  "crossFormatComparisons": [
+    {
+      "baselineFormat": "css",
+      "baselineIcon": "Minimal CSS Icon",
+      "baselineAvgTime": 1.2705000007152558,
+      "comparedFormat": "svg",
+      "comparedIcon": "External SVG",
+      "comparedAvgTime": 3.9555000019073487,
+      "speedRatio": 3.1133,
+      "note": "CSS is 3.11x faster than svg",
+      "baselineMemory": {
+        "min": -1792903,
+        "max": 257637,
+        "average": -4148.695,
+        "stdDev": 131552.86252608147,
+        "median": 0,
+        "standardError": 9302.192117669385,
+        "confidenceInterval": {
+          "lower": -22427.50251122034,
+          "upper": 14130.11251122034
+        },
+        "sampleSize": 200
+      },
+      "comparedMemory": {
+        "min": -1787552,
+        "max": 402668,
+        "average": -3221.975,
+        "stdDev": 130620.64506909192,
+        "median": 0,
+        "standardError": 9236.274389131606,
+        "confidenceInterval": {
+          "lower": -21371.254174643604,
+          "upper": 14927.304174643605
+        },
+        "sampleSize": 200
+      },
+      "memoryRatio": 0.7766
+    },
+    {
+      "baselineFormat": "css",
+      "baselineIcon": "Minimal CSS Icon",
+      "baselineAvgTime": 1.2705000007152558,
+      "comparedFormat": "png",
+      "comparedIcon": "Compressed PNG",
+      "comparedAvgTime": 3.660500002503395,
+      "speedRatio": 2.8811,
+      "note": "CSS is 2.88x faster than png",
+      "baselineMemory": {
+        "min": -1792903,
+        "max": 257637,
+        "average": -4148.695,
+        "stdDev": 131552.86252608147,
+        "median": 0,
+        "standardError": 9302.192117669385,
+        "confidenceInterval": {
+          "lower": -22427.50251122034,
+          "upper": 14130.11251122034
+        },
+        "sampleSize": 200
+      },
+      "comparedMemory": {
+        "min": 0,
+        "max": 234579,
+        "average": 5240.335,
+        "stdDev": 24881.308802622,
+        "median": 0,
+        "standardError": 1759.3742179130552,
+        "confidenceInterval": {
+          "lower": 1783.1646618008463,
+          "upper": 8697.505338199153
+        },
+        "sampleSize": 200
+      },
+      "memoryRatio": -1.2631
+    },
+    {
+      "baselineFormat": "css",
+      "baselineIcon": "Minimal CSS Icon",
+      "baselineAvgTime": 1.2705000007152558,
+      "comparedFormat": "gif",
+      "comparedIcon": "Standard GIF",
+      "comparedAvgTime": 3.8539999985694884,
+      "speedRatio": 3.0335,
+      "note": "CSS is 3.03x faster than gif",
+      "baselineMemory": {
+        "min": -1792903,
+        "max": 257637,
+        "average": -4148.695,
+        "stdDev": 131552.86252608147,
+        "median": 0,
+        "standardError": 9302.192117669385,
+        "confidenceInterval": {
+          "lower": -22427.50251122034,
+          "upper": 14130.11251122034
+        },
+        "sampleSize": 200
+      },
+      "comparedMemory": {
+        "min": -1508657,
+        "max": 60764,
+        "average": -4956.85,
+        "stdDev": 107429.78881329784,
+        "median": 0,
+        "standardError": 7596.43321713216,
+        "confidenceInterval": {
+          "lower": -19883.841271664696,
+          "upper": 9970.141271664696
+        },
+        "sampleSize": 200
+      },
+      "memoryRatio": 1.1948
+    },
+    {
+      "baselineFormat": "css",
+      "baselineIcon": "Minimal CSS Icon",
+      "baselineAvgTime": 1.2705000007152558,
+      "comparedFormat": "jpeg",
+      "comparedIcon": "Heavy Compression JPEG (q20)",
+      "comparedAvgTime": 3.4414999955892562,
+      "speedRatio": 2.7088,
+      "note": "CSS is 2.71x faster than jpeg",
+      "baselineMemory": {
+        "min": -1792903,
+        "max": 257637,
+        "average": -4148.695,
+        "stdDev": 131552.86252608147,
+        "median": 0,
+        "standardError": 9302.192117669385,
+        "confidenceInterval": {
+          "lower": -22427.50251122034,
+          "upper": 14130.11251122034
+        },
+        "sampleSize": 200
+      },
+      "comparedMemory": {
+        "min": -678967,
+        "max": 228314,
+        "average": -18.87,
+        "stdDev": 51919.174935112525,
+        "median": 0,
+        "standardError": 3671.2400670228694,
+        "confidenceInterval": {
+          "lower": -7232.856731699939,
+          "upper": 7195.116731699939
+        },
+        "sampleSize": 200
+      },
+      "memoryRatio": 0.0045
+    },
+    {
+      "baselineFormat": "css",
+      "baselineIcon": "Minimal CSS Icon",
+      "baselineAvgTime": 1.2705000007152558,
+      "comparedFormat": "webp",
+      "comparedIcon": "Optimized WebP (q50)",
+      "comparedAvgTime": 3.618999999165535,
+      "speedRatio": 2.8485,
+      "note": "CSS is 2.85x faster than webp",
+      "baselineMemory": {
+        "min": -1792903,
+        "max": 257637,
+        "average": -4148.695,
+        "stdDev": 131552.86252608147,
+        "median": 0,
+        "standardError": 9302.192117669385,
+        "confidenceInterval": {
+          "lower": -22427.50251122034,
+          "upper": 14130.11251122034
+        },
+        "sampleSize": 200
+      },
+      "comparedMemory": {
+        "min": -277464,
+        "max": 249389,
+        "average": 2656.65,
+        "stdDev": 28762.42880462652,
+        "median": 0,
+        "standardError": 2033.8108451146695,
+        "confidenceInterval": {
+          "lower": -1339.7883106503255,
+          "upper": 6653.088310650326
+        },
+        "sampleSize": 200
+      },
+      "memoryRatio": -0.6404
+    },
+    {
+      "baselineFormat": "css",
+      "baselineIcon": "Minimal CSS Icon",
+      "baselineAvgTime": 1.2705000007152558,
+      "comparedFormat": "avif",
+      "comparedIcon": "Compressed AVIF (q20)",
+      "comparedAvgTime": 3.7590000009536744,
+      "speedRatio": 2.9587,
+      "note": "CSS is 2.96x faster than avif",
+      "baselineMemory": {
+        "min": -1792903,
+        "max": 257637,
+        "average": -4148.695,
+        "stdDev": 131552.86252608147,
+        "median": 0,
+        "standardError": 9302.192117669385,
+        "confidenceInterval": {
+          "lower": -22427.50251122034,
+          "upper": 14130.11251122034
+        },
+        "sampleSize": 200
+      },
+      "comparedMemory": {
+        "min": -1405853,
+        "max": 220945,
+        "average": -1852.5,
+        "stdDev": 102077.91203505872,
+        "median": 0,
+        "standardError": 7217.998380935391,
+        "confidenceInterval": {
+          "lower": -16035.866818538043,
+          "upper": 12330.866818538043
+        },
+        "sampleSize": 200
+      },
+      "memoryRatio": 0.4465
+    }
+  ],
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "platform": "Win32",
+    "hardwareConcurrency": 8,
+    "memoryApi": true
+  },
+  "sourceData": {
+    "css": {
+      "runId": "run_mmfedbxu_8kimrn",
+      "suiteRunId": "suite_mmfedbxu_6n5p6w",
+      "testResultId": "tr_mmfeddtd_xidw06",
+      "testDate": "2026-03-06T21:19:10.771Z",
+      "testStartedAt": "2026-03-06T21:19:10.771Z",
+      "testEndedAt": "2026-03-06T21:19:13.201Z",
+      "durationMs": 2430,
+      "testType": "statistical",
+      "iterations": 1000,
+      "testDuration": 2.43,
+      "results": {
+        "Remix Icon (Square)": {
+          "renderTime": {
+            "min": 1,
+            "max": 3.6999999284744263,
+            "average": 1.405499997138977,
+            "stdDev": 0.33222222553183944,
+            "median": 1.2999999523162842,
+            "standardError": 0.02349165885344502,
+            "confidenceInterval": {
+              "lower": 1.3593388874919574,
+              "upper": 1.4516611067859966
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": 0,
+              "max": 155813,
+              "average": 4138.745,
+              "stdDev": 23671.26702062612,
+              "median": 0,
+              "standardError": 1673.8113429562213,
+              "confidenceInterval": {
+                "lower": 849.705711091025,
+                "upper": 7427.784288908975
+              },
+              "sampleSize": 200
+            },
+            "total": 31913254
+          },
+          "elementMetrics": {
+            "width": 1200,
+            "height": 900,
+            "area": 1080000,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.09999990463256836,
+            "networkRequests": [],
+            "totalFontSize": 0,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.01,
+              "max": 0.03699999928474426,
+              "average": 0.014054999971389776,
+              "stdDev": 0.0033222222553183976,
+              "median": 0.012999999523162841,
+              "standardError": 0.00023491658853445045,
+              "confidenceInterval": {
+                "lower": 0.013593388874919581,
+                "upper": 0.014516611067859972
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.09999990463256836,
+              "max": 1.5,
+              "average": 0.3014999985694885,
+              "stdDev": 0.13872263745006572,
+              "median": 0.2999999523162842,
+              "standardError": 0.009809171764502437,
+              "confidenceInterval": {
+                "lower": 0.2822249760522412,
+                "upper": 0.3207750210867358
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7999999523162842,
+              "max": 2.6999999284744263,
+              "average": 1.1024999982118606,
+              "stdDev": 0.26150655270378426,
+              "median": 1,
+              "standardError": 0.018491305674156314,
+              "confidenceInterval": {
+                "lower": 1.0661645825621435,
+                "upper": 1.1388354138615777
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Pure CSS Icon": {
+          "renderTime": {
+            "min": 1.7999999523162842,
+            "max": 21.199999928474426,
+            "average": 2.7610000002384187,
+            "stdDev": 1.5140145925502244,
+            "median": 2.5,
+            "standardError": 0.10705699852076514,
+            "confidenceInterval": {
+              "lower": 2.5506329981451152,
+              "upper": 2.9713670023317222
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -2428757,
+              "max": 165092,
+              "average": -8691.985,
+              "stdDev": 179786.6554883963,
+              "median": 0,
+              "standardError": 12712.836326269464,
+              "confidenceInterval": {
+                "lower": -33672.7083811195,
+                "upper": 16288.738381119496
+              },
+              "sampleSize": 200
+            },
+            "total": 33221032
+          },
+          "elementMetrics": {
+            "width": 1200,
+            "height": 900,
+            "area": 1080000,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": null,
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.017999999523162842,
+              "max": 0.21199999928474425,
+              "average": 0.02761000000238417,
+              "stdDev": 0.015140145925502254,
+              "median": 0.025,
+              "standardError": 0.0010705699852076522,
+              "confidenceInterval": {
+                "lower": 0.02550632998145113,
+                "upper": 0.029713670023317207
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.19999992847442627,
+              "max": 17.699999928474426,
+              "average": 0.6044999969005584,
+              "stdDev": 1.2299567905971416,
+              "median": 0.5,
+              "standardError": 0.08697107871976813,
+              "confidenceInterval": {
+                "lower": 0.4336018272162141,
+                "upper": 0.7753981665849028
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 1.399999976158142,
+              "max": 4.800000071525574,
+              "average": 2.154000002741814,
+              "stdDev": 0.6360872877097501,
+              "median": 2,
+              "standardError": 0.04497816345661228,
+              "confidenceInterval": {
+                "lower": 2.0656179115495705,
+                "upper": 2.242382093934057
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Minimal CSS Icon": {
+          "renderTime": {
+            "min": 0.8999999761581421,
+            "max": 10.699999928474426,
+            "average": 1.2705000007152558,
+            "stdDev": 0.9880592328414014,
+            "median": 1.100000023841858,
+            "standardError": 0.06986633837561328,
+            "confidenceInterval": {
+              "lower": 1.1332126458071756,
+              "upper": 1.407787355623336
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -1792903,
+              "max": 257637,
+              "average": -4148.695,
+              "stdDev": 131552.86252608147,
+              "median": 0,
+              "standardError": 9302.192117669385,
+              "confidenceInterval": {
+                "lower": -22427.50251122034,
+                "upper": 14130.11251122034
+              },
+              "sampleSize": 200
+            },
+            "total": 32475041
+          },
+          "elementMetrics": {
+            "width": 1200,
+            "height": 900,
+            "area": 1080000,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": null,
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.008999999761581421,
+              "max": 0.10699999928474427,
+              "average": 0.012705000007152537,
+              "stdDev": 0.009880592328414033,
+              "median": 0.01100000023841858,
+              "standardError": 0.0006986633837561342,
+              "confidenceInterval": {
+                "lower": 0.011332126458071733,
+                "upper": 0.01407787355623334
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.09999990463256836,
+              "max": 9.5,
+              "average": 0.3394999986886978,
+              "stdDev": 0.921267292164044,
+              "median": 0.20000004768371582,
+              "standardError": 0.06514343495745638,
+              "confidenceInterval": {
+                "lower": 0.21149314899729602,
+                "upper": 0.4675068483800996
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.6999999284744263,
+              "max": 2.700000047683716,
+              "average": 0.9305000019073486,
+              "stdDev": 0.252663703042449,
+              "median": 0.8999999761581421,
+              "standardError": 0.01786602177810198,
+              "confidenceInterval": {
+                "lower": 0.8953932691133782,
+                "upper": 0.965606734701319
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Circular CSS Icon": {
+          "renderTime": {
+            "min": 1,
+            "max": 13.799999952316284,
+            "average": 2.214000004529953,
+            "stdDev": 1.2171735933184282,
+            "median": 1.899999976158142,
+            "standardError": 0.08606717017166576,
+            "confidenceInterval": {
+              "lower": 2.0448780151426296,
+              "upper": 2.383121993917276
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -825256,
+              "max": 495752,
+              "average": 4861.365,
+              "stdDev": 93991.19463485011,
+              "median": 0,
+              "standardError": 6646.1811098127155,
+              "confidenceInterval": {
+                "lower": -8198.380880781986,
+                "upper": 17921.110880781984
+              },
+              "sampleSize": 200
+            },
+            "total": 34310162
+          },
+          "elementMetrics": {
+            "width": 1200,
+            "height": 900,
+            "area": 1080000,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": null,
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.01,
+              "max": 0.13799999952316283,
+              "average": 0.02214000004529954,
+              "stdDev": 0.01217173593318428,
+              "median": 0.01899999976158142,
+              "standardError": 0.0008606717017166574,
+              "confidenceInterval": {
+                "lower": 0.020448780151426305,
+                "upper": 0.02383121993917277
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.19999992847442627,
+              "max": 7.700000047683716,
+              "average": 0.618000002503395,
+              "stdDev": 0.6479003599796795,
+              "median": 0.5,
+              "standardError": 0.045813473807483664,
+              "confidenceInterval": {
+                "lower": 0.5279765264716896,
+                "upper": 0.7080234785351005
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.6999999284744263,
+              "max": 6.099999904632568,
+              "average": 1.5935000014305114,
+              "stdDev": 0.7586073944362105,
+              "median": 1.399999976158142,
+              "standardError": 0.053641643286410245,
+              "confidenceInterval": {
+                "lower": 1.4880941723727152,
+                "upper": 1.6989058304883076
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Circular Remix Icon": {
+          "renderTime": {
+            "min": 1.1999999284744263,
+            "max": 6.900000095367432,
+            "average": 2.1934999912977218,
+            "stdDev": 0.7686755292353993,
+            "median": 2,
+            "standardError": 0.05435356792545091,
+            "confidenceInterval": {
+              "lower": 2.0866952303242106,
+              "upper": 2.300304752271233
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -3735110,
+              "max": 427664,
+              "average": -8472.825,
+              "stdDev": 269872.0561077105,
+              "median": 0,
+              "standardError": 19082.836092651854,
+              "confidenceInterval": {
+                "lower": -45970.5979220609,
+                "upper": 29024.947922060896
+              },
+              "sampleSize": 200
+            },
+            "total": 31344557
+          },
+          "elementMetrics": {
+            "width": 1200,
+            "height": 900,
+            "area": 1080000,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.30000007152557373,
+            "networkRequests": [],
+            "totalFontSize": 0,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.011999999284744262,
+              "max": 0.06900000095367431,
+              "average": 0.021934999912977208,
+              "stdDev": 0.007686755292353994,
+              "median": 0.02,
+              "standardError": 0.0005435356792545091,
+              "confidenceInterval": {
+                "lower": 0.0208669523032421,
+                "upper": 0.023003047522712317
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.19999992847442627,
+              "max": 1.899999976158142,
+              "average": 0.5684999924898148,
+              "stdDev": 0.2820558917739513,
+              "median": 0.5,
+              "standardError": 0.01994436337469799,
+              "confidenceInterval": {
+                "lower": 0.5293093184585332,
+                "upper": 0.6076906665210963
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.8999999761581421,
+              "max": 6.100000023841858,
+              "average": 1.6239999985694886,
+              "stdDev": 0.6404489624711149,
+              "median": 1.4000000953674316,
+              "standardError": 0.0452865804367214,
+              "confidenceInterval": {
+                "lower": 1.5350118680113312,
+                "upper": 1.712988129127646
+              },
+              "sampleSize": 200
+            }
+          }
+        }
+      },
+      "statisticalAnalysis": {
+        "Remix Icon (Square) vs Minimal CSS Icon": {
+          "pValue": 0.06702554567081531,
+          "power": 0.4489522681463015,
+          "effectSize": 0.18315019222547313,
+          "isSignificant": false,
+          "significanceLevel": "significant"
+        },
+        "Circular Remix Icon vs Minimal CSS Icon": {
+          "pValue": 0.001,
+          "power": 0.999,
+          "effectSize": 1.0427138350393985,
+          "isSignificant": true,
+          "significanceLevel": "very"
+        },
+        "Circular CSS Icon vs Minimal CSS Icon": {
+          "pValue": 0.001,
+          "power": 0.999,
+          "effectSize": 0.8511107082229132,
+          "isSignificant": true,
+          "significanceLevel": "very"
+        },
+        "Pure CSS Icon vs Minimal CSS Icon": {
+          "pValue": 0.001,
+          "power": 0.999,
+          "effectSize": 1.165930468073651,
+          "isSignificant": true,
+          "significanceLevel": "very"
+        }
+      },
+      "performanceRanking": [
+        {
+          "rank": 1,
+          "iconType": "Minimal CSS Icon",
+          "averageTime": 1.2705000007152558,
+          "confidenceInterval": {
+            "lower": 1.1332126458071756,
+            "upper": 1.407787355623336
+          },
+          "standardDeviation": 0.9880592328414014,
+          "sampleSize": 200
+        },
+        {
+          "rank": 2,
+          "iconType": "Remix Icon (Square)",
+          "averageTime": 1.405499997138977,
+          "confidenceInterval": {
+            "lower": 1.3593388874919574,
+            "upper": 1.4516611067859966
+          },
+          "standardDeviation": 0.33222222553183944,
+          "sampleSize": 200
+        },
+        {
+          "rank": 3,
+          "iconType": "Circular Remix Icon",
+          "averageTime": 2.1934999912977218,
+          "confidenceInterval": {
+            "lower": 2.0866952303242106,
+            "upper": 2.300304752271233
+          },
+          "standardDeviation": 0.7686755292353993,
+          "sampleSize": 200
+        },
+        {
+          "rank": 4,
+          "iconType": "Circular CSS Icon",
+          "averageTime": 2.214000004529953,
+          "confidenceInterval": {
+            "lower": 2.0448780151426296,
+            "upper": 2.383121993917276
+          },
+          "standardDeviation": 1.2171735933184282,
+          "sampleSize": 200
+        },
+        {
+          "rank": 5,
+          "iconType": "Pure CSS Icon",
+          "averageTime": 2.7610000002384187,
+          "confidenceInterval": {
+            "lower": 2.5506329981451152,
+            "upper": 2.9713670023317222
+          },
+          "standardDeviation": 1.5140145925502244,
+          "sampleSize": 200
+        }
+      ],
+      "testMetadata": {},
+      "testConfiguration": {},
+      "systemSpecifications": {
+        "lastUpdated": "2026-02-17T18:55:01.604Z",
+        "autoDetected": {
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+          "platform": "Win32",
+          "language": "en-US",
+          "hardwareConcurrency": 8,
+          "deviceMemory": "8GB",
+          "connection": {
+            "effectiveType": "4g",
+            "downlink": 10,
+            "rtt": 50
+          },
+          "screen": {
+            "resolution": "2560×1440",
+            "colorDepth": 32,
+            "pixelRatio": 1
+          },
+          "gpu": "Google Inc. (Intel) — ANGLE (Intel, Intel(R) HD Graphics 530 (0x0000191B) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "touchSupport": false,
+          "cookiesEnabled": true,
+          "doNotTrack": "1",
+          "timezone": "America/New_York",
+          "languages": "en-US, pt-BR, pt, en"
+        },
+        "manual": {
+          "systemConfiguration": {
+            "model": "Micro-Star International Co., Ltd. GE72 6QF REV:1.0System Serial Number: Default stringAsset Tag: Default stringChassis Serial Number: Default stringEnclosure Type: Notebook",
+            "operatingSystem": "Windows 10 Home (x64) Version 2009 (build 19045.6937)Install Language: English (United States)System Locale: English (United States)Installed: 7/7/2020 11:10:17 AMServicing Branch: Current Branch (CB)Boot Mode: UEFI with successful Secure Boot",
+            "bootMode": "UEFI with successful Secure Boot"
+          },
+          "processor": {
+            "cpu": "Jan2026Critical\t\t Oracle Java SE Critical Patch Update for Java 8.0.2520.9 64-bit",
+            "architecture": "64-bit",
+            "cores": "64-bit",
+            "cache": "1024 kilobyte secondary memory cache6144 kilobyte tertiary memory cache64-bit readyMulti-core (4 total)Hyper-threaded (8 total)",
+            "generation": ""
+          },
+          "memory": {
+            "totalRAM": "",
+            "configuration": "Slot 'ChannelA-DIMM0' has 8192 MB (serial number 49941214)Slot 'ChannelA-DIMM1' is E",
+            "speed": ""
+          },
+          "graphics": {
+            "integrated": "Intel(R) HD Graphics 530 [Display adapter]NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "discrete": "NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "driverVersion": "8.5"
+          },
+          "storage": {
+            "systemDrive": "Capacity307.01 Gigabytes Hard Drive Free SpaceHL-DT-ST DVDRAM GUB0N [Optical drive]HGST HTS721010A9E630 [Hard drive] (1000.20 GB) -- drive 1, s/n JR100X6P3TZW9E, rev JB0OA3J0, SMART Status: HealthyTOSHIBA THNSNJ128G8NY [Hard drive] (128.04 GB) -- drive 0, s/n Y58S11JBTUQW, rev JYXA0101, SMART Status: Healthy",
+            "additionalDrives": "",
+            "performance": ""
+          },
+          "network": {
+            "connection": "Adapter",
+            "router": "10.0.0.1",
+            "speed": ""
+          },
+          "reportGeneratedBy": "Belarc Advisor"
+        }
+      },
+      "_sourceInfo": {
+        "originalSource": "css.html",
+        "fileName": "Current Data",
+        "importedAt": null
+      },
+      "_dataOrigin": "live",
+      "startTime": "2026-03-06T21:19:10.771Z",
+      "endTime": "2026-03-06T21:19:13.201Z"
+    },
+    "svg": {
+      "runId": "run_mmfedbxu_8kimrn",
+      "suiteRunId": "suite_mmfeddth_h6kxuc",
+      "testResultId": "tr_mmfedjc2_13lmd0",
+      "testDate": "2026-03-06T21:19:13.209Z",
+      "testStartedAt": "2026-03-06T21:19:13.209Z",
+      "testEndedAt": "2026-03-06T21:19:20.354Z",
+      "durationMs": 7145,
+      "testType": "statistical",
+      "iterations": 600,
+      "testDuration": 7.145,
+      "results": {
+        "Inline SVG": {
+          "renderTime": {
+            "min": 6.299999952316284,
+            "max": 161.60000002384186,
+            "average": 13.964000002741814,
+            "stdDev": 12.355594181120301,
+            "median": 11.699999988079071,
+            "standardError": 0.8736724431059212,
+            "confidenceInterval": {
+              "lower": 12.247233652038679,
+              "upper": 15.68076635344495
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -3780608,
+              "max": 1024749,
+              "average": 6748.345,
+              "stdDev": 697991.2686309412,
+              "median": 0,
+              "standardError": 49355.43592579396,
+              "confidenceInterval": {
+                "lower": -90235.08659418512,
+                "upper": 103731.77659418512
+              },
+              "sampleSize": 200
+            },
+            "total": 33141910
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 3,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": null,
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.06299999952316285,
+              "max": 1.6160000002384185,
+              "average": 0.13964000002741817,
+              "stdDev": 0.12355594181120295,
+              "median": 0.11699999988079071,
+              "standardError": 0.008736724431059209,
+              "confidenceInterval": {
+                "lower": 0.12247233652038682,
+                "upper": 0.15680766353444953
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 3.100000023841858,
+              "max": 156.5,
+              "average": 8.764000003337861,
+              "stdDev": 12.205007787191075,
+              "median": 6.650000035762787,
+              "standardError": 0.8630243770757428,
+              "confidenceInterval": {
+                "lower": 7.068157102384026,
+                "upper": 10.459842904291696
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 3.0999999046325684,
+              "max": 10.600000023841858,
+              "average": 5.198499999046326,
+              "stdDev": 1.4419932272375178,
+              "median": 4.850000023841858,
+              "standardError": 0.1019643189404723,
+              "confidenceInterval": {
+                "lower": 4.998140112328297,
+                "upper": 5.398859885764354
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "External SVG": {
+          "renderTime": {
+            "min": 2,
+            "max": 20.299999952316284,
+            "average": 3.9555000019073487,
+            "stdDev": 2.220161106919401,
+            "median": 3.300000011920929,
+            "standardError": 0.15698909740293399,
+            "confidenceInterval": {
+              "lower": 3.6470164255105835,
+              "upper": 4.263983578304114
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -1787552,
+              "max": 402668,
+              "average": -3221.975,
+              "stdDev": 130620.64506909192,
+              "median": 0,
+              "standardError": 9236.274389131606,
+              "confidenceInterval": {
+                "lower": -21371.254174643604,
+                "upper": 14927.304174643605
+              },
+              "sampleSize": 200
+            },
+            "total": 28947614
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.10000002384185791,
+            "networkRequests": [],
+            "totalFontSize": 0,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.02,
+              "max": 0.20299999952316283,
+              "average": 0.039555000019073555,
+              "stdDev": 0.022201611069194008,
+              "median": 0.03300000011920929,
+              "standardError": 0.0015698909740293398,
+              "confidenceInterval": {
+                "lower": 0.0364701642551059,
+                "upper": 0.04263983578304121
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.8000000715255737,
+              "max": 14.300000071525574,
+              "average": 2.175,
+              "stdDev": 1.3674518740650254,
+              "median": 1.7999999523162842,
+              "standardError": 0.09669344930976323,
+              "confidenceInterval": {
+                "lower": 1.984997372106315,
+                "upper": 2.3650026278936847
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.8000000715255737,
+              "max": 10.399999976158142,
+              "average": 1.7800000017881394,
+              "stdDev": 1.3086108349713592,
+              "median": 1.399999976158142,
+              "standardError": 0.09253275953424381,
+              "confidenceInterval": {
+                "lower": 1.5981731293033503,
+                "upper": 1.9618268742729286
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Optimized SVG": {
+          "renderTime": {
+            "min": 5.899999976158142,
+            "max": 124.10000002384186,
+            "average": 13.914999997615814,
+            "stdDev": 12.015976589946405,
+            "median": 11.399999976158142,
+            "standardError": 0.849657852932991,
+            "confidenceInterval": {
+              "lower": 12.245422316602486,
+              "upper": 15.584577678629142
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -3601623,
+              "max": 1025496,
+              "average": 6525.4,
+              "stdDev": 612940.482201228,
+              "median": 0,
+              "standardError": 43341.43714282406,
+              "confidenceInterval": {
+                "lower": -78640.5239856493,
+                "upper": 91691.32398564929
+              },
+              "sampleSize": 200
+            },
+            "total": 30520462
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 3,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": null,
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.05899999976158142,
+              "max": 1.2410000002384185,
+              "average": 0.13914999997615815,
+              "stdDev": 0.12015976589946416,
+              "median": 0.11399999976158143,
+              "standardError": 0.008496578529329918,
+              "confidenceInterval": {
+                "lower": 0.12245422316602486,
+                "upper": 0.15584577678629144
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 2.799999952316284,
+              "max": 120.70000004768372,
+              "average": 8.47949999809265,
+              "stdDev": 11.375378055540263,
+              "median": 6.100000023841858,
+              "standardError": 0.8043606961633163,
+              "confidenceInterval": {
+                "lower": 6.898931230131734,
+                "upper": 10.060068766053568
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 3,
+              "max": 23.5,
+              "average": 5.433499999046326,
+              "stdDev": 2.53880986346717,
+              "median": 4.899999976158142,
+              "standardError": 0.17952096706009285,
+              "confidenceInterval": {
+                "lower": 5.080741298773243,
+                "upper": 5.786258699319409
+              },
+              "sampleSize": 200
+            }
+          }
+        }
+      },
+      "statisticalAnalysis": {
+        "Optimized SVG vs External SVG": {
+          "pValue": 0.001,
+          "power": 0.999,
+          "effectSize": 1.1526673747951948,
+          "isSignificant": true,
+          "significanceLevel": "very"
+        },
+        "Inline SVG vs External SVG": {
+          "pValue": 0.001,
+          "power": 0.999,
+          "effectSize": 1.1275087155776922,
+          "isSignificant": true,
+          "significanceLevel": "very"
+        }
+      },
+      "performanceRanking": [
+        {
+          "rank": 1,
+          "iconType": "External SVG",
+          "averageTime": 3.9555000019073487,
+          "confidenceInterval": {
+            "lower": 3.6470164255105835,
+            "upper": 4.263983578304114
+          },
+          "standardDeviation": 2.220161106919401,
+          "sampleSize": 200
+        },
+        {
+          "rank": 2,
+          "iconType": "Optimized SVG",
+          "averageTime": 13.914999997615814,
+          "confidenceInterval": {
+            "lower": 12.245422316602486,
+            "upper": 15.584577678629142
+          },
+          "standardDeviation": 12.015976589946405,
+          "sampleSize": 200
+        },
+        {
+          "rank": 3,
+          "iconType": "Inline SVG",
+          "averageTime": 13.964000002741814,
+          "confidenceInterval": {
+            "lower": 12.247233652038679,
+            "upper": 15.68076635344495
+          },
+          "standardDeviation": 12.355594181120301,
+          "sampleSize": 200
+        }
+      ],
+      "testMetadata": {},
+      "testConfiguration": {},
+      "systemSpecifications": {
+        "lastUpdated": "2026-02-17T18:55:01.604Z",
+        "autoDetected": {
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+          "platform": "Win32",
+          "language": "en-US",
+          "hardwareConcurrency": 8,
+          "deviceMemory": "8GB",
+          "connection": {
+            "effectiveType": "4g",
+            "downlink": 10,
+            "rtt": 50
+          },
+          "screen": {
+            "resolution": "2560×1440",
+            "colorDepth": 32,
+            "pixelRatio": 1
+          },
+          "gpu": "Google Inc. (Intel) — ANGLE (Intel, Intel(R) HD Graphics 530 (0x0000191B) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "touchSupport": false,
+          "cookiesEnabled": true,
+          "doNotTrack": "1",
+          "timezone": "America/New_York",
+          "languages": "en-US, pt-BR, pt, en"
+        },
+        "manual": {
+          "systemConfiguration": {
+            "model": "Micro-Star International Co., Ltd. GE72 6QF REV:1.0System Serial Number: Default stringAsset Tag: Default stringChassis Serial Number: Default stringEnclosure Type: Notebook",
+            "operatingSystem": "Windows 10 Home (x64) Version 2009 (build 19045.6937)Install Language: English (United States)System Locale: English (United States)Installed: 7/7/2020 11:10:17 AMServicing Branch: Current Branch (CB)Boot Mode: UEFI with successful Secure Boot",
+            "bootMode": "UEFI with successful Secure Boot"
+          },
+          "processor": {
+            "cpu": "Jan2026Critical\t\t Oracle Java SE Critical Patch Update for Java 8.0.2520.9 64-bit",
+            "architecture": "64-bit",
+            "cores": "64-bit",
+            "cache": "1024 kilobyte secondary memory cache6144 kilobyte tertiary memory cache64-bit readyMulti-core (4 total)Hyper-threaded (8 total)",
+            "generation": ""
+          },
+          "memory": {
+            "totalRAM": "",
+            "configuration": "Slot 'ChannelA-DIMM0' has 8192 MB (serial number 49941214)Slot 'ChannelA-DIMM1' is E",
+            "speed": ""
+          },
+          "graphics": {
+            "integrated": "Intel(R) HD Graphics 530 [Display adapter]NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "discrete": "NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "driverVersion": "8.5"
+          },
+          "storage": {
+            "systemDrive": "Capacity307.01 Gigabytes Hard Drive Free SpaceHL-DT-ST DVDRAM GUB0N [Optical drive]HGST HTS721010A9E630 [Hard drive] (1000.20 GB) -- drive 1, s/n JR100X6P3TZW9E, rev JB0OA3J0, SMART Status: HealthyTOSHIBA THNSNJ128G8NY [Hard drive] (128.04 GB) -- drive 0, s/n Y58S11JBTUQW, rev JYXA0101, SMART Status: Healthy",
+            "additionalDrives": "",
+            "performance": ""
+          },
+          "network": {
+            "connection": "Adapter",
+            "router": "10.0.0.1",
+            "speed": ""
+          },
+          "reportGeneratedBy": "Belarc Advisor"
+        }
+      },
+      "_sourceInfo": {
+        "originalSource": "svg.html",
+        "fileName": "Current Data",
+        "importedAt": null
+      },
+      "_dataOrigin": "live",
+      "startTime": "2026-03-06T21:19:13.209Z",
+      "endTime": "2026-03-06T21:19:20.354Z"
+    },
+    "png": {
+      "runId": "run_mmfedbxu_8kimrn",
+      "suiteRunId": "suite_mmfedjc7_loofz1",
+      "testResultId": "tr_mmfedloz_zx932f",
+      "testDate": "2026-03-06T21:19:20.359Z",
+      "testStartedAt": "2026-03-06T21:19:20.359Z",
+      "testEndedAt": "2026-03-06T21:19:23.411Z",
+      "durationMs": 3052,
+      "testType": "statistical",
+      "iterations": 600,
+      "testDuration": 3.052,
+      "results": {
+        "Standard PNG": {
+          "renderTime": {
+            "min": 2.200000047683716,
+            "max": 27.199999928474426,
+            "average": 4.1594999980926515,
+            "stdDev": 2.982698810759864,
+            "median": 3.299999952316284,
+            "standardError": 0.21090865553253507,
+            "confidenceInterval": {
+              "lower": 3.74506448997122,
+              "upper": 4.573935506214083
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -3181080,
+              "max": 61316,
+              "average": -12238.92,
+              "stdDev": 225557.21147515005,
+              "median": 0,
+              "standardError": 15949.303377960674,
+              "confidenceInterval": {
+                "lower": -43579.301137692724,
+                "upper": 19101.461137692728
+              },
+              "sampleSize": 200
+            },
+            "total": 31096314
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.20000004768371582,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              }
+            ],
+            "totalFontSize": 652,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.02200000047683716,
+              "max": 0.2719999992847443,
+              "average": 0.041594999980926535,
+              "stdDev": 0.029826988107598644,
+              "median": 0.03299999952316284,
+              "standardError": 0.002109086555325351,
+              "confidenceInterval": {
+                "lower": 0.03745064489971222,
+                "upper": 0.04573935506214085
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 1.100000023841858,
+              "max": 12.200000047683716,
+              "average": 2.2984999978542326,
+              "stdDev": 1.5215199177145333,
+              "median": 1.8000000715255737,
+              "standardError": 0.10758770515263442,
+              "confidenceInterval": {
+                "lower": 2.087090157229306,
+                "upper": 2.5099098384791594
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7999999523162842,
+              "max": 17.799999952316284,
+              "average": 1.8580000001192092,
+              "stdDev": 1.947304797231317,
+              "median": 1.399999976158142,
+              "standardError": 0.13769524271593592,
+              "confidenceInterval": {
+                "lower": 1.587428848182395,
+                "upper": 2.1285711520560233
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "High DPI PNG (2×)": {
+          "renderTime": {
+            "min": 2.3000000715255737,
+            "max": 16.199999928474426,
+            "average": 4.152499993443489,
+            "stdDev": 1.8428440295882773,
+            "median": 3.5,
+            "standardError": 0.13030875099910136,
+            "confidenceInterval": {
+              "lower": 3.8964432977302548,
+              "upper": 4.408556689156724
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -1409468,
+              "max": 233459,
+              "average": -3660.57,
+              "stdDev": 102194.51576118646,
+              "median": 0,
+              "standardError": 7226.243509481045,
+              "confidenceInterval": {
+                "lower": -17860.138496130254,
+                "upper": 10538.998496130254
+              },
+              "sampleSize": 200
+            },
+            "total": 28423876
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.10000002384185791,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              }
+            ],
+            "totalFontSize": 2257,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.023000000715255736,
+              "max": 0.16199999928474426,
+              "average": 0.041524999934434925,
+              "stdDev": 0.01842844029588277,
+              "median": 0.035,
+              "standardError": 0.0013030875099910133,
+              "confidenceInterval": {
+                "lower": 0.038964432977302586,
+                "upper": 0.044085566891567264
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.8999999761581421,
+              "max": 7.799999952316284,
+              "average": 2.276499997973442,
+              "stdDev": 0.9940009766431944,
+              "median": 2,
+              "standardError": 0.07028648310904538,
+              "confidenceInterval": {
+                "lower": 2.1383870586641676,
+                "upper": 2.4146129372827163
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7999999523162842,
+              "max": 13.399999976158142,
+              "average": 1.8704999947547913,
+              "stdDev": 1.2868018638159568,
+              "median": 1.5,
+              "standardError": 0.09099063239477513,
+              "confidenceInterval": {
+                "lower": 1.6917034020990582,
+                "upper": 2.0492965874105247
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Compressed PNG": {
+          "renderTime": {
+            "min": 2.1999999284744263,
+            "max": 38.800000071525574,
+            "average": 3.660500002503395,
+            "stdDev": 2.779933436882648,
+            "median": 3.200000047683716,
+            "standardError": 0.19657097844669455,
+            "confidenceInterval": {
+              "lower": 3.27423802985564,
+              "upper": 4.04676197515115
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": 0,
+              "max": 234579,
+              "average": 5240.335,
+              "stdDev": 24881.308802622,
+              "median": 0,
+              "standardError": 1759.3742179130552,
+              "confidenceInterval": {
+                "lower": 1783.1646618008463,
+                "upper": 8697.505338199153
+              },
+              "sampleSize": 200
+            },
+            "total": 29734680
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              }
+            ],
+            "totalFontSize": 5379,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.021999999284744262,
+              "max": 0.38800000071525576,
+              "average": 0.036605000025033994,
+              "stdDev": 0.027799334368826478,
+              "median": 0.03200000047683716,
+              "standardError": 0.0019657097844669453,
+              "confidenceInterval": {
+                "lower": 0.032742380298556445,
+                "upper": 0.040467619751511544
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 1,
+              "max": 6.299999952316284,
+              "average": 1.9495000010728836,
+              "stdDev": 0.6299076661698111,
+              "median": 1.8000000715255737,
+              "standardError": 0.04454119822700654,
+              "confidenceInterval": {
+                "lower": 1.8619765465568157,
+                "upper": 2.0370234555889515
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7000000476837158,
+              "max": 37.300000071525574,
+              "average": 1.708500002026558,
+              "stdDev": 2.6888898090520366,
+              "median": 1.2999999523162842,
+              "standardError": 0.19013322178440958,
+              "confidenceInterval": {
+                "lower": 1.3348882212201931,
+                "upper": 2.0821117828329228
+              },
+              "sampleSize": 200
+            }
+          }
+        }
+      },
+      "statisticalAnalysis": {
+        "High DPI PNG (2×) vs Compressed PNG": {
+          "pValue": 0.03696402278345445,
+          "power": 0.550223366122254,
+          "effectSize": 0.20861597971858856,
+          "isSignificant": true,
+          "significanceLevel": "significant"
+        },
+        "Standard PNG vs Compressed PNG": {
+          "pValue": 0.08349158519142996,
+          "power": 0.40945941048474044,
+          "effectSize": 0.17307763599027845,
+          "isSignificant": false,
+          "significanceLevel": "significant"
+        }
+      },
+      "performanceRanking": [
+        {
+          "rank": 1,
+          "iconType": "Compressed PNG",
+          "averageTime": 3.660500002503395,
+          "confidenceInterval": {
+            "lower": 3.27423802985564,
+            "upper": 4.04676197515115
+          },
+          "standardDeviation": 2.779933436882648,
+          "sampleSize": 200
+        },
+        {
+          "rank": 2,
+          "iconType": "High DPI PNG (2×)",
+          "averageTime": 4.152499993443489,
+          "confidenceInterval": {
+            "lower": 3.8964432977302548,
+            "upper": 4.408556689156724
+          },
+          "standardDeviation": 1.8428440295882773,
+          "sampleSize": 200
+        },
+        {
+          "rank": 3,
+          "iconType": "Standard PNG",
+          "averageTime": 4.1594999980926515,
+          "confidenceInterval": {
+            "lower": 3.74506448997122,
+            "upper": 4.573935506214083
+          },
+          "standardDeviation": 2.982698810759864,
+          "sampleSize": 200
+        }
+      ],
+      "testMetadata": {},
+      "testConfiguration": {},
+      "systemSpecifications": {
+        "lastUpdated": "2026-02-17T18:55:01.604Z",
+        "autoDetected": {
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+          "platform": "Win32",
+          "language": "en-US",
+          "hardwareConcurrency": 8,
+          "deviceMemory": "8GB",
+          "connection": {
+            "effectiveType": "4g",
+            "downlink": 10,
+            "rtt": 50
+          },
+          "screen": {
+            "resolution": "2560×1440",
+            "colorDepth": 32,
+            "pixelRatio": 1
+          },
+          "gpu": "Google Inc. (Intel) — ANGLE (Intel, Intel(R) HD Graphics 530 (0x0000191B) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "touchSupport": false,
+          "cookiesEnabled": true,
+          "doNotTrack": "1",
+          "timezone": "America/New_York",
+          "languages": "en-US, pt-BR, pt, en"
+        },
+        "manual": {
+          "systemConfiguration": {
+            "model": "Micro-Star International Co., Ltd. GE72 6QF REV:1.0System Serial Number: Default stringAsset Tag: Default stringChassis Serial Number: Default stringEnclosure Type: Notebook",
+            "operatingSystem": "Windows 10 Home (x64) Version 2009 (build 19045.6937)Install Language: English (United States)System Locale: English (United States)Installed: 7/7/2020 11:10:17 AMServicing Branch: Current Branch (CB)Boot Mode: UEFI with successful Secure Boot",
+            "bootMode": "UEFI with successful Secure Boot"
+          },
+          "processor": {
+            "cpu": "Jan2026Critical\t\t Oracle Java SE Critical Patch Update for Java 8.0.2520.9 64-bit",
+            "architecture": "64-bit",
+            "cores": "64-bit",
+            "cache": "1024 kilobyte secondary memory cache6144 kilobyte tertiary memory cache64-bit readyMulti-core (4 total)Hyper-threaded (8 total)",
+            "generation": ""
+          },
+          "memory": {
+            "totalRAM": "",
+            "configuration": "Slot 'ChannelA-DIMM0' has 8192 MB (serial number 49941214)Slot 'ChannelA-DIMM1' is E",
+            "speed": ""
+          },
+          "graphics": {
+            "integrated": "Intel(R) HD Graphics 530 [Display adapter]NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "discrete": "NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "driverVersion": "8.5"
+          },
+          "storage": {
+            "systemDrive": "Capacity307.01 Gigabytes Hard Drive Free SpaceHL-DT-ST DVDRAM GUB0N [Optical drive]HGST HTS721010A9E630 [Hard drive] (1000.20 GB) -- drive 1, s/n JR100X6P3TZW9E, rev JB0OA3J0, SMART Status: HealthyTOSHIBA THNSNJ128G8NY [Hard drive] (128.04 GB) -- drive 0, s/n Y58S11JBTUQW, rev JYXA0101, SMART Status: Healthy",
+            "additionalDrives": "",
+            "performance": ""
+          },
+          "network": {
+            "connection": "Adapter",
+            "router": "10.0.0.1",
+            "speed": ""
+          },
+          "reportGeneratedBy": "Belarc Advisor"
+        }
+      },
+      "_sourceInfo": {
+        "originalSource": "png.html",
+        "fileName": "Current Data",
+        "importedAt": null
+      },
+      "_dataOrigin": "live",
+      "startTime": "2026-03-06T21:19:20.359Z",
+      "endTime": "2026-03-06T21:19:23.411Z"
+    },
+    "gif": {
+      "runId": "run_mmfedbxu_8kimrn",
+      "suiteRunId": "suite_mmfedlp4_9iwauh",
+      "testResultId": "tr_mmfedny4_cukpj1",
+      "testDate": "2026-03-06T21:19:23.416Z",
+      "testStartedAt": "2026-03-06T21:19:23.416Z",
+      "testEndedAt": "2026-03-06T21:19:26.332Z",
+      "durationMs": 2916,
+      "testType": "statistical",
+      "iterations": 600,
+      "testDuration": 2.916,
+      "results": {
+        "Standard GIF": {
+          "renderTime": {
+            "min": 2.200000047683716,
+            "max": 20.700000047683716,
+            "average": 3.8539999985694884,
+            "stdDev": 2.2149750812899147,
+            "median": 3.299999952316284,
+            "standardError": 0.1566223900139323,
+            "confidenceInterval": {
+              "lower": 3.5462370021921115,
+              "upper": 4.161762994946866
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -1508657,
+              "max": 60764,
+              "average": -4956.85,
+              "stdDev": 107429.78881329784,
+              "median": 0,
+              "standardError": 7596.43321713216,
+              "confidenceInterval": {
+                "lower": -19883.841271664696,
+                "upper": 9970.141271664696
+              },
+              "sampleSize": 200
+            },
+            "total": 29777577
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.10000002384185791,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              }
+            ],
+            "totalFontSize": 6014,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.02200000047683716,
+              "max": 0.20700000047683717,
+              "average": 0.03853999998569493,
+              "stdDev": 0.02214975081289914,
+              "median": 0.03299999952316284,
+              "standardError": 0.0015662239001393225,
+              "confidenceInterval": {
+                "lower": 0.03546237002192116,
+                "upper": 0.041617629949468694
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 1.399999976158142,
+              "max": 19.299999952316284,
+              "average": 2.188499999046326,
+              "stdDev": 1.5713892150126745,
+              "median": 1.8000000715255737,
+              "standardError": 0.11111399698188679,
+              "confidenceInterval": {
+                "lower": 1.9701609949769183,
+                "upper": 2.406839003115733
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7000000476837158,
+              "max": 17.90000009536743,
+              "average": 1.6624999994039535,
+              "stdDev": 1.398615167895975,
+              "median": 1.399999976158142,
+              "standardError": 0.09889702694896056,
+              "confidenceInterval": {
+                "lower": 1.468167341449246,
+                "upper": 1.856832657358661
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Optimized Palette GIF": {
+          "renderTime": {
+            "min": 2.399999976158142,
+            "max": 29.200000047683716,
+            "average": 4.013000004291534,
+            "stdDev": 2.2813050613357886,
+            "median": 3.4000000953674316,
+            "standardError": 0.1613126278825729,
+            "confidenceInterval": {
+              "lower": 3.6960206905022783,
+              "upper": 4.32997931808079
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -108932,
+              "max": 61580,
+              "average": 2562.025,
+              "stdDev": 14059.281314125667,
+              "median": 0,
+              "standardError": 994.1413155827573,
+              "confidenceInterval": {
+                "lower": 608.5373148798819,
+                "upper": 4515.5126851201185
+              },
+              "sampleSize": 200
+            },
+            "total": 28686209
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.10000002384185791,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.gif",
+                "duration": 2.799999952316284,
+                "size": 1711,
+                "startTime": 57460.89999997616
+              }
+            ],
+            "totalFontSize": 7725,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.02399999976158142,
+              "max": 0.29200000047683716,
+              "average": 0.04013000004291542,
+              "stdDev": 0.022813050613357887,
+              "median": 0.034000000953674316,
+              "standardError": 0.0016131262788257289,
+              "confidenceInterval": {
+                "lower": 0.036960206905022865,
+                "upper": 0.043299793180807976
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 1.5,
+              "max": 4.800000071525574,
+              "average": 2.1780000019073484,
+              "stdDev": 0.6707949298259775,
+              "median": 2,
+              "standardError": 0.0474323643665503,
+              "confidenceInterval": {
+                "lower": 2.084795405927077,
+                "upper": 2.27120459788762
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7999999523162842,
+              "max": 25.600000023841858,
+              "average": 1.833500002026558,
+              "stdDev": 1.9658971254692843,
+              "median": 1.399999976158142,
+              "standardError": 0.13900991885344718,
+              "confidenceInterval": {
+                "lower": 1.5603455114795342,
+                "upper": 2.1066544925735817
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Dithered GIF": {
+          "renderTime": {
+            "min": 2.4000000953674316,
+            "max": 31.5,
+            "average": 3.8864999979734423,
+            "stdDev": 2.2552602393696857,
+            "median": 3.5,
+            "standardError": 0.1594709808598701,
+            "confidenceInterval": {
+              "lower": 3.5731395205837977,
+              "upper": 4.199860475363087
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -1598305,
+              "max": 208501,
+              "average": -4033.64,
+              "stdDev": 114772.53177770207,
+              "median": 0,
+              "standardError": 8115.643551396164,
+              "confidenceInterval": {
+                "lower": -19980.879578493463,
+                "upper": 11913.599578493464
+              },
+              "sampleSize": 200
+            },
+            "total": 29472817
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.10000002384185791,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.gif",
+                "duration": 2.799999952316284,
+                "size": 1711,
+                "startTime": 57460.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.gif",
+                "duration": 3.799999952316284,
+                "size": 614,
+                "startTime": 58405
+              }
+            ],
+            "totalFontSize": 8339,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.024000000953674317,
+              "max": 0.315,
+              "average": 0.038864999979734506,
+              "stdDev": 0.022552602393696847,
+              "median": 0.035,
+              "standardError": 0.0015947098085987003,
+              "confidenceInterval": {
+                "lower": 0.03573139520583806,
+                "upper": 0.04199860475363095
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.6000000238418579,
+              "max": 4.5,
+              "average": 2.12199999332428,
+              "stdDev": 0.5721475036940342,
+              "median": 2,
+              "standardError": 0.040456937970100686,
+              "confidenceInterval": {
+                "lower": 2.042502110213032,
+                "upper": 2.201497876435528
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.8000000715255737,
+              "max": 29.300000071525574,
+              "average": 1.7610000044107437,
+              "stdDev": 2.1289294788761564,
+              "median": 1.399999976158142,
+              "standardError": 0.1505380471181273,
+              "confidenceInterval": {
+                "lower": 1.4651927418236235,
+                "upper": 2.056807266997864
+              },
+              "sampleSize": 200
+            }
+          }
+        }
+      },
+      "statisticalAnalysis": {
+        "Dithered GIF vs Standard GIF": {
+          "pValue": 0.8843947783998065,
+          "power": 0.05242084667613306,
+          "effectSize": 0.014540030862046912,
+          "isSignificant": false,
+          "significanceLevel": "significant"
+        },
+        "Optimized Palette GIF vs Standard GIF": {
+          "pValue": 0.4794579762702822,
+          "power": 0.10895930062037856,
+          "effectSize": 0.07071743848069312,
+          "isSignificant": false,
+          "significanceLevel": "significant"
+        }
+      },
+      "performanceRanking": [
+        {
+          "rank": 1,
+          "iconType": "Standard GIF",
+          "averageTime": 3.8539999985694884,
+          "confidenceInterval": {
+            "lower": 3.5462370021921115,
+            "upper": 4.161762994946866
+          },
+          "standardDeviation": 2.2149750812899147,
+          "sampleSize": 200
+        },
+        {
+          "rank": 2,
+          "iconType": "Dithered GIF",
+          "averageTime": 3.8864999979734423,
+          "confidenceInterval": {
+            "lower": 3.5731395205837977,
+            "upper": 4.199860475363087
+          },
+          "standardDeviation": 2.2552602393696857,
+          "sampleSize": 200
+        },
+        {
+          "rank": 3,
+          "iconType": "Optimized Palette GIF",
+          "averageTime": 4.013000004291534,
+          "confidenceInterval": {
+            "lower": 3.6960206905022783,
+            "upper": 4.32997931808079
+          },
+          "standardDeviation": 2.2813050613357886,
+          "sampleSize": 200
+        }
+      ],
+      "testMetadata": {},
+      "testConfiguration": {},
+      "systemSpecifications": {
+        "lastUpdated": "2026-02-17T18:55:01.604Z",
+        "autoDetected": {
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+          "platform": "Win32",
+          "language": "en-US",
+          "hardwareConcurrency": 8,
+          "deviceMemory": "8GB",
+          "connection": {
+            "effectiveType": "4g",
+            "downlink": 10,
+            "rtt": 50
+          },
+          "screen": {
+            "resolution": "2560×1440",
+            "colorDepth": 32,
+            "pixelRatio": 1
+          },
+          "gpu": "Google Inc. (Intel) — ANGLE (Intel, Intel(R) HD Graphics 530 (0x0000191B) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "touchSupport": false,
+          "cookiesEnabled": true,
+          "doNotTrack": "1",
+          "timezone": "America/New_York",
+          "languages": "en-US, pt-BR, pt, en"
+        },
+        "manual": {
+          "systemConfiguration": {
+            "model": "Micro-Star International Co., Ltd. GE72 6QF REV:1.0System Serial Number: Default stringAsset Tag: Default stringChassis Serial Number: Default stringEnclosure Type: Notebook",
+            "operatingSystem": "Windows 10 Home (x64) Version 2009 (build 19045.6937)Install Language: English (United States)System Locale: English (United States)Installed: 7/7/2020 11:10:17 AMServicing Branch: Current Branch (CB)Boot Mode: UEFI with successful Secure Boot",
+            "bootMode": "UEFI with successful Secure Boot"
+          },
+          "processor": {
+            "cpu": "Jan2026Critical\t\t Oracle Java SE Critical Patch Update for Java 8.0.2520.9 64-bit",
+            "architecture": "64-bit",
+            "cores": "64-bit",
+            "cache": "1024 kilobyte secondary memory cache6144 kilobyte tertiary memory cache64-bit readyMulti-core (4 total)Hyper-threaded (8 total)",
+            "generation": ""
+          },
+          "memory": {
+            "totalRAM": "",
+            "configuration": "Slot 'ChannelA-DIMM0' has 8192 MB (serial number 49941214)Slot 'ChannelA-DIMM1' is E",
+            "speed": ""
+          },
+          "graphics": {
+            "integrated": "Intel(R) HD Graphics 530 [Display adapter]NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "discrete": "NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "driverVersion": "8.5"
+          },
+          "storage": {
+            "systemDrive": "Capacity307.01 Gigabytes Hard Drive Free SpaceHL-DT-ST DVDRAM GUB0N [Optical drive]HGST HTS721010A9E630 [Hard drive] (1000.20 GB) -- drive 1, s/n JR100X6P3TZW9E, rev JB0OA3J0, SMART Status: HealthyTOSHIBA THNSNJ128G8NY [Hard drive] (128.04 GB) -- drive 0, s/n Y58S11JBTUQW, rev JYXA0101, SMART Status: Healthy",
+            "additionalDrives": "",
+            "performance": ""
+          },
+          "network": {
+            "connection": "Adapter",
+            "router": "10.0.0.1",
+            "speed": ""
+          },
+          "reportGeneratedBy": "Belarc Advisor"
+        }
+      },
+      "_sourceInfo": {
+        "originalSource": "gif.html",
+        "fileName": "Current Data",
+        "importedAt": null
+      },
+      "_dataOrigin": "live",
+      "startTime": "2026-03-06T21:19:23.416Z",
+      "endTime": "2026-03-06T21:19:26.332Z"
+    },
+    "jpeg": {
+      "runId": "run_mmfedbxu_8kimrn",
+      "suiteRunId": "suite_mmfedny7_x67adm",
+      "testResultId": "tr_mmfedq1x_q1mkjr",
+      "testDate": "2026-03-06T21:19:26.337Z",
+      "testStartedAt": "2026-03-06T21:19:26.337Z",
+      "testEndedAt": "2026-03-06T21:19:29.061Z",
+      "durationMs": 2724,
+      "testType": "statistical",
+      "iterations": 600,
+      "testDuration": 2.724,
+      "results": {
+        "High Quality JPEG (q90)": {
+          "renderTime": {
+            "min": 2.1999999284744263,
+            "max": 17.100000023841858,
+            "average": 3.571499995589256,
+            "stdDev": 1.5276473131527455,
+            "median": 3.100000023841858,
+            "standardError": 0.10802097743917156,
+            "confidenceInterval": {
+              "lower": 3.359238774921284,
+              "upper": 3.7837612162572283
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -1377092,
+              "max": 74556,
+              "average": -9494.975,
+              "stdDev": 126392.31712567183,
+              "median": 0,
+              "standardError": 8937.286452944316,
+              "confidenceInterval": {
+                "lower": -27056.742880035585,
+                "upper": 8066.792880035582
+              },
+              "sampleSize": 200
+            },
+            "total": 28162025
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.19999992847442627,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.gif",
+                "duration": 2.799999952316284,
+                "size": 1711,
+                "startTime": 57460.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.gif",
+                "duration": 3.799999952316284,
+                "size": 614,
+                "startTime": 58405
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_dithered.gif",
+                "duration": 15,
+                "size": 1711,
+                "startTime": 59391.39999997616
+              }
+            ],
+            "totalFontSize": 10050,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.021999999284744262,
+              "max": 0.17100000023841858,
+              "average": 0.03571499995589265,
+              "stdDev": 0.015276473131527454,
+              "median": 0.03100000023841858,
+              "standardError": 0.0010802097743917156,
+              "confidenceInterval": {
+                "lower": 0.03359238774921293,
+                "upper": 0.037837612162572365
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 1.2999999523162842,
+              "max": 16,
+              "average": 2.0810000014305117,
+              "stdDev": 1.1782957645356351,
+              "median": 1.8000000715255737,
+              "standardError": 0.0833180925346535,
+              "confidenceInterval": {
+                "lower": 1.9172799495999175,
+                "upper": 2.244720053261106
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.6999999284744263,
+              "max": 6.300000071525574,
+              "average": 1.4879999935626984,
+              "stdDev": 0.7779989881196885,
+              "median": 1.2999999523162842,
+              "standardError": 0.055012836025570395,
+              "confidenceInterval": {
+                "lower": 1.3798997707724525,
+                "upper": 1.5961002163529443
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Medium Compression JPEG (q60)": {
+          "renderTime": {
+            "min": 1.899999976158142,
+            "max": 20.200000047683716,
+            "average": 3.665999999046326,
+            "stdDev": 1.7528280114789356,
+            "median": 3.199999988079071,
+            "standardError": 0.12394365731704869,
+            "confidenceInterval": {
+              "lower": 3.422450712418325,
+              "upper": 3.9095492856743266
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -1060629,
+              "max": 238111,
+              "average": -1262.57,
+              "stdDev": 78091.73676265712,
+              "median": 0,
+              "standardError": 5521.919661950966,
+              "confidenceInterval": {
+                "lower": -12113.142135733648,
+                "upper": 9588.002135733648
+              },
+              "sampleSize": 200
+            },
+            "total": 28424335
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.10000002384185791,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.gif",
+                "duration": 2.799999952316284,
+                "size": 1711,
+                "startTime": 57460.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.gif",
+                "duration": 3.799999952316284,
+                "size": 614,
+                "startTime": 58405
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_dithered.gif",
+                "duration": 15,
+                "size": 1711,
+                "startTime": 59391.39999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.jpg",
+                "duration": 4.600000023841858,
+                "size": 1461,
+                "startTime": 60409.799999952316
+              }
+            ],
+            "totalFontSize": 11511,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.01899999976158142,
+              "max": 0.20200000047683717,
+              "average": 0.036659999990463356,
+              "stdDev": 0.017528280114789355,
+              "median": 0.03199999988079071,
+              "standardError": 0.0012394365731704868,
+              "confidenceInterval": {
+                "lower": 0.03422450712418335,
+                "upper": 0.03909549285674336
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.5,
+              "max": 5.600000023841858,
+              "average": 2.0589999991655348,
+              "stdDev": 0.748881239666302,
+              "median": 1.8000000715255737,
+              "standardError": 0.05295390028714303,
+              "confidenceInterval": {
+                "lower": 1.9549455851012987,
+                "upper": 2.1630544132297707
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7999999523162842,
+              "max": 18.600000023841858,
+              "average": 1.605,
+              "stdDev": 1.3984826692356718,
+              "median": 1.399999976158142,
+              "standardError": 0.0988876578788407,
+              "confidenceInterval": {
+                "lower": 1.410685752268078,
+                "upper": 1.799314247731922
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Heavy Compression JPEG (q20)": {
+          "renderTime": {
+            "min": 1.899999976158142,
+            "max": 16,
+            "average": 3.4414999955892562,
+            "stdDev": 1.6014841518093985,
+            "median": 3.100000023841858,
+            "standardError": 0.1132420303707212,
+            "confidenceInterval": {
+              "lower": 3.218979405910789,
+              "upper": 3.6640205852677235
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -678967,
+              "max": 228314,
+              "average": -18.87,
+              "stdDev": 51919.174935112525,
+              "median": 0,
+              "standardError": 3671.2400670228694,
+              "confidenceInterval": {
+                "lower": -7232.856731699939,
+                "upper": 7195.116731699939
+              },
+              "sampleSize": 200
+            },
+            "total": 28162134
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.10000002384185791,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.gif",
+                "duration": 2.799999952316284,
+                "size": 1711,
+                "startTime": 57460.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.gif",
+                "duration": 3.799999952316284,
+                "size": 614,
+                "startTime": 58405
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_dithered.gif",
+                "duration": 15,
+                "size": 1711,
+                "startTime": 59391.39999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.jpg",
+                "duration": 4.600000023841858,
+                "size": 1461,
+                "startTime": 60409.799999952316
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_medium.jpg",
+                "duration": 2.5,
+                "size": 862,
+                "startTime": 61317.10000002384
+              }
+            ],
+            "totalFontSize": 12373,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.01899999976158142,
+              "max": 0.16,
+              "average": 0.03441499995589262,
+              "stdDev": 0.016014841518094,
+              "median": 0.03100000023841858,
+              "standardError": 0.0011324203037072131,
+              "confidenceInterval": {
+                "lower": 0.03218979405910794,
+                "upper": 0.03664020585267729
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.6000000238418579,
+              "max": 8.600000023841858,
+              "average": 1.9524999976158142,
+              "stdDev": 0.8152403540096873,
+              "median": 1.7999999523162842,
+              "standardError": 0.05764619826171715,
+              "confidenceInterval": {
+                "lower": 1.83922521803154,
+                "upper": 2.0657747772000885
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7000000476837158,
+              "max": 14.399999976158142,
+              "average": 1.4884999978542328,
+              "stdDev": 1.148526579642427,
+              "median": 1.2999999523162842,
+              "standardError": 0.08121309328381515,
+              "confidenceInterval": {
+                "lower": 1.328916269551536,
+                "upper": 1.6480837261569297
+              },
+              "sampleSize": 200
+            }
+          }
+        }
+      },
+      "statisticalAnalysis": {
+        "High Quality JPEG (q90) vs Heavy Compression JPEG (q20)": {
+          "pValue": 0.40615982404691064,
+          "power": 0.1320094437986794,
+          "effectSize": 0.08306702650035507,
+          "isSignificant": false,
+          "significanceLevel": "significant"
+        },
+        "Medium Compression JPEG (q60) vs Heavy Compression JPEG (q20)": {
+          "pValue": 0.1811525713371509,
+          "power": 0.2672011800559867,
+          "effectSize": 0.13372150762437077,
+          "isSignificant": false,
+          "significanceLevel": "significant"
+        }
+      },
+      "performanceRanking": [
+        {
+          "rank": 1,
+          "iconType": "Heavy Compression JPEG (q20)",
+          "averageTime": 3.4414999955892562,
+          "confidenceInterval": {
+            "lower": 3.218979405910789,
+            "upper": 3.6640205852677235
+          },
+          "standardDeviation": 1.6014841518093985,
+          "sampleSize": 200
+        },
+        {
+          "rank": 2,
+          "iconType": "High Quality JPEG (q90)",
+          "averageTime": 3.571499995589256,
+          "confidenceInterval": {
+            "lower": 3.359238774921284,
+            "upper": 3.7837612162572283
+          },
+          "standardDeviation": 1.5276473131527455,
+          "sampleSize": 200
+        },
+        {
+          "rank": 3,
+          "iconType": "Medium Compression JPEG (q60)",
+          "averageTime": 3.665999999046326,
+          "confidenceInterval": {
+            "lower": 3.422450712418325,
+            "upper": 3.9095492856743266
+          },
+          "standardDeviation": 1.7528280114789356,
+          "sampleSize": 200
+        }
+      ],
+      "testMetadata": {},
+      "testConfiguration": {},
+      "systemSpecifications": {
+        "lastUpdated": "2026-02-17T18:55:01.604Z",
+        "autoDetected": {
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+          "platform": "Win32",
+          "language": "en-US",
+          "hardwareConcurrency": 8,
+          "deviceMemory": "8GB",
+          "connection": {
+            "effectiveType": "4g",
+            "downlink": 10,
+            "rtt": 50
+          },
+          "screen": {
+            "resolution": "2560×1440",
+            "colorDepth": 32,
+            "pixelRatio": 1
+          },
+          "gpu": "Google Inc. (Intel) — ANGLE (Intel, Intel(R) HD Graphics 530 (0x0000191B) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "touchSupport": false,
+          "cookiesEnabled": true,
+          "doNotTrack": "1",
+          "timezone": "America/New_York",
+          "languages": "en-US, pt-BR, pt, en"
+        },
+        "manual": {
+          "systemConfiguration": {
+            "model": "Micro-Star International Co., Ltd. GE72 6QF REV:1.0System Serial Number: Default stringAsset Tag: Default stringChassis Serial Number: Default stringEnclosure Type: Notebook",
+            "operatingSystem": "Windows 10 Home (x64) Version 2009 (build 19045.6937)Install Language: English (United States)System Locale: English (United States)Installed: 7/7/2020 11:10:17 AMServicing Branch: Current Branch (CB)Boot Mode: UEFI with successful Secure Boot",
+            "bootMode": "UEFI with successful Secure Boot"
+          },
+          "processor": {
+            "cpu": "Jan2026Critical\t\t Oracle Java SE Critical Patch Update for Java 8.0.2520.9 64-bit",
+            "architecture": "64-bit",
+            "cores": "64-bit",
+            "cache": "1024 kilobyte secondary memory cache6144 kilobyte tertiary memory cache64-bit readyMulti-core (4 total)Hyper-threaded (8 total)",
+            "generation": ""
+          },
+          "memory": {
+            "totalRAM": "",
+            "configuration": "Slot 'ChannelA-DIMM0' has 8192 MB (serial number 49941214)Slot 'ChannelA-DIMM1' is E",
+            "speed": ""
+          },
+          "graphics": {
+            "integrated": "Intel(R) HD Graphics 530 [Display adapter]NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "discrete": "NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "driverVersion": "8.5"
+          },
+          "storage": {
+            "systemDrive": "Capacity307.01 Gigabytes Hard Drive Free SpaceHL-DT-ST DVDRAM GUB0N [Optical drive]HGST HTS721010A9E630 [Hard drive] (1000.20 GB) -- drive 1, s/n JR100X6P3TZW9E, rev JB0OA3J0, SMART Status: HealthyTOSHIBA THNSNJ128G8NY [Hard drive] (128.04 GB) -- drive 0, s/n Y58S11JBTUQW, rev JYXA0101, SMART Status: Healthy",
+            "additionalDrives": "",
+            "performance": ""
+          },
+          "network": {
+            "connection": "Adapter",
+            "router": "10.0.0.1",
+            "speed": ""
+          },
+          "reportGeneratedBy": "Belarc Advisor"
+        }
+      },
+      "_sourceInfo": {
+        "originalSource": "jpeg.html",
+        "fileName": "Current Data",
+        "importedAt": null
+      },
+      "_dataOrigin": "live",
+      "startTime": "2026-03-06T21:19:26.337Z",
+      "endTime": "2026-03-06T21:19:29.061Z"
+    },
+    "webp": {
+      "runId": "run_mmfedbxu_8kimrn",
+      "suiteRunId": "suite_mmfedq23_9c7vds",
+      "testResultId": "tr_mmfedsbk_zaq0yr",
+      "testDate": "2026-03-06T21:19:29.068Z",
+      "testStartedAt": "2026-03-06T21:19:29.068Z",
+      "testEndedAt": "2026-03-06T21:19:32.000Z",
+      "durationMs": 2932,
+      "testType": "statistical",
+      "iterations": 600,
+      "testDuration": 2.932,
+      "results": {
+        "Lossy WebP (q80)": {
+          "renderTime": {
+            "min": 2.1999999284744263,
+            "max": 33.5,
+            "average": 4.348500001430511,
+            "stdDev": 2.9927546958273825,
+            "median": 3.599999964237213,
+            "standardError": 0.21161971398474255,
+            "confidenceInterval": {
+              "lower": 3.932667263450492,
+              "upper": 4.764332739410531
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -1856744,
+              "max": 64548,
+              "average": -6363.995,
+              "stdDev": 131994.5553007019,
+              "median": 0,
+              "standardError": 9333.424513282907,
+              "confidenceInterval": {
+                "lower": -24704.17416860091,
+                "upper": 11976.184168600914
+              },
+              "sampleSize": 200
+            },
+            "total": 30060661
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 1.899999976158142,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.gif",
+                "duration": 2.799999952316284,
+                "size": 1711,
+                "startTime": 57460.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.gif",
+                "duration": 3.799999952316284,
+                "size": 614,
+                "startTime": 58405
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_dithered.gif",
+                "duration": 15,
+                "size": 1711,
+                "startTime": 59391.39999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.jpg",
+                "duration": 4.600000023841858,
+                "size": 1461,
+                "startTime": 60409.799999952316
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_medium.jpg",
+                "duration": 2.5,
+                "size": 862,
+                "startTime": 61317.10000002384
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_heavy.jpg",
+                "duration": 2.700000047683716,
+                "size": 590,
+                "startTime": 62220.89999997616
+              }
+            ],
+            "totalFontSize": 12963,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.021999999284744262,
+              "max": 0.335,
+              "average": 0.043485000014305164,
+              "stdDev": 0.02992754695827383,
+              "median": 0.03599999964237213,
+              "standardError": 0.002116197139847426,
+              "confidenceInterval": {
+                "lower": 0.03932667263450497,
+                "upper": 0.04764332739410536
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 1.2999999523162842,
+              "max": 10.700000047683716,
+              "average": 2.3319999986886977,
+              "stdDev": 1.093597637910468,
+              "median": 2,
+              "standardError": 0.07732903056560825,
+              "confidenceInterval": {
+                "lower": 2.1800484536272773,
+                "upper": 2.483951543750118
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7999999523162842,
+              "max": 24.199999928474426,
+              "average": 2.013500002026558,
+              "stdDev": 2.3115544890448168,
+              "median": 1.5,
+              "standardError": 0.1634515854285795,
+              "confidenceInterval": {
+                "lower": 1.6923176366593995,
+                "upper": 2.3346823673937167
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Lossless WebP": {
+          "renderTime": {
+            "min": 2,
+            "max": 19.299999952316284,
+            "average": 3.7584999948740005,
+            "stdDev": 2.188808388933916,
+            "median": 3.200000047683716,
+            "standardError": 0.15477212545331742,
+            "confidenceInterval": {
+              "lower": 3.454372768358232,
+              "upper": 4.06262722138977
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -1744565,
+              "max": 212952,
+              "average": -5941.415,
+              "stdDev": 125226.02096660408,
+              "median": 0,
+              "standardError": 8854.816860649451,
+              "confidenceInterval": {
+                "lower": -23341.130131176174,
+                "upper": 11458.300131176173
+              },
+              "sampleSize": 200
+            },
+            "total": 28162226
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.20000004768371582,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.gif",
+                "duration": 2.799999952316284,
+                "size": 1711,
+                "startTime": 57460.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.gif",
+                "duration": 3.799999952316284,
+                "size": 614,
+                "startTime": 58405
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_dithered.gif",
+                "duration": 15,
+                "size": 1711,
+                "startTime": 59391.39999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.jpg",
+                "duration": 4.600000023841858,
+                "size": 1461,
+                "startTime": 60409.799999952316
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_medium.jpg",
+                "duration": 2.5,
+                "size": 862,
+                "startTime": 61317.10000002384
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_heavy.jpg",
+                "duration": 2.700000047683716,
+                "size": 590,
+                "startTime": 62220.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.webp",
+                "duration": 3.100000023841858,
+                "size": 856,
+                "startTime": 63118.699999928474
+              }
+            ],
+            "totalFontSize": 13819,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.02,
+              "max": 0.19299999952316285,
+              "average": 0.037584999948740073,
+              "stdDev": 0.02188808388933915,
+              "median": 0.03200000047683716,
+              "standardError": 0.0015477212545331734,
+              "confidenceInterval": {
+                "lower": 0.03454372768358239,
+                "upper": 0.04062627221389776
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.5,
+              "max": 16.299999952316284,
+              "average": 2.121000002026558,
+              "stdDev": 1.3258386906936666,
+              "median": 1.7999999523162842,
+              "standardError": 0.09375095289489851,
+              "confidenceInterval": {
+                "lower": 1.9367793795880823,
+                "upper": 2.3052206244650337
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7999999523162842,
+              "max": 17.799999952316284,
+              "average": 1.6349999934434891,
+              "stdDev": 1.7127001191257905,
+              "median": 1.3000000715255737,
+              "standardError": 0.12110618683728541,
+              "confidenceInterval": {
+                "lower": 1.3970263363082234,
+                "upper": 1.8729736505787549
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Optimized WebP (q50)": {
+          "renderTime": {
+            "min": 2.1999999284744263,
+            "max": 10.899999976158142,
+            "average": 3.618999999165535,
+            "stdDev": 1.2120164676211345,
+            "median": 3.200000047683716,
+            "standardError": 0.08570250631646698,
+            "confidenceInterval": {
+              "lower": 3.450594574253677,
+              "upper": 3.7874054240773924
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -277464,
+              "max": 249389,
+              "average": 2656.65,
+              "stdDev": 28762.42880462652,
+              "median": 0,
+              "standardError": 2033.8108451146695,
+              "confidenceInterval": {
+                "lower": -1339.7883106503255,
+                "upper": 6653.088310650326
+              },
+              "sampleSize": 200
+            },
+            "total": 28948716
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.19999992847442627,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.gif",
+                "duration": 2.799999952316284,
+                "size": 1711,
+                "startTime": 57460.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.gif",
+                "duration": 3.799999952316284,
+                "size": 614,
+                "startTime": 58405
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_dithered.gif",
+                "duration": 15,
+                "size": 1711,
+                "startTime": 59391.39999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.jpg",
+                "duration": 4.600000023841858,
+                "size": 1461,
+                "startTime": 60409.799999952316
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_medium.jpg",
+                "duration": 2.5,
+                "size": 862,
+                "startTime": 61317.10000002384
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_heavy.jpg",
+                "duration": 2.700000047683716,
+                "size": 590,
+                "startTime": 62220.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.webp",
+                "duration": 3.100000023841858,
+                "size": 856,
+                "startTime": 63118.699999928474
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_lossless.webp",
+                "duration": 2.700000047683716,
+                "size": 1492,
+                "startTime": 64191.799999952316
+              }
+            ],
+            "totalFontSize": 15311,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.021999999284744262,
+              "max": 0.10899999976158142,
+              "average": 0.03618999999165542,
+              "stdDev": 0.012120164676211347,
+              "median": 0.03200000047683716,
+              "standardError": 0.0008570250631646699,
+              "confidenceInterval": {
+                "lower": 0.03450594574253684,
+                "upper": 0.037874054240773995
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 1,
+              "max": 4.400000095367432,
+              "average": 2.0424999994039537,
+              "stdDev": 0.568648004444322,
+              "median": 1.899999976158142,
+              "standardError": 0.0402094860050778,
+              "confidenceInterval": {
+                "lower": 1.9634883594039758,
+                "upper": 2.1215116394039315
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7999999523162842,
+              "max": 8.399999976158142,
+              "average": 1.5755000001192092,
+              "stdDev": 0.964104365864727,
+              "median": 1.3000000715255737,
+              "standardError": 0.06817247348745047,
+              "confidenceInterval": {
+                "lower": 1.441541089716369,
+                "upper": 1.7094589105220495
+              },
+              "sampleSize": 200
+            }
+          }
+        }
+      },
+      "statisticalAnalysis": {
+        "Lossless WebP vs Optimized WebP (q50)": {
+          "pValue": 0.4303988943915431,
+          "power": 0.12369420786560614,
+          "effectSize": 0.07885090294117383,
+          "isSignificant": false,
+          "significanceLevel": "significant"
+        },
+        "Lossy WebP (q80) vs Optimized WebP (q50)": {
+          "pValue": 0.0013977372850726422,
+          "power": 0.8916116938834452,
+          "effectSize": 0.3195144500014669,
+          "isSignificant": true,
+          "significanceLevel": "very"
+        }
+      },
+      "performanceRanking": [
+        {
+          "rank": 1,
+          "iconType": "Optimized WebP (q50)",
+          "averageTime": 3.618999999165535,
+          "confidenceInterval": {
+            "lower": 3.450594574253677,
+            "upper": 3.7874054240773924
+          },
+          "standardDeviation": 1.2120164676211345,
+          "sampleSize": 200
+        },
+        {
+          "rank": 2,
+          "iconType": "Lossless WebP",
+          "averageTime": 3.7584999948740005,
+          "confidenceInterval": {
+            "lower": 3.454372768358232,
+            "upper": 4.06262722138977
+          },
+          "standardDeviation": 2.188808388933916,
+          "sampleSize": 200
+        },
+        {
+          "rank": 3,
+          "iconType": "Lossy WebP (q80)",
+          "averageTime": 4.348500001430511,
+          "confidenceInterval": {
+            "lower": 3.932667263450492,
+            "upper": 4.764332739410531
+          },
+          "standardDeviation": 2.9927546958273825,
+          "sampleSize": 200
+        }
+      ],
+      "testMetadata": {},
+      "testConfiguration": {},
+      "systemSpecifications": {
+        "lastUpdated": "2026-02-17T18:55:01.604Z",
+        "autoDetected": {
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+          "platform": "Win32",
+          "language": "en-US",
+          "hardwareConcurrency": 8,
+          "deviceMemory": "8GB",
+          "connection": {
+            "effectiveType": "4g",
+            "downlink": 10,
+            "rtt": 50
+          },
+          "screen": {
+            "resolution": "2560×1440",
+            "colorDepth": 32,
+            "pixelRatio": 1
+          },
+          "gpu": "Google Inc. (Intel) — ANGLE (Intel, Intel(R) HD Graphics 530 (0x0000191B) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "touchSupport": false,
+          "cookiesEnabled": true,
+          "doNotTrack": "1",
+          "timezone": "America/New_York",
+          "languages": "en-US, pt-BR, pt, en"
+        },
+        "manual": {
+          "systemConfiguration": {
+            "model": "Micro-Star International Co., Ltd. GE72 6QF REV:1.0System Serial Number: Default stringAsset Tag: Default stringChassis Serial Number: Default stringEnclosure Type: Notebook",
+            "operatingSystem": "Windows 10 Home (x64) Version 2009 (build 19045.6937)Install Language: English (United States)System Locale: English (United States)Installed: 7/7/2020 11:10:17 AMServicing Branch: Current Branch (CB)Boot Mode: UEFI with successful Secure Boot",
+            "bootMode": "UEFI with successful Secure Boot"
+          },
+          "processor": {
+            "cpu": "Jan2026Critical\t\t Oracle Java SE Critical Patch Update for Java 8.0.2520.9 64-bit",
+            "architecture": "64-bit",
+            "cores": "64-bit",
+            "cache": "1024 kilobyte secondary memory cache6144 kilobyte tertiary memory cache64-bit readyMulti-core (4 total)Hyper-threaded (8 total)",
+            "generation": ""
+          },
+          "memory": {
+            "totalRAM": "",
+            "configuration": "Slot 'ChannelA-DIMM0' has 8192 MB (serial number 49941214)Slot 'ChannelA-DIMM1' is E",
+            "speed": ""
+          },
+          "graphics": {
+            "integrated": "Intel(R) HD Graphics 530 [Display adapter]NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "discrete": "NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "driverVersion": "8.5"
+          },
+          "storage": {
+            "systemDrive": "Capacity307.01 Gigabytes Hard Drive Free SpaceHL-DT-ST DVDRAM GUB0N [Optical drive]HGST HTS721010A9E630 [Hard drive] (1000.20 GB) -- drive 1, s/n JR100X6P3TZW9E, rev JB0OA3J0, SMART Status: HealthyTOSHIBA THNSNJ128G8NY [Hard drive] (128.04 GB) -- drive 0, s/n Y58S11JBTUQW, rev JYXA0101, SMART Status: Healthy",
+            "additionalDrives": "",
+            "performance": ""
+          },
+          "network": {
+            "connection": "Adapter",
+            "router": "10.0.0.1",
+            "speed": ""
+          },
+          "reportGeneratedBy": "Belarc Advisor"
+        }
+      },
+      "_sourceInfo": {
+        "originalSource": "webp.html",
+        "fileName": "Current Data",
+        "importedAt": null
+      },
+      "_dataOrigin": "live",
+      "startTime": "2026-03-06T21:19:29.068Z",
+      "endTime": "2026-03-06T21:19:32.000Z"
+    },
+    "avif": {
+      "runId": "run_mmfedbxu_8kimrn",
+      "suiteRunId": "suite_mmfedsbo_68gy90",
+      "testResultId": "tr_mmfedumo_3o32nl",
+      "testDate": "2026-03-06T21:19:32.004Z",
+      "testStartedAt": "2026-03-06T21:19:32.004Z",
+      "testEndedAt": "2026-03-06T21:19:34.992Z",
+      "durationMs": 2988,
+      "testType": "statistical",
+      "iterations": 600,
+      "testDuration": 2.988,
+      "results": {
+        "Standard AVIF (q50)": {
+          "renderTime": {
+            "min": 2.399999976158142,
+            "max": 33,
+            "average": 4.145000002384186,
+            "stdDev": 2.81583372762387,
+            "median": 3.3000000715255737,
+            "standardError": 0.19910951234966323,
+            "confidenceInterval": {
+              "lower": 3.7537498106170974,
+              "upper": 4.536250194151274
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -2360613,
+              "max": 59124,
+              "average": -15283.095,
+              "stdDev": 192963.83511650702,
+              "median": 0,
+              "standardError": 13644.603633464496,
+              "confidenceInterval": {
+                "lower": -42094.74113975774,
+                "upper": 11528.551139757737
+              },
+              "sampleSize": 200
+            },
+            "total": 28162341
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.19999992847442627,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.gif",
+                "duration": 2.799999952316284,
+                "size": 1711,
+                "startTime": 57460.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.gif",
+                "duration": 3.799999952316284,
+                "size": 614,
+                "startTime": 58405
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_dithered.gif",
+                "duration": 15,
+                "size": 1711,
+                "startTime": 59391.39999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.jpg",
+                "duration": 4.600000023841858,
+                "size": 1461,
+                "startTime": 60409.799999952316
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_medium.jpg",
+                "duration": 2.5,
+                "size": 862,
+                "startTime": 61317.10000002384
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_heavy.jpg",
+                "duration": 2.700000047683716,
+                "size": 590,
+                "startTime": 62220.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.webp",
+                "duration": 3.100000023841858,
+                "size": 856,
+                "startTime": 63118.699999928474
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_lossless.webp",
+                "duration": 2.700000047683716,
+                "size": 1492,
+                "startTime": 64191.799999952316
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.webp",
+                "duration": 2.600000023841858,
+                "size": 686,
+                "startTime": 65090
+              }
+            ],
+            "totalFontSize": 15997,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.02399999976158142,
+              "max": 0.33,
+              "average": 0.0414500000238419,
+              "stdDev": 0.028158337276238704,
+              "median": 0.03300000071525574,
+              "standardError": 0.0019910951234966326,
+              "confidenceInterval": {
+                "lower": 0.03753749810617102,
+                "upper": 0.045362501941512784
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 1.5,
+              "max": 31.799999952316284,
+              "average": 2.3934999936819077,
+              "stdDev": 2.2935364143426713,
+              "median": 1.899999976158142,
+              "standardError": 0.1621775151479982,
+              "confidenceInterval": {
+                "lower": 2.074821176416091,
+                "upper": 2.7121788109477243
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7999999523162842,
+              "max": 16.600000023841858,
+              "average": 1.7495000088214874,
+              "stdDev": 1.370507644180167,
+              "median": 1.399999976158142,
+              "standardError": 0.09690952488677959,
+              "confidenceInterval": {
+                "lower": 1.5590727924189656,
+                "upper": 1.9399272252240092
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Lossless AVIF": {
+          "renderTime": {
+            "min": 1.2999999523162842,
+            "max": 16.700000047683716,
+            "average": 4.057500002384185,
+            "stdDev": 1.9263691864333945,
+            "median": 3.5,
+            "standardError": 0.13621487147958658,
+            "confidenceInterval": {
+              "lower": 3.7898377799267977,
+              "upper": 4.325162224841573
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -291168,
+              "max": 240173,
+              "average": 2321.33,
+              "stdDev": 28737.09099815574,
+              "median": 0,
+              "standardError": 2032.0191916370816,
+              "confidenceInterval": {
+                "lower": -1671.5877115668654,
+                "upper": 6314.247711566865
+              },
+              "sampleSize": 200
+            },
+            "total": 28686687
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.7999999523162842,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.gif",
+                "duration": 2.799999952316284,
+                "size": 1711,
+                "startTime": 57460.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.gif",
+                "duration": 3.799999952316284,
+                "size": 614,
+                "startTime": 58405
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_dithered.gif",
+                "duration": 15,
+                "size": 1711,
+                "startTime": 59391.39999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.jpg",
+                "duration": 4.600000023841858,
+                "size": 1461,
+                "startTime": 60409.799999952316
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_medium.jpg",
+                "duration": 2.5,
+                "size": 862,
+                "startTime": 61317.10000002384
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_heavy.jpg",
+                "duration": 2.700000047683716,
+                "size": 590,
+                "startTime": 62220.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.webp",
+                "duration": 3.100000023841858,
+                "size": 856,
+                "startTime": 63118.699999928474
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_lossless.webp",
+                "duration": 2.700000047683716,
+                "size": 1492,
+                "startTime": 64191.799999952316
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.webp",
+                "duration": 2.600000023841858,
+                "size": 686,
+                "startTime": 65090
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.avif",
+                "duration": 3,
+                "size": 1050,
+                "startTime": 66071.69999992847
+              }
+            ],
+            "totalFontSize": 17047,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.012999999523162841,
+              "max": 0.16700000047683716,
+              "average": 0.04057500002384189,
+              "stdDev": 0.019263691864333937,
+              "median": 0.035,
+              "standardError": 0.0013621487147958652,
+              "confidenceInterval": {
+                "lower": 0.03789837779926801,
+                "upper": 0.043251622248415764
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 0.3999999761581421,
+              "max": 7.100000023841858,
+              "average": 2.215000007748604,
+              "stdDev": 0.8518823371920626,
+              "median": 2,
+              "standardError": 0.06023717774015525,
+              "confidenceInterval": {
+                "lower": 2.096633953489199,
+                "upper": 2.333366062008009
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.8000000715255737,
+              "max": 12.899999976158142,
+              "average": 1.8404999941587448,
+              "stdDev": 1.5230258640663759,
+              "median": 1.4000000953674316,
+              "standardError": 0.10769419164038353,
+              "confidenceInterval": {
+                "lower": 1.6288809075853912,
+                "upper": 2.0521190807320986
+              },
+              "sampleSize": 200
+            }
+          }
+        },
+        "Compressed AVIF (q20)": {
+          "renderTime": {
+            "min": 2.399999976158142,
+            "max": 28.299999952316284,
+            "average": 3.7590000009536744,
+            "stdDev": 2.0380104061055113,
+            "median": 3.399999976158142,
+            "standardError": 0.14410909782859566,
+            "confidenceInterval": {
+              "lower": 3.4758256237204836,
+              "upper": 4.042174378186865
+            },
+            "sampleSize": 200
+          },
+          "memoryUsage": {
+            "used": {
+              "min": -1405853,
+              "max": 220945,
+              "average": -1852.5,
+              "stdDev": 102077.91203505872,
+              "median": 0,
+              "standardError": 7217.998380935391,
+              "confidenceInterval": {
+                "lower": -16035.866818538043,
+                "upper": 12330.866818538043
+              },
+              "sampleSize": 200
+            },
+            "total": 29473295
+          },
+          "elementMetrics": {
+            "width": 48,
+            "height": 48,
+            "area": 2304,
+            "childNodes": 0,
+            "cssRules": 615,
+            "computedStyles": {
+              "fontSize": "16px",
+              "fontFamily": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          "networkMetrics": {
+            "fontLoadTime": 0.10000002384185791,
+            "networkRequests": [
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.svg",
+                "duration": 3.5,
+                "size": 652,
+                "startTime": 50260.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.png",
+                "duration": 2.5,
+                "size": 1605,
+                "startTime": 54447
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_2x.png",
+                "duration": 2.6999999284744263,
+                "size": 3122,
+                "startTime": 55454.5
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_compressed.png",
+                "duration": 2.899999976158142,
+                "size": 635,
+                "startTime": 56510
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.gif",
+                "duration": 2.799999952316284,
+                "size": 1711,
+                "startTime": 57460.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.gif",
+                "duration": 3.799999952316284,
+                "size": 614,
+                "startTime": 58405
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_dithered.gif",
+                "duration": 15,
+                "size": 1711,
+                "startTime": 59391.39999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.jpg",
+                "duration": 4.600000023841858,
+                "size": 1461,
+                "startTime": 60409.799999952316
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_medium.jpg",
+                "duration": 2.5,
+                "size": 862,
+                "startTime": 61317.10000002384
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_heavy.jpg",
+                "duration": 2.700000047683716,
+                "size": 590,
+                "startTime": 62220.89999997616
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.webp",
+                "duration": 3.100000023841858,
+                "size": 856,
+                "startTime": 63118.699999928474
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_lossless.webp",
+                "duration": 2.700000047683716,
+                "size": 1492,
+                "startTime": 64191.799999952316
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_optimized.webp",
+                "duration": 2.600000023841858,
+                "size": 686,
+                "startTime": 65090
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon.avif",
+                "duration": 3,
+                "size": 1050,
+                "startTime": 66071.69999992847
+              },
+              {
+                "url": "http://127.0.0.1:3000/img/remix_circle_icon_lossless.avif",
+                "duration": 2.899999976158142,
+                "size": 3759,
+                "startTime": 67111.5
+              }
+            ],
+            "totalFontSize": 20806,
+            "fontStatus": "loaded"
+          },
+          "sampleSize": 200,
+          "testConfig": {
+            "iterations": 200,
+            "iconsPerTest": 100,
+            "description": "High-power statistical analysis"
+          },
+          "bulkMetrics": {
+            "avgIconsPerTest": 100,
+            "avgTimePerIcon": {
+              "min": 0.02399999976158142,
+              "max": 0.28299999952316285,
+              "average": 0.03759000000953681,
+              "stdDev": 0.02038010406105512,
+              "median": 0.03399999976158142,
+              "standardError": 0.001441090978285957,
+              "confidenceInterval": {
+                "lower": 0.0347582562372049,
+                "upper": 0.04042174378186871
+              },
+              "sampleSize": 200
+            },
+            "generationTime": {
+              "min": 1.2999999523162842,
+              "max": 5.100000023841858,
+              "average": 2.061500001549721,
+              "stdDev": 0.5814275920128349,
+              "median": 1.899999976158142,
+              "standardError": 0.04111313930812409,
+              "confidenceInterval": {
+                "lower": 1.9807126828092572,
+                "upper": 2.1422873202901846
+              },
+              "sampleSize": 200
+            },
+            "layoutTime": {
+              "min": 0.7999999523162842,
+              "max": 26.799999952316284,
+              "average": 1.6949999988079072,
+              "stdDev": 1.8955581454112649,
+              "median": 1.399999976158142,
+              "standardError": 0.1340362018753701,
+              "confidenceInterval": {
+                "lower": 1.431618862122805,
+                "upper": 1.9583811354930094
+              },
+              "sampleSize": 200
+            }
+          }
+        }
+      },
+      "statisticalAnalysis": {
+        "Lossless AVIF vs Compressed AVIF (q20)": {
+          "pValue": 0.1322435477033448,
+          "power": 0.3249322803834824,
+          "effectSize": 0.1505313518146325,
+          "isSignificant": false,
+          "significanceLevel": "significant"
+        },
+        "Standard AVIF (q50) vs Compressed AVIF (q20)": {
+          "pValue": 0.1163092329839015,
+          "power": 0.34864415961037853,
+          "effectSize": 0.15704553437179605,
+          "isSignificant": false,
+          "significanceLevel": "significant"
+        }
+      },
+      "performanceRanking": [
+        {
+          "rank": 1,
+          "iconType": "Compressed AVIF (q20)",
+          "averageTime": 3.7590000009536744,
+          "confidenceInterval": {
+            "lower": 3.4758256237204836,
+            "upper": 4.042174378186865
+          },
+          "standardDeviation": 2.0380104061055113,
+          "sampleSize": 200
+        },
+        {
+          "rank": 2,
+          "iconType": "Lossless AVIF",
+          "averageTime": 4.057500002384185,
+          "confidenceInterval": {
+            "lower": 3.7898377799267977,
+            "upper": 4.325162224841573
+          },
+          "standardDeviation": 1.9263691864333945,
+          "sampleSize": 200
+        },
+        {
+          "rank": 3,
+          "iconType": "Standard AVIF (q50)",
+          "averageTime": 4.145000002384186,
+          "confidenceInterval": {
+            "lower": 3.7537498106170974,
+            "upper": 4.536250194151274
+          },
+          "standardDeviation": 2.81583372762387,
+          "sampleSize": 200
+        }
+      ],
+      "testMetadata": {},
+      "testConfiguration": {},
+      "systemSpecifications": {
+        "lastUpdated": "2026-02-17T18:55:01.604Z",
+        "autoDetected": {
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+          "platform": "Win32",
+          "language": "en-US",
+          "hardwareConcurrency": 8,
+          "deviceMemory": "8GB",
+          "connection": {
+            "effectiveType": "4g",
+            "downlink": 10,
+            "rtt": 50
+          },
+          "screen": {
+            "resolution": "2560×1440",
+            "colorDepth": 32,
+            "pixelRatio": 1
+          },
+          "gpu": "Google Inc. (Intel) — ANGLE (Intel, Intel(R) HD Graphics 530 (0x0000191B) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "touchSupport": false,
+          "cookiesEnabled": true,
+          "doNotTrack": "1",
+          "timezone": "America/New_York",
+          "languages": "en-US, pt-BR, pt, en"
+        },
+        "manual": {
+          "systemConfiguration": {
+            "model": "Micro-Star International Co., Ltd. GE72 6QF REV:1.0System Serial Number: Default stringAsset Tag: Default stringChassis Serial Number: Default stringEnclosure Type: Notebook",
+            "operatingSystem": "Windows 10 Home (x64) Version 2009 (build 19045.6937)Install Language: English (United States)System Locale: English (United States)Installed: 7/7/2020 11:10:17 AMServicing Branch: Current Branch (CB)Boot Mode: UEFI with successful Secure Boot",
+            "bootMode": "UEFI with successful Secure Boot"
+          },
+          "processor": {
+            "cpu": "Jan2026Critical\t\t Oracle Java SE Critical Patch Update for Java 8.0.2520.9 64-bit",
+            "architecture": "64-bit",
+            "cores": "64-bit",
+            "cache": "1024 kilobyte secondary memory cache6144 kilobyte tertiary memory cache64-bit readyMulti-core (4 total)Hyper-threaded (8 total)",
+            "generation": ""
+          },
+          "memory": {
+            "totalRAM": "",
+            "configuration": "Slot 'ChannelA-DIMM0' has 8192 MB (serial number 49941214)Slot 'ChannelA-DIMM1' is E",
+            "speed": ""
+          },
+          "graphics": {
+            "integrated": "Intel(R) HD Graphics 530 [Display adapter]NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "discrete": "NVIDIA GeForce GTX 970M [Display adapter]Acer V277U E [Monitor] (27.2\"vis, s/n 24220255C4208, May 2024)Acer V277U E [Monitor] (27.2\"vis, s/n 2422025E34208, May 2024)Generic PnP Monitor (17.1\"vis)",
+            "driverVersion": "8.5"
+          },
+          "storage": {
+            "systemDrive": "Capacity307.01 Gigabytes Hard Drive Free SpaceHL-DT-ST DVDRAM GUB0N [Optical drive]HGST HTS721010A9E630 [Hard drive] (1000.20 GB) -- drive 1, s/n JR100X6P3TZW9E, rev JB0OA3J0, SMART Status: HealthyTOSHIBA THNSNJ128G8NY [Hard drive] (128.04 GB) -- drive 0, s/n Y58S11JBTUQW, rev JYXA0101, SMART Status: Healthy",
+            "additionalDrives": "",
+            "performance": ""
+          },
+          "network": {
+            "connection": "Adapter",
+            "router": "10.0.0.1",
+            "speed": ""
+          },
+          "reportGeneratedBy": "Belarc Advisor"
+        }
+      },
+      "_sourceInfo": {
+        "originalSource": "avif.html",
+        "fileName": "Current Data",
+        "importedAt": null
+      },
+      "_dataOrigin": "live",
+      "startTime": "2026-03-06T21:19:32.004Z",
+      "endTime": "2026-03-06T21:19:34.992Z"
+    }
+  }
+}

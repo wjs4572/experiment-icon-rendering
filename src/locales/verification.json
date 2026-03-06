@@ -1,27 +1,27 @@
 {
     "sourceLocale": "en",
     "generatedAt": "2026-03-06",
-    "totalKeys": 426,
+    "totalKeys": 429,
     "description": "Keys are unverified until a native speaker confirms correctness. Source locale (en) is verified by default. Regional English variants (en-us, en-gb) are verified as the maintainer speaks English.",
     "locales": {
         "en": {
-            "totalVerified": 426,
+            "totalVerified": 429,
             "totalUnverified": 0,
             "unverifiedKeys": []
         },
         "en-us": {
-            "totalVerified": 426,
+            "totalVerified": 429,
             "totalUnverified": 0,
             "unverifiedKeys": []
         },
         "en-gb": {
-            "totalVerified": 426,
+            "totalVerified": 429,
             "totalUnverified": 0,
             "unverifiedKeys": []
         },
         "es": {
             "totalVerified": 0,
-            "totalUnverified": 426,
+            "totalUnverified": 429,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -157,6 +157,9 @@
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
+                "library.stats_by_format",
+                "library.stats_by_type",
+                "library.stats_overview",
                 "library.subtitle",
                 "library.title",
                 "library.toggle_active",
@@ -453,7 +456,7 @@
         },
         "fr": {
             "totalVerified": 0,
-            "totalUnverified": 426,
+            "totalUnverified": 429,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -589,6 +592,9 @@
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
+                "library.stats_by_format",
+                "library.stats_by_type",
+                "library.stats_overview",
                 "library.subtitle",
                 "library.title",
                 "library.toggle_active",
@@ -885,7 +891,7 @@
         },
         "de": {
             "totalVerified": 0,
-            "totalUnverified": 426,
+            "totalUnverified": 429,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -1021,6 +1027,9 @@
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
+                "library.stats_by_format",
+                "library.stats_by_type",
+                "library.stats_overview",
                 "library.subtitle",
                 "library.title",
                 "library.toggle_active",
@@ -1317,7 +1326,7 @@
         },
         "ja": {
             "totalVerified": 0,
-            "totalUnverified": 426,
+            "totalUnverified": 429,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -1453,6 +1462,9 @@
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
+                "library.stats_by_format",
+                "library.stats_by_type",
+                "library.stats_overview",
                 "library.subtitle",
                 "library.title",
                 "library.toggle_active",
@@ -1749,7 +1761,7 @@
         },
         "zh": {
             "totalVerified": 0,
-            "totalUnverified": 426,
+            "totalUnverified": 429,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -1885,6 +1897,9 @@
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
+                "library.stats_by_format",
+                "library.stats_by_type",
+                "library.stats_overview",
                 "library.subtitle",
                 "library.title",
                 "library.toggle_active",
@@ -2181,7 +2196,7 @@
         },
         "zh-tw": {
             "totalVerified": 0,
-            "totalUnverified": 426,
+            "totalUnverified": 429,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -2317,6 +2332,9 @@
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
+                "library.stats_by_format",
+                "library.stats_by_type",
+                "library.stats_overview",
                 "library.subtitle",
                 "library.title",
                 "library.toggle_active",
@@ -2613,7 +2631,7 @@
         },
         "pt": {
             "totalVerified": 0,
-            "totalUnverified": 426,
+            "totalUnverified": 429,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -2749,6 +2767,9 @@
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
+                "library.stats_by_format",
+                "library.stats_by_type",
+                "library.stats_overview",
                 "library.subtitle",
                 "library.title",
                 "library.toggle_active",
@@ -3045,7 +3066,7 @@
         },
         "pt-br": {
             "totalVerified": 0,
-            "totalUnverified": 426,
+            "totalUnverified": 429,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -3181,6 +3202,9 @@
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
+                "library.stats_by_format",
+                "library.stats_by_type",
+                "library.stats_overview",
                 "library.subtitle",
                 "library.title",
                 "library.toggle_active",
@@ -3477,7 +3501,7 @@
         },
         "pt-pt": {
             "totalVerified": 0,
-            "totalUnverified": 426,
+            "totalUnverified": 429,
             "unverifiedKeys": [
                 "app.description",
                 "app.subtitle",
@@ -3613,6 +3637,9 @@
                 "library.make_imported_active",
                 "library.nav_dashboard",
                 "library.nav_summary",
+                "library.stats_by_format",
+                "library.stats_by_type",
+                "library.stats_overview",
                 "library.subtitle",
                 "library.title",
                 "library.toggle_active",

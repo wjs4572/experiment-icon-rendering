@@ -117,8 +117,29 @@
                     data-i18n="library.clear_all">Clear All History</button>
         </div>
 
-        <!-- Tabulator Table -->
-        <div id="results-table" class="mb-8" role="grid" aria-label="Test results table"></div>
+        <!-- Table + Stats Sidebar -->
+        <div class="flex gap-4 mb-8 items-start">
+            <!-- Tabulator Table -->
+            <div class="flex-1 min-w-0">
+                <div id="results-table" role="grid" aria-label="Test results table"></div>
+            </div>
+
+            <!-- Stats Sidebar -->
+            <div id="statsSidebar" class="w-64 flex-shrink-0 space-y-3">
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="font-semibold text-gray-700 mb-3 text-sm" data-i18n="library.stats_overview">Quick Stats</h3>
+                    <div id="statsOverview" class="space-y-2 text-sm text-gray-600"></div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="font-semibold text-gray-700 mb-3 text-sm" data-i18n="library.stats_by_format">By Format</h3>
+                    <div id="statsByFormat" class="space-y-1.5 text-sm"></div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="font-semibold text-gray-700 mb-3 text-sm" data-i18n="library.stats_by_type">By Test Type</h3>
+                    <div id="statsByType" class="space-y-1.5 text-sm"></div>
+                </div>
+            </div>
+        </div>
 
         <!-- Details Panel -->
         <section id="detailsPanel" class="hidden bg-white rounded-lg shadow-lg overflow-hidden mb-8" role="region" aria-label="Run details">
@@ -215,6 +236,8 @@
         _buildTable() {
             const self = this;
             const records = this._loadRecords();
+            // Render sidebar stats from the initial record set
+            setTimeout(function () { self._renderStatsPanel(); }, 0);
 
             // Build Tabulator locale configuration from i18n
             const tabulatorLocale = {
@@ -234,7 +257,6 @@
             this.table = new Tabulator('#results-table', {
                 data: records,
                 layout: 'fitColumns',
-                responsiveLayout: 'collapse',
                 pagination: true,
                 paginationSize: 25,
                 paginationSizeSelector: [10, 25, 50, 100],
@@ -649,12 +671,84 @@
         }
 
         /* ────────────────────────────────────────────────────────────
+         * Stats Sidebar
+         * ──────────────────────────────────────────────────────────── */
+
+        _renderStatsPanel() {
+            var records = this._loadRecords();
+            var ov  = document.getElementById('statsOverview');
+            var fmt = document.getElementById('statsByFormat');
+            var typ = document.getElementById('statsByType');
+            if (!ov || !fmt || !typ) return;
+
+            if (records.length === 0) {
+                var empty = '<span class="text-gray-400 italic">No records</span>';
+                ov.innerHTML = empty;
+                fmt.innerHTML = empty;
+                typ.innerHTML = empty;
+                return;
+            }
+
+            var active   = records.filter(function (r) { return r.active; }).length;
+            var inactive = records.length - active;
+
+            // Overview
+            ov.innerHTML = [
+                this._statRow('Total', records.length, 'text-gray-800'),
+                this._statRow('Active', active, 'text-green-600'),
+                this._statRow('Inactive', inactive, 'text-gray-400')
+            ].join('');
+
+            // By format
+            var fmtMap = {};
+            records.forEach(function (r) {
+                var f = (r.format || 'unknown').toUpperCase();
+                fmtMap[f] = (fmtMap[f] || 0) + 1;
+            });
+            var fmtEntries = Object.entries(fmtMap).sort(function (a, b) { return b[1] - a[1]; });
+            var fmtMax = fmtEntries.length ? fmtEntries[0][1] : 1;
+            fmt.innerHTML = fmtEntries.map(function (kv) {
+                return '<div class="flex items-center gap-2">' +
+                    '<span class="w-12 text-xs font-medium text-gray-600 shrink-0">' + kv[0] + '</span>' +
+                    '<div class="flex-1 bg-gray-100 rounded-full h-1.5">' +
+                        '<div class="bg-blue-400 rounded-full h-1.5" style="width:' + Math.round((kv[1] / fmtMax) * 100) + '%"></div>' +
+                    '</div>' +
+                    '<span class="text-xs text-gray-500 shrink-0 w-5 text-right">' + kv[1] + '</span>' +
+                    '</div>';
+            }).join('');
+
+            // By test type
+            var typMap = {};
+            records.forEach(function (r) {
+                var t = r.testType || 'unknown';
+                typMap[t] = (typMap[t] || 0) + 1;
+            });
+            var typEntries = Object.entries(typMap).sort(function (a, b) { return b[1] - a[1]; });
+            var typMax = typEntries.length ? typEntries[0][1] : 1;
+            typ.innerHTML = typEntries.map(function (kv) {
+                return '<div class="flex items-center gap-2">' +
+                    '<span class="w-20 text-xs text-gray-600 shrink-0 capitalize truncate" title="' + kv[0] + '">' + kv[0] + '</span>' +
+                    '<div class="flex-1 bg-gray-100 rounded-full h-1.5">' +
+                        '<div class="bg-purple-400 rounded-full h-1.5" style="width:' + Math.round((kv[1] / typMax) * 100) + '%"></div>' +
+                    '</div>' +
+                    '<span class="text-xs text-gray-500 shrink-0 w-5 text-right">' + kv[1] + '</span>' +
+                    '</div>';
+            }).join('');
+        }
+
+        _statRow(label, value, colorClass) {
+            return '<div class="flex justify-between"><span>' + label + '</span>' +
+                   '<span class="font-semibold ' + colorClass + '">' + value + '</span></div>';
+        }
+
+        /* ────────────────────────────────────────────────────────────
          * Table Refresh
          * ──────────────────────────────────────────────────────────── */
 
         _refreshTable() {
             this.table.replaceData(this._loadRecords());
             this._updateBulkButtons();
+            this._renderStatsPanel();
         }
 
         /* ────────────────────────────────────────────────────────────
