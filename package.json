@@ -4,6 +4,7 @@
   "description": "Academic research tool for icon rendering performance analysis",
   "private": true,
   "scripts": {
+    "clean": "node scripts/clean.js",
     "build:css": "npx @tailwindcss/cli -i ./src/css/tailwind.src.css -o ./src/css/tailwind.css",
     "watch:css": "npx @tailwindcss/cli -i ./src/css/tailwind.src.css -o ./src/css/tailwind.css --watch",
     "test": "playwright test --reporter=html,line",
