@@ -4,11 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SVG Badge Comparison</title>
-  <link rel="stylesheet" href="css/tailwind.css">
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/tailwind.css">    <link rel="stylesheet" href="css/icon-styles.css">  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
 </head>
 
 <body class="min-h-screen bg-slate-50 text-slate-900">
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-[1400px] mx-auto px-4 md:px-8 py-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <img alt="SimpsonConcepts Logo" class="h-auto w-[130px] md:w-[162px] mr-[8px]" src="/images/logo_information_visualization.png">
+                <div class="flex items-center gap-3 ml-[6px] md:gap-6">
+                    <div class="h-8 w-px bg-gray-300"></div>
+                    <span class="text-header-title font-semibold text-[#07285b] leading-tight">Icon Rendering Performance Test</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="window.systemSpecsManager && window.systemSpecsManager.showModal()" class="hidden w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors cursor-pointer text-gray-600 text-xl" title="System Specs">⚙</button>
+            </div>
+        </div>
+    </div>
+</header>
   <main class="max-w-5xl mx-auto p-6">
     <h1 class="text-2xl font-semibold mb-2">Badge comparison</h1>
     <p class="text-slate-600 mb-6">

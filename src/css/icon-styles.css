@@ -1,3 +1,14 @@
+/* ── Design tokens ─────────────────────────────────────────── */
+:root {
+    --header-title-size: 1.75rem;
+}
+
+.text-header-title {
+    font-size: var(--header-title-size);
+    line-height: 1.25;
+}
+
+/* ── Custom icon components ─────────────────────────────────── */
 .code-slash-icon {
     position: relative;
     width: 16px;
