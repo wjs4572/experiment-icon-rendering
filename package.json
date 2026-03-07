@@ -1,6 +1,6 @@
 {
   "name": "icon-performance-testing",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Academic research tool for icon rendering performance analysis",
   "private": true,
   "scripts": {
