@@ -23,7 +23,7 @@
 </head>
 <body class="min-h-screen bg-gray-50">
 <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-    <div class="max-w-[1400px] mx-auto px-4 md:px-8 py-3">
+    <div class="container mx-auto px-8 py-3">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <img alt="SimpsonConcepts Logo" class="h-auto w-[130px] md:w-[162px] mr-[8px]" src="/images/logo_information_visualization.png">
@@ -32,9 +32,14 @@
                     <span class="text-header-title font-semibold text-[#07285b] leading-tight">Icon Rendering Performance Test</span>
                 </div>
             </div>
-            <div class="relative">
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-400 mr-1"><span data-i18n="summary.last_updated">Last updated:</span> <span id="lastUpdated" class="text-gray-600" data-i18n="summary.never">Never</span></span>
+                <div class="h-5 w-px bg-gray-300"></div>
+                <a href="index.html" class="inline-flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" data-i18n="summary.back_to_tests">← Back to Test Suite</a>
+                <a href="results-library.html" class="inline-flex items-center px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors" data-i18n="summary.view_results_library">📊 View Results Library</a>
+                <div class="relative">
                 <button id="settingsBtn" onclick="document.getElementById('settingsDropdown').classList.toggle('hidden')" class="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors cursor-pointer text-gray-600 text-xl" title="Settings">⚙</button>
-                <div id="settingsDropdown" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-4 min-w-[240px] z-50">
+                <div id="settingsDropdown" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50" style="min-width: 280px;">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Language</label>
                     <select id="languageSelector" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="en">English</option>
@@ -74,14 +79,6 @@
                 </div>
             </div>
             
-            <div class="mt-6 space-x-4">
-                <a href="index.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" data-i18n="summary.back_to_tests">
-                    ← Back to Test Suite
-                </a>
-                <a href="results-library.html" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors" data-i18n="summary.view_results_library">
-                    📊 View Results Library
-                </a>
-            </div>
         </header>
 
         <!-- Data Export & Controls -->
@@ -97,9 +94,7 @@
                     Clear All Data
                 </button>
             </div>
-            <div class="text-sm text-gray-500">
-                <span data-i18n="summary.last_updated">Last updated:</span> <span id="lastUpdated" data-i18n="summary.never">Never</span>
-            </div>
+
         </div>
 
         <!-- Summary Cards -->
