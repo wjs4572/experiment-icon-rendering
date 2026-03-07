@@ -1,487 +1,622 @@
-# Icon Rendering Performance Test
+﻿# Icon Rendering Performance Test
 
-This project is designed to test the rendering times of icons across different formats and implementation methods.
+An academic research tool for comparing icon rendering performance across formats (CSS, SVG, PNG, GIF, JPEG, WebP, AVIF) and implementation methods. The project uses a plain-HTML/CSS/JS interface for in-browser performance measurement, with a Playwright regression test suite to guard against functional regressions during development.
 
-## Purpose
+---
 
-The goal is to compare rendering performance across various icon formats:
+## Table of Contents
 
-- **CSS** - Icons defined purely with CSS (gradients, shapes, etc.)
-- **SVG** - Scalable Vector Graphics
-- **PNG** - Portable Network Graphics (raster)
-- **GIF** - Graphics Interchange Format (raster)
-- **JPEG** - Joint Photographic Experts Group (raster)
-- **WebP** - Modern raster format with better compression
-- **AVIF** - AV1 Image File Format (modern raster)
+- [Icon Rendering Performance Test](#icon-rendering-performance-test)
+  - [Table of Contents](#table-of-contents)
+  - [About This Project](#about-this-project)
+  - [Quick Start](#quick-start)
+  - [Commands Reference](#commands-reference)
+  - [Development Server](#development-server)
+  - [CSS Build](#css-build)
+  - [Testing — Full Suite](#testing--full-suite)
+  - [Testing — Quick \& Commit](#testing--quick--commit)
+    - [Quick](#quick)
+    - [Smart Commit Testing](#smart-commit-testing)
+  - [Testing — Browser-Specific](#testing--browser-specific)
+  - [Testing — Format-Specific](#testing--format-specific)
+  - [Testing — Interactive \& Debug](#testing--interactive--debug)
+  - [Utilities](#utilities)
+  - [Build Pipeline](#build-pipeline)
+    - [Step 1 — (One-time) Install](#step-1--one-time-install)
+    - [Step 2 — (When needed) Rebuild CSS](#step-2--when-needed-rebuild-css)
+    - [Step 3 — Start the Dev Server](#step-3--start-the-dev-server)
+    - [Step 4 — Make Changes \& Validate](#step-4--make-changes--validate)
+    - [Step 5 — Full Suite Verification](#step-5--full-suite-verification)
+    - [Step 6 — Commit](#step-6--commit)
+    - [Step 7 — Clean Up Artifacts](#step-7--clean-up-artifacts)
+  - [Testing Architecture](#testing-architecture)
+    - [Experimental Performance Testing](#experimental-performance-testing)
+    - [Regression Testing (Playwright)](#regression-testing-playwright)
+      - [Test Organization](#test-organization)
+      - [Smart Commit Rotation](#smart-commit-rotation)
+  - [Internationalization (i18n)](#internationalization-i18n)
+  - [Browser-Specific Notes](#browser-specific-notes)
+    - [WebKit on Windows](#webkit-on-windows)
+    - [Port 3000 Already in Use](#port-3000-already-in-use)
+    - [Common Failures](#common-failures)
+  - [Project Structure](#project-structure)
+  - [Licensing](#licensing)
+  - [Contributing](#contributing)
+    - [Adding a New Icon Format](#adding-a-new-icon-format)
+    - [General Workflow](#general-workflow)
+    - [Guidelines](#guidelines)
 
-## Format Categorization
+---
 
-Icons will be grouped by format type:
+## About This Project
 
-- **Vector**: SVG
-- **Raster**: PNG, GIF, JPEG, WebP, AVIF
-- **CSS**: Pure CSS implementations
+The goal is to measure and compare rendering performance across icon formats:
 
-## Source of Truth
+| Format | Category | Notes |
+| -------- | ---------- | ------- |
+| **CSS** | CSS | Icons defined purely with CSS (gradients, shapes) |
+| **SVG** | Vector | Source of truth for all generated image formats |
+| **PNG** | Raster | Portable Network Graphics |
+| **GIF** | Raster | Graphics Interchange Format |
+| **JPEG** | Raster | Joint Photographic Experts Group |
+| **WebP** | Raster | Modern compressed raster |
+| **AVIF** | Raster | AV1 Image File Format (modern) |
 
-- **SVG** serves as the source of truth for all image formats
-- All generated images must visually match the CSS-defined icon
-- SVG versions will be created to replicate what the CSS defines
-- Other formats will be generated from the SVG source
+**Implementation philosophy:**
 
-## Implementation Philosophy
+- **Plain HTML, CSS, and JavaScript** for the icon interface — no frameworks, no build overhead
+- **Node.js tooling** (Playwright, http-server, Tailwind CLI) for testing and CSS generation
+- **Focused on raw performance** — experimental results are collected in-browser with JS `performance` APIs
+- **Comprehensive Playwright regression tests** for functional reliability across Chromium, Firefox, and WebKit
 
-This project maintains a minimal approach for the core icon rendering:
+---
 
-- **Plain HTML, CSS, and JavaScript only** for the icon interface
-- **Node.js tooling** for comprehensive automated testing
-- **No build tools** or frameworks for the rendering code itself
-- **Focused on raw performance** without tooling overhead
-- **Comprehensive testing** with Playwright for reliability and cross-browser validation
+## Quick Start
 
-## Internationalization (i18n)
+```bash
+# 1. Clone
+git clone https://github.com/wjs4572/experiment-icon-rendering.git
+cd experiment-icon-rendering
 
-The performance testing suite supports multiple languages and follows industry standards:
+# 2. Install Node dependencies and Playwright browsers
+npm install
+npm run test:install
 
-**Supported Languages:**
+# 3. Start the development server
+npm run serve
+# → http://localhost:3000
 
-- 🇺🇸 English (en) - Default
-- 🇪🇸 Spanish (es, Español)
-- 🇫🇷 French (fr, Français)
-- 🇩🇪 German (de, Deutsch)
-- 🇯🇵 Japanese (ja, 日本語)
-- 🇨🇳 Chinese (zh, 中文)
-- 🇵🇹 Portuguese (pt, pt-br, pt-pt, Português)
-
-**Language Features:**
-
-- **Automatic detection** from browser language settings
-- **Persistent selection** across pages and sessions
-- **Real-time switching** without page reload
-- **WCAG compliant** language selector
-- **Complete UI translation** including technical terms
-
-**File Structure (Industry Standard):**
-
-```text
-src/
-├── locales/           # Translation files (industry standard)
-│   ├── en.json        # English (default)
-│   ├── es.json        # Spanish
-│   ├── fr.json        # French
-│   ├── de.json        # German
-│   ├── ja.json        # Japanese
-│   ├── zh.json        # Chinese
-│   └── pt.json        # Portuguese
-└── js/
-    └── i18n.js        # Internationalization system
+# 4. Run the regression tests
+npm test
 ```
 
-**Usage:**
+---
 
-- Language selector appears in top-right corner of all pages
-- Selection is automatically saved and applied across the entire suite
-- Falls back to English if translation missing
-- Supports technical performance terminology in all languages
+## Commands Reference
 
-## Usage
+The table below lists every npm script. Click a **Category** link to jump to the detailed section for that group.
 
-### Quick Start
+| Command | Category | Description |
+| --------- | ---------- | ------------- |
+| `npm run serve` | [Development Server](#development-server) | Serve `src/` on port 3000 with CORS |
+| `npm run build:css` | [CSS Build](#css-build) | Compile Tailwind CSS once |
+| `npm run watch:css` | [CSS Build](#css-build) | Compile Tailwind CSS and watch for changes |
+| `npm test` | [Testing — Full Suite](#testing--full-suite) | All tests, HTML + line reporter |
+| `npm run test:full` | [Testing — Full Suite](#testing--full-suite) | Alias for `npm test` |
+| `npm run test:report` | [Testing — Full Suite](#testing--full-suite) | Open the last HTML report |
+| `npm run test:install` | [Testing — Full Suite](#testing--full-suite) | Install Playwright browsers |
+| `npm run test:quick` | [Testing — Quick & Commit](#testing--quick--commit) | Core tests only (fast) |
+| `npm run test:commit` | [Testing — Quick & Commit](#testing--quick--commit) | Smart rotation — tests changed areas |
+| `npm run test:commit:dry` | [Testing — Quick & Commit](#testing--quick--commit) | Show what commit tests would run (dry run) |
+| `npm run test:rotation` | [Testing — Quick & Commit](#testing--quick--commit) | Force full rotation through all subsets |
+| `npm run test:status` | [Testing — Quick & Commit](#testing--quick--commit) | Show rotation coverage across recent commits |
+| `npm run test:browser:chrome` | [Testing — Browser-Specific](#testing--browser-specific) | Chromium only |
+| `npm run test:browser:firefox` | [Testing — Browser-Specific](#testing--browser-specific) | Firefox only |
+| `npm run test:browser:webkit` | [Testing — Browser-Specific](#testing--browser-specific) | WebKit (Safari engine) only |
+| `npm run test:format:json` | [Testing — Format-Specific](#testing--format-specific) | JSON / GeoJSON format tests |
+| `npm run test:format:css` | [Testing — Format-Specific](#testing--format-specific) | CSS / JS format tests |
+| `npm run test:format:images` | [Testing — Format-Specific](#testing--format-specific) | PNG / JPG / GIF raster tests |
+| `npm run test:format:vector` | [Testing — Format-Specific](#testing--format-specific) | SVG / AVIF / WebP vector & modern tests |
+| `npm run test:headed` | [Testing — Interactive & Debug](#testing--interactive--debug) | Run tests with visible browser windows |
+| `npm run test:ui` | [Testing — Interactive & Debug](#testing--interactive--debug) | Open Playwright interactive test UI |
+| `npm run clean` | [Utilities](#utilities) | Remove test artifacts and output files |
 
-1. **Clone the repository**:
+---
 
-   ```bash
-   git clone https://github.com/wjs4572/experiment-icon-rendering.git
-   cd experiment-icon-rendering
-   ```
+## Development Server
 
-2. **Install dependencies**:
+```bash
+npm run serve
+```
 
-   ```bash
-   npm install
-   npm run test:install  # Install Playwright browsers
-   ```
+Launches `npx http-server src -p 3000 --cors`. The `src/` directory is served statically at `http://localhost:3000`.
 
-3. **Start the development server**:
+**Details:**
 
-   ```bash
-   npm run serve
-   ```
+- **Port**: 3000
+- **CORS**: Enabled (required for fetch calls between pages)
+- **Auto-start**: Playwright automatically starts this server before running tests (configured in `playwright.config.js`), so you only need to run it manually during interactive development
 
-   This launches the icon rendering interface at `http://localhost:3000`
+**Changing the port:**
+Update both the `serve` script in `package.json` and the `baseURL` in `playwright.config.js`.
 
-4. **Run tests**:
+---
 
-   ```bash
-   npm test              # Full test suite with HTML report
-   npm run test:quick    # Quick subset (54 tests) with HTML report  
-   npm run test:commit   # Smart commit testing with rotation
-   ```
+## CSS Build
+
+Tailwind CSS source lives in `src/css/tailwind.src.css`. The compiled output (`src/css/tailwind.css`) is committed to the repo — you only need to rebuild when you change the source.
+
+```bash
+# Build once
+npm run build:css
+
+# Build and watch for changes during active development
+npm run watch:css
+```
+
+The CLI used is `@tailwindcss/cli` (v4). Both commands run:
+
+```bash
+npx @tailwindcss/cli -i ./src/css/tailwind.src.css -o ./src/css/tailwind.css [--watch]
+```
+
+---
+
+## Testing — Full Suite
+
+```bash
+npm test
+# or
+npm run test:full
+```
+
+Runs all Playwright regression tests across Chromium, Firefox, and WebKit with HTML + line reporters.
+
+**What happens:**
+
+1. Playwright auto-starts the HTTP server (port 3000) if it isn't running
+2. All test files in `tests/` are executed in parallel (2 workers)
+3. Failed tests are retried once
+4. Results are written to `playwright-report/index.html`
+
+**After a failure, view the report:**
+
+```bash
+npm run test:report
+```
+
+**Install browsers** (first time or after updating Playwright):
+
+```bash
+npm run test:install
+# → npx playwright install
+```
+
+---
+
+## Testing — Quick & Commit
+
+These commands run smaller, targeted subsets of the regression suite for faster feedback during development.
+
+### Quick
+
+```bash
+npm run test:quick
+```
+
+Runs `tests/index.test.js` and `tests/summary.test.js` — the core navigation and interface tests. Useful for a fast sanity check after minor changes.
+
+### Smart Commit Testing
+
+```bash
+npm run test:commit
+```
+
+The recommended pre-commit check. `scripts/commit-tests.js` inspects your working tree, maps changed files to relevant test suites, and runs those tests plus one rotating subset for broader coverage.
+
+- **Typical scope**: 54–162 tests × 3 browsers (Chromium, Firefox, WebKit)
+- **Duration**: 2–5 minutes
+- **Reports**: Written to `commit-reports/latest-commit-results.json` and `commit-reports/latest-commit-summary.md`
+
+```bash
+# See what would run without executing
+npm run test:commit:dry
+
+# Force a full rotation pass (all subsets run sequentially)
+npm run test:rotation
+
+# Show which subsets have been covered across recent commits
+npm run test:status
+```
+
+**Pre-commit hook:**
+
+`scripts/pre-commit` is a git hook that runs `npm run test:commit` automatically when you run `git commit`. If tests fail the commit is blocked. Bypass with:
+
+```bash
+git commit --no-verify   # use with caution
+```
+
+---
+
+## Testing — Browser-Specific
+
+Run the full test suite against a single browser engine:
+
+```bash
+npm run test:browser:chrome    # Chromium
+npm run test:browser:firefox   # Firefox
+npm run test:browser:webkit    # WebKit (Safari engine)
+```
+
+Each command passes `--project=<engine>` to Playwright. Useful for isolating browser-specific failures.
+
+> **WebKit on Windows** requires specific stability flags to prevent crashes — see [Browser-Specific Notes](#browser-specific-notes).
+
+---
+
+## Testing — Format-Specific
+
+Run tests scoped to a particular icon format category:
+
+```bash
+npm run test:format:json      # tests/json.test.js + tests/geojson.test.js
+npm run test:format:css       # tests/css.test.js + tests/js.test.js
+npm run test:format:images    # tests/png.test.js + tests/jpg.test.js + tests/gif.test.js
+npm run test:format:vector    # tests/svg.test.js + tests/avif.test.js + tests/webp.test.js
+```
+
+Use these when you have changed a specific format page or its supporting code and want targeted feedback before running the full suite.
+
+---
+
+## Testing — Interactive & Debug
+
+```bash
+# Show browser windows during test execution (useful for debugging failures)
+npm run test:headed
+
+# Open Playwright's graphical test runner
+npm run test:ui
+```
+
+`test:ui` launches the Playwright UI mode — a browser-based interface that lets you run individual tests, inspect steps, view traces, and replay failures interactively.
+
+---
+
+## Utilities
+
+```bash
+npm run clean
+```
+
+Runs `scripts/clean.js`, which removes generated/output files that should not be committed:
+
+| What gets removed | Pattern |
+| ------------------- | --------- |
+| `playwright-report/` directory | (entire folder) |
+| `test-results/` directory | (entire folder) |
+| Root-level test output files | `test-*.txt`, `test-*.log` |
+| Full test output files | `full-test-output*.txt` |
+| Tail output files | `tail-output*.txt` |
+| Browser-specific output files | `webkit-*.txt`, `firefox-*.txt` |
+| Any `.log` files in project root | `*.log` |
+
+Files that are locked by a running process (EBUSY) are skipped with a warning — close open editor tabs or processes holding those files and re-run.
+
+---
+
+## Build Pipeline
+
+The standard development workflow from scratch to committed change:
+
+### Step 1 — (One-time) Install
+
+```bash
+npm install
+npm run test:install
+```
+
+### Step 2 — (When needed) Rebuild CSS
+
+If you have changed `src/css/tailwind.src.css`:
+
+```bash
+npm run build:css
+```
+
+Or keep a watcher running alongside your editor:
+
+```bash
+npm run watch:css
+```
+
+### Step 3 — Start the Dev Server
+
+For interactive development in the browser:
+
+```bash
+npm run serve
+# → http://localhost:3000
+```
+
+Playwright starts this automatically during test runs, so this step is only required for manual browser work.
+
+### Step 4 — Make Changes & Validate
+
+Run the fast change-aware tests while iterating:
+
+```bash
+npm run test:commit
+```
+
+Repeat until green.
+
+### Step 5 — Full Suite Verification
+
+Before merging or pushing, run the entire regression suite:
+
+```bash
+npm test
+```
+
+All browsers, all tests. Check `playwright-report/` on failure.
+
+### Step 6 — Commit
+
+```bash
+git add -A
+git commit -m "feat: description of change"
+# Pre-commit hook runs test:commit automatically
+```
+
+Bypass the hook (only if tests were already verified):
+
+```bash
+git commit --no-verify
+```
+
+### Step 7 — Clean Up Artifacts
+
+```bash
+npm run clean
+```
+
+---
 
 ## Testing Architecture
 
-This project employs **two distinct testing systems** with different purposes:
+The project uses **two distinct systems** for two different purposes.
 
-### 1. Experimental Performance Testing
+### Experimental Performance Testing
 
-**Purpose**: Measure and compare actual icon rendering performance across formats
+| Property | Detail |
+| ---------- | -------- |
+| **Purpose** | Measure and compare actual icon rendering times across formats |
+| **Technology** | JS `performance` APIs in the browser |
+| **Entry point** | `http://localhost:3000` |
+| **Data collected** | Load times, memory usage, rendering metrics |
+| **Storage** | JSON export files with timestamped measurements + system specs |
+| **Browsers** | Single browser at a time (results are browser-specific) |
 
-- **Technology**: Pure JavaScript performance measurement within browser
-- **Data Collected**: Load times, memory usage, rendering performance metrics
-- **Results Storage**: JSON files with timestamped performance measurements
-- **Cross-Browser**: Tests run in user's actual browser environment
+Performance data is collected interactively through the browser interface. Results include a `systemSpecifications` section capturing:
 
-### 2. Regression Testing System
+- Auto-detected browser info (user agent, platform, hardware concurrency, screen details)
+- Manual system specs (CPU, memory, GPU, storage, network)
+- Metadata (tool used, timestamp, completeness)
 
-**Purpose**: Ensure interface functionality and prevent regressions during development
+Use **Belarc Advisor** (free, [belarc.com](https://www.belarc.com/free_download.html)) to collect comprehensive hardware specs for reproducibility documentation.
 
-- **Technology**: Playwright automated browser testing framework
-- **Data Collected**: Functional test results, visual regression detection
-- **Results Storage**: HTML reports and test pass/fail status
-- **Cross-Browser**: Automated testing across Chromium, Firefox, WebKit
+> **Important**: Experimental results are browser-specific. Relative comparisons between formats are consistent across similar systems, but absolute values differ by hardware and browser engine.
 
-### Regression Test Organization
+### Regression Testing (Playwright)
 
-**393 total tests** organized into strategic subsets:
+| Property | Detail |
+| ---------- | -------- |
+| **Purpose** | Prevent functional regressions during development |
+| **Technology** | Playwright v1.40.0 |
+| **Browsers** | Chromium, Firefox, WebKit |
+| **Total tests** | ~1497 across all suites |
+| **Parallelism** | 2 workers |
+| **Retries** | 1 retry per failed test |
+| **Reports** | HTML (`playwright-report/`) + JSON (`commit-reports/`) |
 
-- **Core Functionality** (54 tests): Essential navigation and validation
-- **Data Formats** (87 tests): JSON, GeoJSON, CSV, XML, YAML processing  
-- **Raster Images** (81 tests): PNG, JPG, GIF, WebP performance
-- **Vector/Modern** (81 tests): SVG, AVIF, ICO optimization
-- **Cross-Browser** (90 tests): Multi-browser compatibility
+#### Test Organization
 
-### Smart Commit Regression Testing
+| Subset | Tests | Coverage |
+| -------- | ------- | ---------- |
+| Core Functionality | ~54 | Navigation, index, summary pages |
+| Data Formats | ~87 | JSON, GeoJSON processing |
+| Raster Images | ~81 | PNG, JPG, GIF, WebP |
+| Vector / Modern | ~81 | SVG, AVIF, ICO |
+| Cross-Browser | ~90 | Multi-browser compatibility |
 
-**Optimized for development workflow** with intelligent regression test rotation:
+#### Smart Commit Rotation
 
-```bash
-npm run test:commit   # Runs ~54-162 tests (rotates subsets)
-```
+`npm run test:commit` maintains a `.test-rotation.json` state file to track which subsets have run recently, ensuring full coverage over time without running all ~1497 tests on every commit.
+
+---
+
+## Internationalization (i18n)
+
+All pages support 12 locale variants with automatic browser language detection.
+
+**Supported locales:**
+
+| Code | Language |
+| ------ | ---------- |
+| `en`, `en-us`, `en-gb` | English |
+| `es` | Spanish (Español) |
+| `fr` | French (Français) |
+| `de` | German (Deutsch) |
+| `ja` | Japanese (日本語) |
+| `zh`, `zh-tw` | Chinese (中文) |
+| `pt`, `pt-br`, `pt-pt` | Portuguese (Português) |
 
 **Features:**
 
-- 🔄 **Automatic rotation** through test subsets on each commit
-- ⚡ **Fast execution** (1-3 minutes vs. 15+ minutes for full suite)
-- 📊 **Statistical relevance** - covers all areas over time
-- 📝 **Auto-generated reports** in `commit-reports/` directory
-- 🧹 **Auto-cleanup** of old reports before new commits
+- Automatic detection from `navigator.language`
+- Persistent selection across pages and sessions (localStorage)
+- Real-time switching without page reload
+- WCAG-compliant language selector in the top-right corner of every page
+- Falls back to English for any missing key
 
-### Test Commands
-
-#### Full Test Suite
+**File structure:**
 
 ```bash
-npm test              # All 393 tests with HTML + progress reports
-npm run test:full     # Same as above (explicit)
-npm run test:report   # Open last HTML test report
+src/
+├── locales/
+│   ├── en.json          # English (default, fully verified)
+│   ├── es.json          # Spanish
+│   ├── fr.json          # French
+│   ├── de.json          # German
+│   ├── ja.json          # Japanese
+│   ├── zh.json          # Chinese (Simplified)
+│   ├── zh-tw.json       # Chinese (Traditional)
+│   ├── pt.json          # Portuguese
+│   ├── pt-br.json       # Portuguese (Brazil)
+│   ├── pt-pt.json       # Portuguese (Portugal)
+│   └── verification.json  # Key tracking & verification status
+└── js/
+    └── i18n.js          # Internationalization system
 ```
 
-#### Quick Development
+---
 
-```bash
-npm run test:quick    # Core tests (54) with HTML + progress
-npm run test:commit   # Smart rotation (54-162 tests)
-```
+## Browser-Specific Notes
 
-#### Browser-Specific Testing
+### WebKit on Windows
 
-```bash
-npm run test:browser:chrome   # Chromium only
-npm run test:browser:firefox  # Firefox only  
-npm run test:browser:webkit   # WebKit/Safari only
-```
-
-#### Format-Specific Testing
-
-```bash
-npm run test:format:json      # JSON/GeoJSON formats
-npm run test:format:css       # CSS/JS processing
-npm run test:format:images    # PNG/JPG/GIF rasters
-npm run test:format:vector    # SVG/AVIF/WebP vectors
-```
-
-#### Development Testing
-
-```bash
-npm run test:headed   # Run with visible browser windows
-npm run test:ui       # Interactive test UI mode
-```
-
-### Regression Test Reports
-
-Each commit regression test run generates trackable reports:
-
-- `commit-reports/latest-commit-results.json` - Structured regression test data
-- `commit-reports/latest-commit-summary.md` - Human-readable regression summary
-
-**Sample commit regression summary:**
-
-```markdown
-# Commit Regression Test Results
-
-**Status:** ✅ PASSED
-**Test Subset:** data-formats  
-**Description:** JSON, GeoJSON, CSV, XML, YAML data processing
-**Test Files:** 87 regression tests completed successfully
-```
-
-### Testing Methodology
-
-**Experimental Performance Testing:**
-
-1. **Browser-Native Measurement**: JavaScript performance APIs measure actual rendering times
-2. **Format Coverage**: All icon formats tested for loading, rendering, and memory usage
-3. **Multiple Iterations**: Statistical sampling with multiple measurement cycles
-4. **Cross-Browser Comparison**: Same tests executed in different browser engines
-5. **Environmental Control**: Standardized system configuration for reproducible results
-
-**Regression Testing (Playwright):**
-
-1. **Multi-Browser Validation**: Automated testing across Chromium, Firefox, WebKit
-2. **Functional Verification**: Interface elements, navigation, and user interactions
-3. **Visual Regression**: Screenshot comparisons ensure visual consistency
-4. **Statistical Rotation**: Smart commit testing ensures comprehensive coverage over time
-5. **Development Safety**: Prevents regressions during code changes
-
-## Browser-Specific Testing Architecture
-
-### Current Implementation (In-Browser Testing)
-
-**🌐 This version is designed for browser-specific performance testing:**
-
-- **Single Browser Environment**: All experimental performance results are specific to the browser in which they are executed
-- **Browser Identification**: Exported test results include comprehensive browser information (`userAgent`, `platform`, etc.)
-- **Reproducible Within Environment**: Results are scientifically valid for repeatability within the same browser/system configuration
-- **Environment Documentation**: System specifications integration ensures complete environmental context
-
-**Key characteristics:**
-
-- ✅ **Accurate for single browser**: Precise measurement of rendering performance in your target browser
-- ✅ **Scientific reproducibility**: Complete system and browser environment documentation
-- ✅ **Immediate feedback**: Real-time performance analysis during interactive testing
-- ⚠️ **Browser-specific results**: Performance data is not directly comparable across different browsers
-
-### Cross-Browser Regression Testing
-
-**The Playwright regression testing system provides multi-browser validation:**
-
-- **Functional Testing**: Ensures interface works correctly across Chromium, Firefox, WebKit
-- **Automated Coverage**: 393 tests validate functionality across all browser engines
-- **Development Safety**: Prevents browser-specific regressions during code changes
-- **Visual Consistency**: Screenshot comparisons ensure consistent appearance
-
-### Future Development: CLI Multi-Browser Testing
-
-**🛠️ Potential future enhancement:**
-
-A future project version may provide CLI tools for automated multi-browser performance testing and comparison:
-
-- **Automated Execution**: Run identical performance tests across multiple browser engines
-- **Comparative Analysis**: Direct performance comparisons between browsers
-- **Batch Processing**: Automated test execution without manual browser interaction
-- **Cross-Browser Reporting**: Unified reports showing performance differences across browsers
-
-**Current Focus**: The present version prioritizes accuracy and reproducibility within individual browser environments, ensuring that experimental results are scientifically valid for the specific testing context.
-
-### Experimental Environment Documentation
-
-**Critical for Reproducibility**: When collecting experimental performance measurements, document your system configuration to ensure reproducible and comparable results.
-
-**Recommended System Information Collection:**
-
-- **System Configuration**: Model, operating system, boot configuration
-- **Processor**: CPU model, architecture, core count, cache sizes, generation
-- **Memory System**: Total RAM, configuration, speed specifications
-- **Graphics Hardware**: Integrated and discrete GPU details, driver versions
-- **Storage Subsystem**: Drive types (SSD/HDD), specific models, performance characteristics
-- **Network Environment**: Connection type, speeds, latency characteristics
-
-**System Information Tools:**
-
-- **Belarc Advisor** (Recommended): Free tool that generates comprehensive system reports including hardware specifications, software versions, and system configurations. Available at belarc.com/free_download.html
-- **Windows**: System Information (msinfo32), Device Manager, PowerShell hardware commands
-- **macOS**: System Information, System Profiler, terminal hardware commands  
-- **Linux**: lscpu, lshw, dmidecode, /proc filesystem information
-
-**Performance Test Integration:**
-
-The performance testing interface includes a **System Specs** button that allows you to:
-
-**Performance Test Integration:**
-
-The performance testing interface includes a **System Specs** button that allows you to:
-
-1. **Input System Information**: Guided form with fields for all critical hardware specifications
-2. **Tool Guidance**: Step-by-step instructions for using Belarc Advisor to collect complete system data
-3. **Auto-Detection**: Automatically captures browser-detectable information (CPU cores, memory, screen resolution)
-4. **Export Integration**: System specifications are automatically included in all exported test results
-5. **Persistent Storage**: Your system information is saved locally and reused across test sessions
-
-**Exported Results Structure:**
-
-Test results now include a comprehensive `systemSpecifications` section with:
-
-- **Auto-detected browser information** (user agent, platform, hardware concurrency, screen details)
-- **Manual system specifications** (CPU, memory, graphics, storage, network details)
-- **Data collection metadata** (tool used, timestamp, completeness status)
-- **Reproducibility guidance** for other researchers using different hardware configurations
-
-**Performance Measurement Best Practices:**
-
-- **Browser Versions**: Document specific browser engines and versions used
-- **Environmental Control**: Consistent power state, thermal conditions, background processes
-- **Test Conditions**: Dedicated testing sessions with minimal concurrent applications
-- **Measurement Context**: Record system load, available memory, active services
-
-**Reproducibility Guidelines:**
-
-- Different hardware configurations will show different absolute performance values
-- **Relative comparisons** between formats should remain consistent across similar systems
-- GPU acceleration availability may significantly impact rendering performance
-- Memory bandwidth and CPU architecture affect JavaScript execution speed
-- Include system specifications in your experimental performance reports
-
-### WebKit Stability & Test Reliability
-
-**Critical for Windows Systems**: WebKit requires specific launch options to prevent browser crashes during intensive testing. These options may affect performance measurements and should be considered when interpreting results.
-
-**Required WebKit Launch Options:**
+WebKit requires additional launch flags to prevent process crashes during parallel test execution. These are configured in `playwright.config.js`:
 
 ```javascript
 launchOptions: {
   args: [
-    '--disable-accelerated-compositing',    // Prevents GPU-related crashes
-    '--disable-background-timer-throttling', // Maintains consistent timing
+    '--disable-accelerated-compositing',
+    '--disable-background-timer-throttling',
     '--disable-backgrounding-occluded-windows',
-    '--disable-renderer-backgrounding',     // Prevents process backgrounding issues
-    '--disable-features=TranslateUI',       // Removes translation overhead
-    '--disable-dev-shm-usage',             // Avoids shared memory issues
-    '--no-startup-window',                 // Reduces startup overhead
-    '--disable-gpu',                       // Forces software rendering
-    '--disable-software-rasterizer',       // Prevents rendering conflicts
-    '--disable-extensions',                // Removes extension overhead
-    '--disable-plugins',                   // Eliminates plugin interference
-    '--no-sandbox',                        // Bypasses sandboxing on Windows
-    '--disable-web-security',              // Reduces security overhead
-    '--disable-features=VizDisplayCompositor', // Prevents compositor crashes
-    '--single-process',                    // Critical: Prevents multi-process crashes
-    '--disable-background-media-suspend'   // Maintains media consistency
+    '--disable-renderer-backgrounding',
+    '--disable-features=TranslateUI',
+    '--disable-dev-shm-usage',
+    '--no-startup-window',
+    '--disable-gpu',
+    '--disable-software-rasterizer',
+    '--disable-extensions',
+    '--disable-plugins',
+    '--no-sandbox',
+    '--disable-web-security',
+    '--disable-features=VizDisplayCompositor',
+    '--single-process',
+    '--disable-background-media-suspend'
   ],
-  handleSIGTERM: false,                   // Enhanced signal handling
+  handleSIGTERM: false,
   handleSIGINT: false
 }
 ```
 
-**Performance Impact Considerations:**
+**Impact on test results:** WebKit tests use software rendering only (`--disable-gpu`). Performance measurements from WebKit reflect this configured environment, not default Safari behavior.
 
-- **GPU Acceleration Disabled**: WebKit tests use software rendering only
-- **Single-Process Mode**: May show different memory patterns vs. normal WebKit usage
-- **Background Throttling Disabled**: May affect timing measurements compared to default WebKit behavior
-- **Security Features Disabled**: Testing environment differs from production WebKit
+### Port 3000 Already in Use
 
-**Why These Options Are Required:**
+```powershell
+# Windows — find the process using port 3000
+netstat -no | findstr :3000
+```
 
-- WebKit on Windows exhibits process crashes (exit code 3221225477) without these stability flags
-- Multi-process architecture creates resource conflicts during parallel test execution  
-- GPU acceleration causes rendering failures in headless testing environments
-- Sandboxing interferes with test automation on Windows systems
+Or update both the `serve` script in `package.json` and `baseURL` in `playwright.config.js` to use a different port.
 
-**Test Result Interpretation:**
-When comparing performance across browsers, note that WebKit results reflect a specifically configured environment optimized for testing reliability rather than default browser behavior. These configurations ensure testing consistency but may not represent typical Safari/WebKit performance characteristics.
+### Common Failures
 
-### Development Workflow
+| Symptom | Likely Cause | Fix |
+| --------- | ------------- | ----- |
+| Tests pass locally, fail in CI | Server not running at port 3000 | Verify `webServer` config in `playwright.config.js` |
+| WebKit crash (exit code 3221225477) | Missing stability flags | Check `launchOptions` in `playwright.config.js` |
+| EBUSY on `npm run clean` | Output file open in editor or process | Close the file/tab and re-run |
 
-**Experimental Performance Testing:**
+---
 
-1. **Performance Measurement**: Use browser interface at `http://localhost:3000` to collect performance data
-2. **Cross-Browser Comparison**: Manually test in different browsers for comparative analysis
-3. **Data Collection**: Record measurements with system specifications for reproducibility
+## Project Structure
 
-**Regression Testing Workflow:**
+```text
+format_rendering/
+├── src/                          # Icon rendering interface (served at localhost:3000)
+│   ├── index.html               # Main entry point — run tests, batch progress
+│   ├── summary.html             # Aggregate results, statistical analysis
+│   ├── results-library.html     # Browse, filter, manage all run records
+│   ├── {format}.html           # Per-format test pages (css, svg, png, gif, jpeg, webp, avif)
+│   ├── css/
+│   │   ├── tailwind.src.css    # Tailwind source (edit this)
+│   │   └── tailwind.css        # Compiled output (committed, regenerated by build:css)
+│   ├── js/
+│   │   ├── i18n.js             # Internationalization system
+│   │   └── run-state.js        # Cross-tab run state via BroadcastChannel + localStorage
+│   ├── locales/                # Translation JSON files (12 locale variants)
+│   └── data/
+│       ├── index.json          # Manifest of available data files for Results Library loader
+│       └── *.json              # Example / sample performance datasets
+├── tests/                       # Playwright regression test suites
+│   ├── index.test.js           # Core navigation tests
+│   ├── summary.test.js         # Summary page tests
+│   ├── results-library.test.js # Results Library tests
+│   ├── format-pages.test.js    # All 7 format page tests
+│   ├── i18n.test.js            # Internationalization tests
+│   ├── suite-runner.test.js    # SuiteRunner module tests
+│   ├── run-record.test.js      # RunRecord module tests
+│   ├── run-state.test.js       # RunState module tests
+│   └── stress-test-manager.test.js
+├── scripts/
+│   ├── commit-tests.js         # Smart commit rotation logic
+│   ├── clean.js                # Artifact cleanup
+│   └── pre-commit              # Git pre-commit hook
+├── commit-reports/             # Auto-generated commit test reports
+│   ├── latest-commit-results.json
+│   └── latest-commit-summary.md
+├── playwright.config.js         # Playwright configuration
+├── package.json                 # Scripts and dependencies
+└── .gitignore
+```
 
-1. **Daily Development**: Use `npm run test:commit` for fast, rotating regression test coverage
-2. **Feature Work**: Use format-specific or browser-specific regression test commands
-3. **Pre-Release**: Use `npm test` for comprehensive regression validation
-4. **Debugging**: Use `npm run test:headed` or `npm run test:ui` for interactive regression testing
-
-### Technical Architecture
-
-**Experimental Performance Testing Infrastructure:**
-
-- Pure JavaScript performance measurement APIs
-- Browser-native timing and memory profiling
-- Cross-format comparison within same browser session
-- Manual data collection and analysis workflow
-
-**Regression Testing Infrastructure:**
-
-- Node.js `http-server` with CORS support on port 3000
-- Replaces Python server dependency for improved reliability
-- Automatic server startup during regression test execution
-
-**Regression Test Configuration:**
-
-- Playwright v1.40.0 with optimized WebKit stability settings  
-- 2-worker parallelization for resource management
-- 30-minute global timeout for comprehensive regression test suites
-- JSON and HTML reporting for both automation and human analysis
-
-**Smart Regression Test Rotation:**
-
-- Stateful rotation tracking in `.test-rotation.json`
-- 5 predefined test subsets with strategic coverage areas
-- Automatic cleanup of previous reports before commit execution
-- JSON + Markdown report generation for trackable regression results
+---
 
 ## Licensing
 
 This project uses dual licensing:
 
-- **Software Code**: Licensed under BSD-3-Clause (see [LICENSE-BSD3](LICENSE-BSD3))
-- **Data, Results & Documentation**: Licensed under CC BY 4.0 (see [LICENSE-CC-BY-4.0](LICENSE-CC-BY-4.0))
+| Asset type | License |
+| ------------ | --------- |
+| Software code (HTML, CSS, JS) | [BSD-3-Clause](LICENSE-BSD3) |
+| Data, results & documentation | [CC BY 4.0](LICENSE-CC-BY-4.0) |
 
-### What This Means
+Research data and performance measurements shared under CC BY 4.0 require attribution.
 
-- **Code** (HTML, CSS, JavaScript): You can use, modify, and redistribute under BSD-3-Clause terms
-- **Research Data** (performance measurements, findings, documentation): You can use and share under CC BY 4.0 with attribution
+---
 
 ## Contributing
 
-When adding new icon formats or experimental features:
+### Adding a New Icon Format
 
-1. **Visual Consistency**: Ensure output matches the CSS reference implementation
-2. **Experimental Testing**: Manually validate performance using the browser interface
-3. **Regression Testing**: Add corresponding Playwright tests for new formats or functionality  
-4. **Cross-Browser Validation**: Test across Chromium, Firefox, and WebKit
-5. **Performance Documentation**: Document experimental findings and measurements with system specifications
-6. **Regression Testing**: Run `npm run test:commit` before submitting changes
-7. **Full Validation**: Run `npm test` for major changes or new features
-8. **Report Inclusion**: Include generated `commit-reports/` (regression test results) in your commits
+1. Create `src/{format}.html` following the existing format page pattern
+2. Add the format to `src/index.html` batch runner and `src/summary.html` comparisons
+3. Add corresponding `tests/{format}.test.js` Playwright tests
+4. Update `src/data/index.json` if adding sample data files
 
-**Testing Guidelines:**
+### General Workflow
 
-- **Experimental Performance**: Use browser interface to collect performance data
-- **Regression Tests**: Format-specific Playwright tests go in `tests/{format}.test.js`
-- Follow existing test patterns for consistency
-- Include both positive and negative test cases for regressions
-- Document experimental performance measurements with environment details
+1. Make changes
+2. `npm run test:commit` — validate affected tests pass
+3. `npm run build:css` — if you changed `tailwind.src.css`
+4. `npm test` — full validation before merging
+5. `git add -A && git commit -m "type: description"`
 
-**Key Project Files:**
-**Key Project Files:**
+### Guidelines
 
-```text
-├── src/                          # Icon rendering interface (experimental testing)
-│   ├── index.html               # Main application entry point
-│   └── assets/                  # Icon files (SVG, PNG, etc.)
-├── tests/                       # Playwright regression test suites  
-│   ├── index.test.js           # Core navigation regression tests
-│   ├── {format}.test.js        # Format-specific regression tests
-│   └── summary.test.js         # Interface validation tests
-├── scripts/
-│   └── commit-tests.js         # Smart commit regression testing logic
-├── commit-reports/             # Auto-generated regression test reports
-├── playwright.config.js        # Regression test configuration
-└── package.json               # Dependencies and npm scripts
-```
+- Match existing test patterns in `tests/` for consistency
+- Include both positive and negative test cases
+- All user-visible strings must have i18n keys in all 12 locale files
+- Add new keys to `src/locales/verification.json` and mark non-English as unverified
+- Include `commit-reports/` output in your commits (it is tracked)
+- Document experimental performance findings with system specifications
 
-Contributions are welcome under the respective licenses.
+---
+
+*Licensed BSD-3-Clause (code) / CC BY 4.0 (data & docs). See LICENSE files for details.*

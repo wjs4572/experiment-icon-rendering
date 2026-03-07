@@ -12,14 +12,16 @@ test.describe('CSS Performance Testing Page', () => {
     // Handle external CDN timeouts more gracefully
     await page.goto('css.html', { waitUntil: 'domcontentloaded' });
     
-    // Wait for essential page structure (not CDN resources)
-    try {
-      await page.waitForSelector('h1', { timeout: 5000 });
-      await page.waitForSelector('#testingTab', { timeout: 3000 });
-      await page.waitForSelector('#renderingTab', { timeout: 3000 });
-    } catch (e) {
-      // Continue if some elements are missing - individual tests will catch specifics
-    }
+    // Wait for essential page structure with sufficient timeout for WebKit under load
+    await page.waitForSelector('h1', { timeout: 15000 });
+    await page.waitForSelector('#testingTab', { timeout: 15000 });
+    await page.waitForSelector('#renderingTab', { timeout: 15000 });
+    // Ensure tab elements are fully attached and visible before tests proceed
+    await page.waitForFunction(() => {
+      const t = document.getElementById('testingTab');
+      const r = document.getElementById('renderingTab');
+      return t && r && t.offsetParent !== null && r.offsetParent !== null;
+    }, { timeout: 15000 });
   });
 
   test('page loads with correct title and structure', async ({ page }) => {
@@ -169,11 +171,11 @@ test.describe('CSS Performance Testing Page', () => {
       // Wait a moment for JavaScript to update the container content
       await page.waitForTimeout(500);
       
-      // Verify initial state messaging (JavaScript sets this content dynamically)
+      // Verify initial state messaging (static HTML content before any test runs)
       const renderingContainer = page.locator('#renderingTabContainer');
       await expect(renderingContainer).toBeVisible();
-      await expect(renderingContainer).toContainText('Ready to show live icon rendering');
-      await expect(renderingContainer).toContainText('Start a test to see icons');
+      await expect(renderingContainer).toContainText('No test running');
+      await expect(renderingContainer).toContainText('Start a performance test to see live rendering');
     });
 
     test('rendering container has proper styling', async ({ page }) => {
@@ -333,6 +335,39 @@ test.describe('CSS Performance Testing Page', () => {
       // Verify tab navigation has proper ARIA labels
       const tabNav = page.locator('nav[aria-label="Tabs"]');
       await expect(tabNav).toBeVisible();
+    });
+  });
+
+  /* ─── Foundation Module Integration (Phase 4 init pattern) ── */
+
+  test.describe('Foundation Module Integration', () => {
+    test('foundation module scripts are loaded', async ({ page }) => {
+      const scripts = [
+        'js/icon-configs.js',
+        'js/run-id.js',
+        'js/run-record.js',
+        'js/reporters.js',
+        'js/run-state.js',
+        'js/run-handle.js',
+        'js/suite-runner.js'
+      ];
+      for (const src of scripts) {
+        const count = await page.locator(`script[src="${src}"]`).count();
+        expect(count).toBeGreaterThan(0);
+      }
+    });
+
+    test('SuiteRunner and RunStateStore globals are available', async ({ page }) => {
+      const globals = await page.evaluate(() => ({
+        SuiteRunner: typeof window.SuiteRunner === 'object',
+        RunStateStore: typeof window.RunStateStore === 'object',
+        Reporters: typeof window.Reporters === 'object',
+        IconConfigs: typeof window.IconConfigs === 'object'
+      }));
+      expect(globals.SuiteRunner).toBe(true);
+      expect(globals.RunStateStore).toBe(true);
+      expect(globals.Reporters).toBe(true);
+      expect(globals.IconConfigs).toBe(true);
     });
   });
 });

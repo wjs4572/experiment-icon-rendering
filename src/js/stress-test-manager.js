@@ -1,9 +1,19 @@
 class StressTestManager {
+    /**
+     * @param {Object}   options
+     * @param {Array}    options.iconConfigs – Icon config array (from icon-configs.js)
+     * @param {string}   [options.format]   – Format key (css, svg, png, …). Falls back to page detection.
+     * @param {Object}   [options.reporter] – Reporter instance (DOMReporter, StoreReporter, or NoopReporter)
+     */
     constructor(options = {}) {
         this.isRunning = false;
         this.shouldStop = false;
         this.currentTest = null;
         this.results = {};
+        this.statisticalAnalysis = {};
+        this.performanceRanking = [];
+        this.activeTestType = null;
+        this.isOffscreenBatchMode = false;
         this.startTime = 0;
         this.totalIterations = 0;
         this.completedIterations = 0;
@@ -15,54 +25,30 @@ class StressTestManager {
         // System information storage
         this.systemInfo = this.loadSystemInfo();
         
-        this.iconConfigs = options.iconConfigs || [
-            {
-                name: 'Remix Icon (Square)',
-                selector: '.ri-code-s-slash-line',
-                containerSelector: '.ri-code-s-slash-line',
-                hasNetworkOverhead: true
-            },
-            {
-                name: 'Pure CSS Icon',
-                selector: '.code-slash-icon',
-                containerSelector: '.code-slash-icon',
-                hasNetworkOverhead: false
-            },
-            {
-                name: 'Minimal CSS Icon',
-                selector: '.simple-icon',
-                containerSelector: '.simple-icon',
-                hasNetworkOverhead: false
-            },
-            {
-                name: 'Circular CSS Icon',
-                selector: '.circular-icon',
-                containerSelector: '.circular-icon',
-                hasNetworkOverhead: false
-            },
-            {
-                name: 'Circular Remix Icon',
-                selector: '.ri-code-s-slash-line',
-                containerSelector: '.ri-code-s-slash-line',
-                hasNetworkOverhead: true,
-                isCircular: true
-            }
-        ];
+        // Icon configs — must be provided via options or IconConfigs global
+        this.iconConfigs = options.iconConfigs
+            || (window.IconConfigs && options.format && window.IconConfigs.allIconConfigs[options.format])
+            || (window.IconConfigs && window.IconConfigs.cssIconConfigs)
+            || [];
         
-        this.setupEventListeners();
-        this.updateMemoryDisplay();
-        this.createTestContainer();
+        // Format key — provided or auto-detected from page URL
+        this.format = options.format || this._detectPageFormat();
+        this.testTypeOverride = options.testType || null;
+        
+        // Reporter — defaults to NoopReporter if none provided
+        this.reporter = options.reporter
+            || (window.Reporters && new window.Reporters.NoopReporter())
+            || { onTestStart(){}, onProgress(){}, onIterationComplete(){}, onTestComplete(){}, onError(){} };
+        
+        // If the reporter is a DOMReporter, give it a back-reference to us
+        if (this.reporter.setManager) {
+            this.reporter.setManager(this);
+        }
         
         // Delegate system specs to shared module
         if (window.systemSpecsManager) {
             this.systemInfo = window.systemSpecsManager.systemInfo;
             window.systemSpecsManager.initializeModal();
-        }
-
-        // Load previously saved results if not auto-running (batch mode)
-        const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.get('autorun')) {
-            this.loadSavedResults();
         }
     }
 
@@ -208,55 +194,44 @@ class StressTestManager {
             // Append to the rendering tab container
             const renderingTabContainer = document.getElementById('renderingTabContainer');
             if (renderingTabContainer) {
+                this.isOffscreenBatchMode = false;
                 renderingTabContainer.innerHTML = '';
                 renderingTabContainer.appendChild(testContainer);
                 testContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Ready to show live icon rendering. Start a test to see icons!</div>';
             } else {
-                // Fallback to body if tab container not found
+                // Batch/index fallback: keep rendering work offscreen to avoid UI freezes.
+                this.isOffscreenBatchMode = true;
+                testContainer.style.cssText = `
+                    position: fixed;
+                    left: -10000px;
+                    top: 0;
+                    width: 1200px;
+                    height: 900px;
+                    overflow: hidden;
+                    opacity: 0;
+                    pointer-events: none;
+                    contain: layout style paint;
+                    isolation: isolate;
+                    display: block;
+                    background: white;
+                    border: 0;
+                    padding: 0;
+                    margin: 0;
+                `;
+                testContainer.setAttribute('aria-hidden', 'true');
                 document.body.appendChild(testContainer);
-                testContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Rendering container initialized</div>';
+                testContainer.innerHTML = '';
             }
+        } else {
+            this.isOffscreenBatchMode = !document.getElementById('renderingTabContainer');
         }
+
+        return testContainer;
     }
 
+    /** @deprecated Removed in refactor — wire buttons in suite page scripts instead. */
     setupEventListeners() {
-        document.getElementById('startTest').addEventListener('click', () => this.startStressTest());
-        document.getElementById('stopTest').addEventListener('click', () => this.stopTest());
-        document.getElementById('clearResults').addEventListener('click', () => this.clearResults());
-        
-        // System info button event listener
-        const systemInfoBtn = document.getElementById('systemInfoButton');
-        if (systemInfoBtn) {
-            systemInfoBtn.addEventListener('click', () => this.showSystemInfoModal());
-        }
-        
-        // Only update memory display when not testing to avoid performance interference
-        setInterval(() => {
-            if (!this.isRunning) {
-                this.updateMemoryDisplay();
-            }
-        }, 5000);
-        
-        // Update system info display on page load
-        setTimeout(() => this.updateSystemInfoDisplay(), 100);
-
-        // Auto-start support for batch runner (via URL parameter)
-        const urlParams = new URLSearchParams(window.location.search);
-        const autoTestType = urlParams.get('autorun');
-        if (autoTestType) {
-            // Set the test type dropdown and start after a brief delay for page setup
-            setTimeout(() => {
-                const testTypeSelect = document.getElementById('testType');
-                if (testTypeSelect) {
-                    testTypeSelect.value = autoTestType;
-                }
-                // Signal ready to parent, then start
-                if (window.parent !== window) {
-                    window.parent.postMessage({ type: 'testReady', format: this.detectPageFormat() }, '*');
-                }
-                this.startStressTest();
-            }, 500);
-        }
+        console.warn('StressTestManager.setupEventListeners() is deprecated. Wire buttons in your suite page script.');
     }
 
     updateMemoryDisplay() {
@@ -280,10 +255,15 @@ class StressTestManager {
         this.startTime = performance.now();
         this.testStartedAt = new Date().toISOString();
         this.results = {};
+        this.statisticalAnalysis = {};
+        this.performanceRanking = [];
+        this.activeTestType = null;
         this.completedIterations = 0;
         
         // Get test parameters
-        const testType = document.getElementById('testType').value;
+        const testTypeEl = document.getElementById('testType');
+        const testType = this.testTypeOverride || (testTypeEl ? testTypeEl.value : 'bulk');
+        this.activeTestType = testType;
         const testConfig = this.getTestConfig(testType);
         
         this.totalIterations = testConfig.iterations * this.iconConfigs.length;
@@ -296,18 +276,28 @@ class StressTestManager {
         // Update UI
         this.showProgress(true);
         this.updateProgress('Preparing test environment...', 0);
+
+        // Ensure rendering container exists before test execution
+        this.createTestContainer();
         
         // Initialize rendering tab for live viewing
         const testContainer = document.getElementById('bulkTestContainer');
         if (testContainer) {
-            testContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">🔄 Initializing stress test infrastructure...</div>';
-            testContainer.style.display = 'block';
+            if (this.isOffscreenBatchMode) {
+                testContainer.innerHTML = '';
+            } else {
+                testContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">🔄 Initializing stress test infrastructure...</div>';
+                testContainer.style.display = 'block';
+            }
         }
         
         try {
             // Log test parameters for user awareness
             console.log(`Starting stress test: ${testConfig.iterations} iterations × ${this.iconConfigs.length} icon types = ${this.totalIterations} total iterations`);
             this.updateProgress(`Test Configuration: ${this.totalIterations.toLocaleString()} total iterations`, 1);
+
+            // Notify reporter of test start
+            this.reporter.onTestStart(this.format, testConfig);
             
             // Run test for each icon configuration
             for (let configIndex = 0; configIndex < this.iconConfigs.length; configIndex++) {
@@ -325,10 +315,11 @@ class StressTestManager {
             }
         } catch (error) {
             console.error('Stress test error:', error);
+            this.reporter.onError(error);
             this.displayError(error.message);
         } finally {
             this.isRunning = false;
-            this.showProgress(false);
+            try { this.showProgress(false); } catch (_) { /* UI reset is non-critical */ }
             // Disable research mode protections
             await this.disableResearchMode();
         }
@@ -340,25 +331,29 @@ class StressTestManager {
         // Update rendering tab with current test info
         const testContainer = document.getElementById('bulkTestContainer');
         if (testContainer) {
-            testContainer.innerHTML = `
-                <div style="text-align: center; padding: 20px; border-bottom: 1px solid #e5e5e5; margin-bottom: 16px;">
-                    <h3 style="margin: 0; color: #333; font-size: 18px;">🧪 Testing: ${config.name}</h3>
-                    <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">${testConfig.description} • ${testConfig.iterations} iterations • ${testConfig.iconsPerTest} icons per test</p>
-                    <p style="margin: 4px 0 0 0; color: #888; font-size: 12px;">Displaying up to ${testConfig.iconsPerTest} icons below</p>
-                </div>
-                <div id="iconDisplay" style="
-                    display: grid; 
-                    grid-template-columns: repeat(20, 1fr); 
-                    gap: 2px;
-                    max-height: 70vh;
-                    overflow-y: auto;
-                    border: 1px solid #f0f0f0;
-                    border-radius: 4px;
-                    padding: 8px;
-                ">
-                    <div style="text-align: center; color: #666; grid-column: 1/-1; padding: 20px;">Icons will appear here during testing...</div>
-                </div>
-            `;
+            if (this.isOffscreenBatchMode) {
+                testContainer.innerHTML = '';
+            } else {
+                testContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; border-bottom: 1px solid #e5e5e5; margin-bottom: 16px;">
+                        <h3 style="margin: 0; color: #333; font-size: 18px;">🧪 Testing: ${config.name}</h3>
+                        <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">${testConfig.description} • ${testConfig.iterations} iterations • ${testConfig.iconsPerTest} icons per test</p>
+                        <p style="margin: 4px 0 0 0; color: #888; font-size: 12px;">Displaying up to ${testConfig.iconsPerTest} icons below</p>
+                    </div>
+                    <div id="iconDisplay" style="
+                        display: grid; 
+                        grid-template-columns: repeat(20, 1fr); 
+                        gap: 2px;
+                        max-height: 70vh;
+                        overflow-y: auto;
+                        border: 1px solid #f0f0f0;
+                        border-radius: 4px;
+                        padding: 8px;
+                    ">
+                        <div style="text-align: center; color: #666; grid-column: 1/-1; padding: 20px;">Icons will appear here during testing...</div>
+                    </div>
+                `;
+            }
         }
         
         const measurements = {
@@ -425,7 +420,9 @@ class StressTestManager {
         }
         
         if (!referenceElement) {
-            throw new Error(`Element not found: ${config.selector}`);
+            // Index batch runner does not contain per-format demo elements.
+            // Use a safe fallback element so suite execution can proceed and persist results.
+            referenceElement = document.getElementById('bulkTestContainer') || document.body;
         }
 
         // Measure element metrics once per configuration
@@ -433,7 +430,10 @@ class StressTestManager {
             measurements.elementMetrics = this.measureElementMetrics(referenceElement);
         }
 
-        const testContainer = document.getElementById('bulkTestContainer');
+        const testContainer = document.getElementById('bulkTestContainer') || this.createTestContainer();
+        const totalForConfig = endIndex - startIndex;
+        let lastLoopProgressUpdateAt = performance.now();
+        let lastUiYieldAt = performance.now();
 
         // Run iterations - each iteration tests bulk icon rendering
         for (let i = startIndex; i < endIndex; i++) {
@@ -458,6 +458,29 @@ class StressTestManager {
 
             // Track actual completed iterations for accurate progress
             this.completedIterations++;
+
+            // Emit lightweight progress updates from the hot loop so very short tests
+            // still publish visible progress (batch index UI + cross-tab listeners).
+            const now = performance.now();
+            const completedForConfig = (i - startIndex + 1);
+            const shouldUpdateProgress =
+                completedForConfig === 1 ||
+                completedForConfig === totalForConfig ||
+                (now - lastLoopProgressUpdateAt) >= 250;
+
+            if (shouldUpdateProgress) {
+                const percentage = Math.min(100, (this.completedIterations / this.totalIterations) * 100);
+                const progressText = `${config.name}: ${completedForConfig.toLocaleString()}/${totalForConfig.toLocaleString()}`;
+                this.updateProgress(progressText, percentage);
+                lastLoopProgressUpdateAt = now;
+            }
+
+            // Cooperative scheduling: yield periodically so browser timers and paints
+            // can run (elapsed time, ETA, and index current-suite progress bar updates).
+            if ((now - lastUiYieldAt) >= 75) {
+                await this.delay(0);
+                lastUiYieldAt = performance.now();
+            }
             
             // Clean up for next iteration (but leave last batch visible)
             if (i < endIndex - 1) {
@@ -475,38 +498,44 @@ class StressTestManager {
     }
 
     async measureBulkRender(config, referenceElement, testContainer, iconCount) {
-        return new Promise((resolve) => {
-            const totalStart = performance.now();
-            
-            // Phase 1: Generate icons
-            const generationStart = performance.now();
-            this.generateBulkIcons(config, referenceElement, testContainer, iconCount);
-            const generationEnd = performance.now();
-            
-            // Phase 2: Force layout and render
-            requestAnimationFrame(() => {
-                const layoutStart = performance.now();
-                
-                // Force complete layout calculation while keeping visible
-                testContainer.style.display = 'block';
-                testContainer.offsetHeight; // Force reflow
-                // Keep container visible during testing
-                
-                const layoutEnd = performance.now();
-                const totalEnd = performance.now();
-                
-                resolve({
-                    totalTime: totalEnd - totalStart,
-                    generationTime: generationEnd - generationStart,
-                    layoutTime: layoutEnd - layoutStart
-                });
-            });
-        });
+        const totalStart = performance.now();
+
+        // Phase 1: Generate icons
+        const generationStart = performance.now();
+        this.generateBulkIcons(config, referenceElement, testContainer, iconCount);
+        const generationEnd = performance.now();
+
+        // Phase 2: Force layout/render immediately.
+        // Avoid requestAnimationFrame here because background tabs can pause RAF,
+        // which appears as "test paused until tab refocus".
+        const layoutStart = performance.now();
+        testContainer.style.display = 'block';
+        testContainer.offsetHeight;
+        testContainer.getBoundingClientRect();
+        const layoutEnd = performance.now();
+        const totalEnd = performance.now();
+
+        return {
+            totalTime: totalEnd - totalStart,
+            generationTime: generationEnd - generationStart,
+            layoutTime: layoutEnd - layoutStart
+        };
     }
 
     generateBulkIcons(config, referenceElement, testContainer, iconCount) {
-        // Find the iconDisplay container or use the main container as fallback
-        const iconDisplay = document.getElementById('iconDisplay') || testContainer;
+        // Find the iconDisplay container or use test container fallbacks
+        let iconDisplay = document.getElementById('iconDisplay')
+            || testContainer
+            || document.getElementById('bulkTestContainer');
+
+        if (!iconDisplay) {
+            iconDisplay = this.createTestContainer();
+        }
+
+        if (!iconDisplay) {
+            throw new Error('Bulk test container is not available for icon rendering');
+        }
+
         const fragment = document.createDocumentFragment();
         
         // Clear previous icons if using iconDisplay
@@ -810,6 +839,30 @@ class StressTestManager {
     async displayAggregatedResults({ fromSaved = false, savedDuration = null } = {}) {
         const resultsDiv = document.getElementById('results');
         const testDuration = savedDuration != null ? savedDuration : (performance.now() - this.startTime) / 1000;
+        const sortedResults = Object.entries(this.results).sort((a, b) =>
+            a[1].renderTime.average - b[1].renderTime.average
+        );
+
+        // Compute derived metrics (statisticalAnalysis, performanceRanking) BEFORE creating RunRecord
+        // so they're available when suite-runner creates the RunRecord
+        if (!fromSaved) {
+            this.computeDerivedMetrics(sortedResults);
+        }
+
+        // Index batch runner has no results panel; still persist and notify completion.
+        if (!resultsDiv) {
+            if (!fromSaved) {
+                this.saveResultsToStorage(sortedResults, testDuration);
+            }
+
+            this.reporter.onTestComplete(this.results, testDuration, {
+                fromSaved,
+                savedDuration,
+                startedAt: this.testStartedAt,
+                sortedResults
+            });
+            return;
+        }
         
         const startedAtDisplay = this.testStartedAt ? new Date(this.testStartedAt).toLocaleString() : 'N/A';
 
@@ -874,10 +927,6 @@ class StressTestManager {
         html += '</tr></thead><tbody>';
 
         // Sort results by average render time
-        const sortedResults = Object.entries(this.results).sort((a, b) => 
-            a[1].renderTime.average - b[1].renderTime.average
-        );
-
         for (const [iconType, data] of sortedResults) {
             const isRemixIcon = iconType.includes('Font') || iconType.includes('Remix');
             const rowClass = isRemixIcon ? 'bg-blue-25' : '';
@@ -908,13 +957,23 @@ class StressTestManager {
         if (!fromSaved) {
             this.saveResultsToStorage(sortedResults, testDuration);
         }
+
+        // Notify reporter of completion
+        this.reporter.onTestComplete(this.results, testDuration, {
+            fromSaved,
+            savedDuration,
+            startedAt: this.testStartedAt,
+            sortedResults
+        });
     }
 
-    saveResultsToStorage(sortedResults, testDuration) {
+    /**
+     * Compute derived metrics (statisticalAnalysis, performanceRanking) from test results.
+     * Called before RunRecord creation so these metrics are available in the RunRecord.
+     * @param {Array} sortedResults - Array of [iconType, data] entries sorted by average time
+     */
+    computeDerivedMetrics(sortedResults) {
         try {
-            // Determine format from the current page
-            const pageFormat = this.detectPageFormat();
-
             // Prepare statistical analysis data
             const statisticsData = {};
             if (sortedResults.length >= 2) {
@@ -940,6 +999,30 @@ class StressTestManager {
                 }
             }
 
+            // Store in instance properties so suite-runner can access them
+            this.statisticalAnalysis = statisticsData;
+            this.performanceRanking = sortedResults.map(([iconType, data], index) => ({
+                rank: index + 1,
+                iconType,
+                averageTime: data.renderTime.average,
+                confidenceInterval: data.renderTime.confidenceInterval,
+                standardDeviation: data.renderTime.stdDev,
+                sampleSize: data.sampleSize
+            }));
+        } catch (error) {
+            console.error('[StressTestManager] Error computing derived metrics:', error);
+            // Initialize empty so RunRecord creation doesn't fail
+            this.statisticalAnalysis = {};
+            this.performanceRanking = [];
+        }
+    }
+
+    saveResultsToStorage(sortedResults, testDuration) {
+        try {
+            // Use injected format
+            const pageFormat = this.format;
+
+            // Use pre-computed derived metrics (computed in computeDerivedMetrics)
             const testResults = {
                 testStartedAt: this.testStartedAt || new Date().toISOString(),
                 testDate: new Date().toISOString(),
@@ -947,15 +1030,8 @@ class StressTestManager {
                 iterations: this.completedIterations,
                 testDuration: testDuration,
                 results: Object.fromEntries(sortedResults),
-                statisticalAnalysis: statisticsData,
-                performanceRanking: sortedResults.map(([iconType, data], index) => ({
-                    rank: index + 1,
-                    iconType,
-                    averageTime: data.renderTime.average,
-                    confidenceInterval: data.renderTime.confidenceInterval,
-                    standardDeviation: data.renderTime.stdDev,
-                    sampleSize: data.sampleSize
-                })),
+                statisticalAnalysis: this.statisticalAnalysis || {},
+                performanceRanking: this.performanceRanking || [],
                 testMetadata: {
                     ...this.getBrowserInfo(), // Enhanced browser information
                     testingEnvironment: 'In-Browser (Single Browser)',
@@ -987,16 +1063,6 @@ class StressTestManager {
             
             // Also save to past results history for archival
             this.saveToPastResults(testResults);
-
-            // Notify parent window if running inside an iframe (batch runner)
-            if (window.parent !== window) {
-                window.parent.postMessage({
-                    type: 'testComplete',
-                    format: pageFormat,
-                    duration: testDuration,
-                    iterations: this.completedIterations
-                }, '*');
-            }
             
         } catch (error) {
             console.error('Failed to save results to localStorage:', error);
@@ -1007,7 +1073,7 @@ class StressTestManager {
         const testTypeElement = document.getElementById('testType');
         const testMethodElement = document.getElementById('testMethod');
         
-        const testType = testTypeElement ? testTypeElement.value : 'unknown';
+        const testType = this.activeTestType || this.testTypeOverride || (testTypeElement ? testTypeElement.value : 'unknown');
         const testMethod = testMethodElement ? testMethodElement.value : 'straight';
         const testConfig = this.getTestConfig(testType);
         
@@ -1077,7 +1143,7 @@ class StressTestManager {
 
                 // Source tracking for provenance
                 sourceInfo: {
-                    originalSource: this.detectOriginalSource(),
+                    originalSource: this._detectOriginalSource(),
                     fileName: 'Current Data',
                     importedAt: null
                 }
@@ -1114,17 +1180,27 @@ class StressTestManager {
         return descriptions[testType] || 'Unknown Test Type';
     }
 
-    detectOriginalSource() {
+    _detectOriginalSource() {
         // Determine which test page we are on based on the current URL
         const path = window.location.pathname;
         const fileName = path.split('/').pop() || 'unknown';
         return fileName;
     }
 
-    detectPageFormat() {
+    /** @deprecated Use _detectOriginalSource instead */
+    detectOriginalSource() {
+        return this._detectOriginalSource();
+    }
+
+    _detectPageFormat() {
         // Derive the format key (css, svg, png, etc.) from the current page filename
-        const source = this.detectOriginalSource();
+        const source = this._detectOriginalSource();
         return source.replace(/\.html$/i, '') || 'css';
+    }
+
+    /** @deprecated Use this.format instead */
+    detectPageFormat() {
+        return this.format;
     }
 
     parseBrowserName() {
@@ -1343,31 +1419,7 @@ class StressTestManager {
     }
 
     updateProgress(message, percentage) {
-        // Minimal updates during testing to avoid performance interference
-        if (document.getElementById('currentIcon')) {
-            document.getElementById('currentIcon').textContent = message;
-        }
-        if (document.getElementById('progressText')) {
-            document.getElementById('progressText').textContent = `${percentage.toFixed(0)}%`;
-        }
-        if (document.getElementById('progressBar')) {
-            document.getElementById('progressBar').style.width = `${percentage}%`;
-        }
-        if (document.getElementById('currentIteration')) {
-            document.getElementById('currentIteration').textContent = this.completedIterations.toLocaleString();
-        }
-        
-        // Update time-based info — throttling handled by the 2-second setInterval caller
-        if (document.getElementById('elapsedTime')) {
-            const elapsed = (performance.now() - this.startTime) / 1000;
-            document.getElementById('elapsedTime').textContent = `${elapsed.toFixed(1)}s`;
-        }
-        if (document.getElementById('eta') && percentage > 5) {
-            const elapsed = (performance.now() - this.startTime) / 1000;
-            const totalEstimated = (elapsed / percentage) * 100;
-            const remaining = totalEstimated - elapsed;
-            document.getElementById('eta').textContent = remaining > 0 ? `${remaining.toFixed(0)}s` : 'Almost done';
-        }
+        this.reporter.onProgress(percentage, message, this.completedIterations, this.totalIterations);
     }
 
     showProgress(show) {
@@ -1376,17 +1428,30 @@ class StressTestManager {
         const stopBtn = document.getElementById('stopTest');
         
         if (show) {
-            progressDiv.classList.remove('hidden');
-            startBtn.disabled = true;
-            startBtn.textContent = 'Testing...';
-            startBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            stopBtn.classList.remove('hidden');
+            if (progressDiv) progressDiv.classList.remove('hidden');
+            if (startBtn) {
+                startBtn.disabled = true;
+                startBtn.textContent = 'Testing...';
+                startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            if (stopBtn) stopBtn.classList.remove('hidden');
         } else {
-            progressDiv.classList.add('hidden');
-            startBtn.disabled = false;
-            startBtn.textContent = 'Start Stress Test';
-            startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            stopBtn.classList.add('hidden');
+            if (progressDiv) progressDiv.classList.add('hidden');
+            if (startBtn) {
+                startBtn.disabled = false;
+                // Restore i18n-translated label; fall back to English if i18n unavailable
+                // i18n method is .translate(), not .t()
+                try {
+                    const i18nKey = startBtn.getAttribute('data-i18n');
+                    startBtn.textContent = (window.i18n && i18nKey && typeof window.i18n.translate === 'function')
+                        ? window.i18n.translate(i18nKey)
+                        : 'Start Stress Test';
+                } catch (_) {
+                    startBtn.textContent = 'Start Stress Test';
+                }
+                startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            if (stopBtn) stopBtn.classList.add('hidden');
         }
     }
 
@@ -1400,7 +1465,9 @@ class StressTestManager {
         this.disableResearchMode();
         
         const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">Test stopped by user.</div>';
+        if (resultsDiv) {
+            resultsDiv.innerHTML = '<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">Test stopped by user.</div>';
+        }
     }
 
     async enableResearchMode() {
@@ -1511,12 +1578,14 @@ class StressTestManager {
         this.isRunning = false;
         this.shouldStop = false;
         this.results = {};
+        this.statisticalAnalysis = {};
+        this.performanceRanking = [];
         this.completedIterations = 0;
         this.totalIterations = 0;
         this.startTime = 0;
         
-        // Reset UI state
-        this.showProgress(false);
+        // Reset UI state — wrapped so any DOM/i18n failure cannot abort test execution
+        try { this.showProgress(false); } catch (_) { /* UI reset is non-critical */ }
         
         // Clear any existing test container content
         const testContainer = document.getElementById('bulkTestContainer');
@@ -1533,15 +1602,39 @@ class StressTestManager {
 
     clearResults() {
         this.resetTestState();
-        document.getElementById('results').innerHTML = '<div class="text-gray-500">No tests run yet. Click "Start Stress Test" to begin performance analysis.</div>';
+        const resultsDiv = document.getElementById('results');
+        if (resultsDiv) {
+            resultsDiv.innerHTML = '<div class="text-gray-500">No tests run yet. Click "Start Stress Test" to begin performance analysis.</div>';
+        }
     }
 
     displayError(message) {
         const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Error: ${message}</div>`;
+        if (resultsDiv) {
+            resultsDiv.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Error: ${message}</div>`;
+        } else {
+            console.error('Stress test error:', message);
+        }
     }
 
     delay(ms) {
+        if (ms === 0) {
+            // MessageChannel yields to the macrotask queue without timer throttling.
+            // setTimeout(0) in background tabs gets clamped to ~1s by browsers, which
+            // slows the iteration loop to a crawl and makes progress updates infrequent.
+            // MessageChannel.postMessage fires immediately in the next event-loop tick,
+            // unaffected by background-tab timer clamping in Chrome and Firefox.
+            //
+            // A single reusable channel is kept on the instance to avoid per-call
+            // allocation overhead (no GC pressure on the measurement hot loop).
+            if (!this._yieldChannel) {
+                this._yieldChannel = new MessageChannel();
+            }
+            return new Promise(resolve => {
+                this._yieldChannel.port1.onmessage = resolve;
+                this._yieldChannel.port2.postMessage(null);
+            });
+        }
         return new Promise(resolve => setTimeout(resolve, ms));
     }
     
@@ -1562,18 +1655,9 @@ class StressTestManager {
                 this.updateMemoryDisplay();
             }
 
-            // Broadcast progress to parent if running in iframe (batch runner)
-            if (window.parent !== window) {
-                window.parent.postMessage({
-                    type: 'testProgress',
-                    format: this.detectPageFormat(),
-                    percentage: percentage,
-                    completed: this.completedIterations,
-                    total: this.totalIterations,
-                    message: progressText
-                }, '*');
-            }
-        }, 2000); // Update every 2 seconds without blocking performance measurement
+            // Broadcast progress to reporter (replaces postMessage-based approach)
+            this.reporter.onProgress(percentage, progressText, this.completedIterations, this.totalIterations);
+        }, 500); // Keep UI responsive; heavy work remains in core measurement path
         
         // Track interval for cleanup
         this.activeIntervals.push(interval);
@@ -1587,9 +1671,10 @@ class StressTestManager {
      * so users can see past results (including those from the batch runner)
      * without re-running tests.
      */
+    /** @deprecated Use RunStateStore to load saved results instead. */
     loadSavedResults() {
         try {
-            const pageFormat = this.detectPageFormat();
+            const pageFormat = this.format;
             const stored = localStorage.getItem(`iconTestResults_${pageFormat}`);
             if (!stored) return;
 
@@ -1601,6 +1686,8 @@ class StressTestManager {
 
             // Restore state so displayAggregatedResults() can render the full view
             this.results = testData.results;
+            this.statisticalAnalysis = testData.statisticalAnalysis || {};
+            this.performanceRanking = testData.performanceRanking || [];
             this.completedIterations = testData.iterations || 0;
             this.testStartedAt = testData.testStartedAt || testData.testDate || null;
 
@@ -1617,7 +1704,7 @@ class StressTestManager {
     // Export functionality for test results
     exportResultsAsJSON() {
         try {
-            const pageFormat = this.detectPageFormat();
+            const pageFormat = this.format;
             const results = localStorage.getItem(`iconTestResults_${pageFormat}`);
             if (!results) {
                 alert('No test results found. Please run a test first.');
@@ -1669,11 +1756,5 @@ class StressTestManager {
     }
 }
 
-// Auto-initialize only if no page-specific initialization is expected.
-// Pages that pass custom options (e.g., svg.html) set window.__stressTestManagerInit = true
-// before this script loads, and handle initialization themselves.
-document.addEventListener('DOMContentLoaded', function() {
-    if (!window.__stressTestManagerInit) {
-        stressTestManager = new StressTestManager();
-    }
-});
+// ── Expose class globally ──────────────────────────────────────────────
+window.StressTestManager = StressTestManager;

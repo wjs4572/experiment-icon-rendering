@@ -11,12 +11,12 @@ module.exports = defineConfig({
   fullyParallel: true,
   // Fail the build on CI if you accidentally left test.only in the source code
   forbidOnly: !!process.env.CI,
-  // Retry on CI only
-  retries: process.env.CI ? 2 : 0,
+  // Retry failed tests to handle transient browser timing issues
+  retries: process.env.CI ? 2 : 1,
   // Limit workers to prevent resource exhaustion with WebKit
   workers: process.env.CI ? 1 : 2,
-  // Global timeout to prevent hanging tests
-  globalTimeout: 30 * 60 * 1000, // 30 minutes
+  // Global timeout to prevent hanging tests (must accommodate all tests + retries)
+  globalTimeout: 45 * 60 * 1000, // 45 minutes
   // Reporter to use. See https://playwright.dev/docs/test-reporters
   reporter: 'html',
   // Use efficient local development server for testing

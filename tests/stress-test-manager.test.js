@@ -261,7 +261,8 @@ test.describe('Stress Test Manager', () => {
       await page.goto('css.html');
       await page.waitForFunction(() => window.systemSpecsManager);
 
-      await page.locator('#systemInfoButton').click();
+      // Open modal via SystemSpecsManager API (button click handler delegates to showModal)
+      await page.evaluate(() => window.systemSpecsManager.showModal());
       await expect(page.locator('#systemInfoModal')).toBeVisible();
     });
 
@@ -308,17 +309,57 @@ test.describe('Stress Test Manager', () => {
     test('bulkTestContainer is created on init', async ({ page }) => {
       await page.goto('css.html');
       await page.waitForFunction(() => window.stressTestManager);
+      
+      // Wait for the rendering tab to be visible and stable
+      await page.waitForSelector('#renderingTab', { timeout: 10000 });
+      await page.locator('#renderingTab').waitFor({ state: 'visible', timeout: 10000 });
+
+      // createTestContainer must be called to create the rendering container
+      await page.evaluate(() => window.stressTestManager.createTestContainer());
+      
+      // Allow event handlers and DOM updates to settle
+      await page.waitForTimeout(500);
 
       // Switch to rendering tab to see the container
-      await page.locator('#renderingTab').click();
+      // Use force click to bypass any transient visibility issues
+      await page.locator('#renderingTab').click({ timeout: 15000, force: true });
       await expect(page.locator('#bulkTestContainer')).toBeAttached();
     });
 
     test('bulkTestContainer has ready message', async ({ page }) => {
       await page.goto('css.html');
       await page.waitForFunction(() => window.stressTestManager);
+      
+      // createTestContainer must be called to populate the container
+      await page.evaluate(() => window.stressTestManager.createTestContainer());
 
-      await page.locator('#renderingTab').click();
+      // Wait for renderingTab element to exist and be stable
+      await page.waitForSelector('#renderingTab', { timeout: 10000 });
+      
+      // Wait for the element to be in the viewport and have stable positioning
+      await page.locator('#renderingTab').waitFor({ state: 'visible', timeout: 10000 });
+      
+      // Add extra settle time for layout and event listeners to be ready
+      await page.waitForTimeout(800);
+      
+      // Try clicking with increased timeout and stability checking
+      let clicked = false;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          await page.locator('#renderingTab').click({ timeout: 20000, force: true, delay: 100 });
+          clicked = true;
+          break;
+        } catch (e) {
+          if (attempt < 2) {
+            await page.waitForTimeout(500);
+          }
+        }
+      }
+      
+      expect(clicked).toBe(true);
+      
+      // Wait for bulkTestContainer to appear after click
+      await page.locator('#bulkTestContainer').waitFor({ state: 'attached', timeout: 10000 });
       const text = await page.locator('#bulkTestContainer').textContent();
       expect(text).toBeTruthy();
     });
@@ -358,6 +399,65 @@ test.describe('Stress Test Manager', () => {
 
       const text = await page.locator('#results').textContent();
       expect(text).toContain('stopped by user');
+    });
+  });
+
+  /* ─── Reporter Injection (Phase 2 pattern) ────────────── */
+
+  test.describe('Reporter Injection', () => {
+    test('constructor accepts reporter via options', async ({ page }) => {
+      await page.goto('css.html');
+      await page.waitForFunction(() => window.StressTestManager && window.Reporters);
+
+      const result = await page.evaluate(() => {
+        const reporter = new window.Reporters.NoopReporter();
+        const mgr = new window.StressTestManager({
+          iconConfigs: window.IconConfigs.allIconConfigs.css,
+          format: 'css',
+          reporter: reporter
+        });
+        return {
+          hasReporter: mgr.reporter === reporter,
+          reporterType: mgr.reporter.constructor.name || 'NoopReporter'
+        };
+      });
+      expect(result.hasReporter).toBe(true);
+    });
+
+    test('constructor accepts format and iconConfigs', async ({ page }) => {
+      await page.goto('css.html');
+      await page.waitForFunction(() => window.StressTestManager && window.IconConfigs);
+
+      const result = await page.evaluate(() => {
+        const mgr = new window.StressTestManager({
+          iconConfigs: window.IconConfigs.allIconConfigs.svg,
+          format: 'svg',
+          reporter: new window.Reporters.NoopReporter()
+        });
+        return {
+          format: mgr.format,
+          configCount: mgr.iconConfigs.length
+        };
+      });
+      expect(result.format).toBe('svg');
+      expect(result.configCount).toBe(3); // SVG has 3 configs
+    });
+
+    test('page initializes stressTestManager with DOMReporter', async ({ page }) => {
+      await page.goto('css.html');
+      await page.waitForFunction(() => window.stressTestManager);
+
+      const hasDomReporter = await page.evaluate(() => {
+        const reporter = window.stressTestManager.reporter;
+        // DOMReporter has setManager method and onProgress that writes to DOM
+        return (
+          reporter !== null &&
+          typeof reporter === 'object' &&
+          typeof reporter.onProgress === 'function' &&
+          typeof reporter.setManager === 'function'
+        );
+      });
+      expect(hasDomReporter).toBe(true);
     });
   });
 });

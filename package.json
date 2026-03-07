@@ -1,9 +1,12 @@
 {
   "name": "icon-performance-testing",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Academic research tool for icon rendering performance analysis",
   "private": true,
   "scripts": {
+    "clean": "node scripts/clean.js",
+    "build:css": "npx @tailwindcss/cli -i ./src/css/tailwind.src.css -o ./src/css/tailwind.css",
+    "watch:css": "npx @tailwindcss/cli -i ./src/css/tailwind.src.css -o ./src/css/tailwind.css --watch",
     "test": "playwright test --reporter=html,line",
     "test:full": "playwright test --reporter=html,line",
     "test:commit": "node scripts/commit-tests.js",
@@ -26,8 +29,10 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
+    "@tailwindcss/cli": "^4.2.1",
     "@types/node": "^20.0.0",
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "tailwindcss": "^4.2.1"
   },
   "keywords": [
     "academic-research",

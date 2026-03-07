@@ -7,11 +7,16 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Performance Summary Dashboard - Icon Rendering Tests</title>
-    <link rel="icon" href="https://simpsonconcepts.com/img/favicon_io/favicon.ico" type="image/x-icon">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="css/tailwind.css">
     <!-- Chart.js for visualizations -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Foundation Modules -->
+    <script src="js/run-id.js"></script>
+    <script src="js/run-record.js"></script>
+    <script src="js/run-state.js"></script>
+    <script src="js/system-specs-utils.js"></script>
     <!-- Internationalization System -->
     <script src="js/i18n.js"></script>
 </head>
@@ -57,8 +62,8 @@
                 <a href="index.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" data-i18n="summary.back_to_tests">
                     ← Back to Test Suite
                 </a>
-                <a href="past-results.html" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors" data-i18n="summary.view_past_results">
-                    📊 View Past Results
+                <a href="results-library.html" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors" data-i18n="summary.view_results_library">
+                    📊 View Results Library
                 </a>
             </div>
         </header>
@@ -90,14 +95,14 @@
         <div id="noDataMessage" class="hidden bg-yellow-50 border border-yellow-200 p-6 rounded-lg text-center">
             <h3 class="text-lg font-semibold text-yellow-800 mb-2" data-i18n="summary.no_data_title">No Test Data Available</h3>
             <p class="text-yellow-700 mb-4" data-i18n="summary.no_data_desc">
-                No performance test results found. Run some tests or import previous results from the Past Results Archive.
+                No performance test results found. Run some tests or import previous results from the Results Library.
             </p>
             <div class="space-x-4">
                 <a href="index.html" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors" data-i18n="summary.run_tests">
                     Go Back to Run Tests
                 </a>
-                <a href="past-results.html" class="inline-block px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors" data-i18n="summary.view_past_results">
-                    📊 View Past Results
+                <a href="results-library.html" class="inline-block px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors" data-i18n="summary.view_results_library">
+                    📊 View Results Library
                 </a>
             </div>
         </div>
@@ -166,6 +171,7 @@
                     <div class="flex gap-2">
                         <button id="excludeSelectAll" class="text-xs text-red-600 hover:underline" type="button">Exclude All</button>
                         <button id="excludeDeselectAll" class="text-xs text-green-600 hover:underline" type="button">Include All</button>
+                        <button id="excludeAllButBest" class="text-xs text-blue-600 hover:underline" type="button">Best Only</button>
                     </div>
                 </div>
                 <div id="testExclusionList" class="max-h-60 overflow-y-auto p-2.5 border border-gray-100 rounded-lg bg-gray-50/50 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-3 items-start">
@@ -218,6 +224,14 @@
                 </div>
             </div>
 
+            <!-- Cross-Format Best Performer Comparison -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6" data-i18n="summary.cross_format_title">Cross-Format Best Performer Comparison</h2>
+                <div id="crossFormatComparison" class="space-y-4">
+                    <!-- Cross-format comparison populated dynamically -->
+                </div>
+            </div>
+
             <!-- Test Environment Information -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-6" data-i18n="summary.environment_title">Test Environment</h2>
@@ -233,13 +247,13 @@
             constructor() {
                 this.testFormats = ['css', 'svg', 'png', 'gif', 'jpeg', 'webp', 'avif'];
                 this.results = {};
-                this.archiveHistory = [];
                 this.chartInstance = null;
                 this.excludedTests = new Set();
-                this.loadArchiveHistory();
+                this._refreshTimer = null;
                 this.loadExcludedTests();
                 this.loadResults();
                 this.setupEventListeners();
+                this.setupLiveDataSync();
                 this.populateFilterDropdowns();
                 this.restoreFilterState();
                 this.render();
@@ -263,29 +277,12 @@
                 return typeof num === 'number' ? num.toLocaleString(this.getLocale()) : num;
             }
 
-            inferFormatFromResults(results) {
-                if (!results || typeof results !== 'object') return null;
-                const keys = Object.keys(results);
-                if (keys.length === 0) return null;
-                const firstKey = keys[0].toLowerCase();
-                if (firstKey.includes('css'))   return 'css';
-                if (firstKey.includes('svg'))   return 'svg';
-                if (firstKey.includes('png'))   return 'png';
-                if (firstKey.includes('gif'))   return 'gif';
-                if (firstKey.includes('jpeg'))  return 'jpeg';
-                if (firstKey.includes('webp'))  return 'webp';
-                if (firstKey.includes('avif'))  return 'avif';
-                return null;
-            }
-
-            loadArchiveHistory() {
-                try {
-                    const raw = localStorage.getItem('iconTestHistory');
-                    this.archiveHistory = raw ? JSON.parse(raw) : [];
-                } catch (e) {
-                    console.error('Error loading archive history:', e);
-                    this.archiveHistory = [];
-                }
+            /**
+             * Get all active RunRecords from the Run State Store.
+             * @returns {Array<Object>}
+             */
+            getActiveRunRecords() {
+                return window.RunStateStore ? window.RunStateStore.getActiveRecords() : [];
             }
 
             getFilterState() {
@@ -304,14 +301,18 @@
                 return !!(f.testType || f.dateRange || f.significance || f.originalSource || f.inputSource || f.fileName || this.excludedTests.size > 0);
             }
 
-            filterArchiveEntries(entries) {
+            /**
+             * Filter RunRecords based on the current filter state.
+             * @param {Array<Object>} records – Active RunRecords
+             * @returns {Array<Object>}
+             */
+            filterRecords(records) {
                 const f = this.getFilterState();
-                if (!f.testType && !f.dateRange && !f.significance && !f.originalSource && !f.inputSource && !f.fileName) {
-                    return entries;
-                }
-                let filtered = [...entries];
+                let filtered = [...records];
                 if (f.testType) {
-                    filtered = filtered.filter(r => r.testConfiguration?.testType === f.testType);
+                    filtered = filtered.filter(r =>
+                        r.testType === f.testType || r.testConfiguration?.testType === f.testType
+                    );
                 }
                 if (f.dateRange) {
                     const now = new Date();
@@ -319,117 +320,100 @@
                     if (f.dateRange === 'today') cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                     else if (f.dateRange === 'week') cutoff = new Date(now.getTime() - 7*24*60*60*1000);
                     else if (f.dateRange === 'month') cutoff = new Date(now.getTime() - 30*24*60*60*1000);
-                    if (cutoff) filtered = filtered.filter(r => new Date(r.timestamp) >= cutoff);
+                    if (cutoff) filtered = filtered.filter(r => new Date(r.startTime || r.endTime) >= cutoff);
                 }
                 if (f.significance === 'significant') {
-                    filtered = filtered.filter(r => r.summary?.significantDifferences > 0);
-                } else if (f.significance === 'not-significant') {
-                    filtered = filtered.filter(r => !r.summary?.significantDifferences || r.summary.significantDifferences === 0);
-                }
-                if (f.originalSource) {
                     filtered = filtered.filter(r => {
-                        const src = r.sourceInfo?.originalSource || (this.inferFormatFromResults(r.results) + '.html');
-                        return src === f.originalSource;
+                        const sa = r.statisticalAnalysis || {};
+                        return Object.values(sa).some(s => s.isSignificant);
+                    });
+                } else if (f.significance === 'not-significant') {
+                    filtered = filtered.filter(r => {
+                        const sa = r.statisticalAnalysis || {};
+                        const entries = Object.values(sa);
+                        return entries.length === 0 || entries.every(s => !s.isSignificant);
                     });
                 }
+                if (f.originalSource) {
+                    filtered = filtered.filter(r => `${r.format}.html` === f.originalSource);
+                }
                 if (f.inputSource === 'Current Data') {
-                    filtered = filtered.filter(r => !r.sourceInfo?.fileName || r.sourceInfo.fileName === 'Current Data');
+                    filtered = filtered.filter(r => r.source === 'local');
                 } else if (f.inputSource === 'file') {
-                    filtered = filtered.filter(r => r.sourceInfo?.fileName && r.sourceInfo.fileName !== 'Current Data');
+                    filtered = filtered.filter(r => r.source === 'imported');
                 }
                 if (f.fileName) {
-                    filtered = filtered.filter(r => r.sourceInfo?.fileName === f.fileName);
+                    filtered = filtered.filter(r => r.importedFileName === f.fileName);
                 }
                 return filtered;
             }
 
+            /**
+             * Load active RunRecords from the Run State Store, apply filters,
+             * group by format and pick the latest per format.
+             */
             loadResults() {
                 this.results = {};
-                let hasData = false;
-                const f = this.getFilterState();
-                const inputFilter = f.inputSource;
-                const fileFilter = f.fileName;
+                const activeRecords = this.getActiveRunRecords();
+                const filtered = this.filterRecords(activeRecords);
 
-                // 1. Load per-format keys (from live test sessions) — skip if filtering to imported only
-                if (inputFilter !== 'file' && !fileFilter) {
-                    this.testFormats.forEach(format => {
-                        try {
-                            const data = localStorage.getItem(`iconTestResults_${format}`);
-                            if (data) {
-                                const parsed = JSON.parse(data);
-                                // Apply source filter to live data
-                                if (f.originalSource && f.originalSource !== `${format}.html`) return;
-                                parsed._sourceInfo = {
-                                    originalSource: `${format}.html`,
-                                    fileName: 'Current Data',
-                                    importedAt: null
-                                };
-                                parsed._dataOrigin = 'live';
-                                this.results[format] = parsed;
-                                hasData = true;
-                            }
-                        } catch (error) {
-                            console.error(`Error loading ${format} results:`, error);
-                        }
-                    });
-                }
+                // Group by format, pick latest per format
+                const latestByFormat = {};
+                filtered.forEach(record => {
+                    const fmt = record.format;
+                    if (!fmt) return;
+                    const ts = record.startTime || record.endTime || '';
+                    if (!latestByFormat[fmt] || ts > (latestByFormat[fmt].startTime || latestByFormat[fmt].endTime || '')) {
+                        latestByFormat[fmt] = record;
+                    }
+                });
 
-                // 2. Load from iconTestHistory archive — apply filters, then pick latest per format
-                try {
-                    const filteredHistory = this.filterArchiveEntries(this.archiveHistory);
-                    const latestByFormat = {};
-                    filteredHistory.forEach(entry => {
-                        const format = this.inferFormatFromResults(entry.results);
-                        if (!format) return;
-                        if (!latestByFormat[format] || new Date(entry.timestamp) > new Date(latestByFormat[format].timestamp)) {
-                            latestByFormat[format] = entry;
-                        }
-                    });
+                // Convert RunRecords to the display shape expected by render methods
+                Object.entries(latestByFormat).forEach(([format, record]) => {
+                    this.results[format] = this.convertRecordToDisplay(record);
+                });
 
-                    Object.entries(latestByFormat).forEach(([format, entry]) => {
-                        const converted = this.convertHistoryToResult(entry);
-                        const existing = this.results[format];
-                        if (!existing || (existing._dataOrigin !== 'live')) {
-                            this.results[format] = converted;
-                            hasData = true;
-                        } else if (existing && new Date(entry.timestamp) > new Date(existing.testDate)) {
-                            this.results[format] = converted;
-                            hasData = true;
-                        }
-                    });
-                } catch (error) {
-                    console.error('Error loading archive results:', error);
-                }
-
+                const hasData = Object.keys(this.results).length > 0;
                 if (hasData) {
                     this.updateLastUpdated();
                 }
-
                 return hasData;
             }
 
-            convertHistoryToResult(entry) {
-                const sourceInfo = entry.sourceInfo || {};
+            /**
+             * Convert a RunRecord into the display shape used by render methods.
+             * Preserves a `_record` reference to the original RunRecord for exports.
+             */
+            convertRecordToDisplay(record) {
                 return {
-                    testDate: entry.testDate || entry.timestamp,
-                    testType: entry.testConfiguration?.testType || 'unknown',
-                    iterations: entry.testConfiguration?.iterations || 0,
-                    testDuration: entry.testConfiguration?.testDuration || 0,
-                    results: entry.results,
-                    statisticalAnalysis: entry.statisticalAnalysis || {},
-                    performanceRanking: entry.performanceRanking || [],
-                    testMetadata: {
-                        userAgent: entry.systemInfo?.userAgent || 'Unknown',
-                        timestamp: entry.systemInfo?.timestamp || 0,
-                        testingEnvironment: 'Archive',
-                        browserSpecific: true
-                    },
+                    // RunRecord identity fields (used in exports)
+                    runId:        record.runId,
+                    suiteRunId:   record.suiteRunId,
+                    testResultId: record.testResultId,
+
+                    // Display fields
+                    testDate:      record.startTime || record.endTime,
+                    testStartedAt: record.startTime,
+                    testEndedAt:   record.endTime,
+                    durationMs:    record.durationMs,
+                    testType:      record.testType || record.testConfiguration?.testType || 'unknown',
+                    iterations:    record.iterations || record.testConfiguration?.iterations || 0,
+                    testDuration:  record.testDuration || (record.durationMs ? record.durationMs / 1000 : 0),
+
+                    results:              record.results              || {},
+                    statisticalAnalysis:  record.statisticalAnalysis  || {},
+                    performanceRanking:   record.performanceRanking   || [],
+                    testMetadata:         record.testMetadata         || {},
+                    testConfiguration:    record.testConfiguration    || {},
+                    systemSpecifications: record.systemSpecifications || {},
+
                     _sourceInfo: {
-                        originalSource: sourceInfo.originalSource || (this.inferFormatFromResults(entry.results) + '.html'),
-                        fileName: sourceInfo.fileName || 'Current Data',
-                        importedAt: sourceInfo.importedAt || null
+                        originalSource: `${record.format}.html`,
+                        fileName: record.importedFileName || (record.source === 'imported' ? 'Imported' : 'Current Data'),
+                        importedAt: record.source === 'imported' ? record.startTime : null
                     },
-                    _dataOrigin: 'archive'
+                    _dataOrigin: record.source === 'imported' ? 'archive' : 'live',
+                    _record: record
                 };
             }
 
@@ -454,6 +438,7 @@
                 document.getElementById('summaryClearFilters').addEventListener('click', () => this.clearFilters());
                 document.getElementById('excludeSelectAll')?.addEventListener('click', () => this.excludeAllTests());
                 document.getElementById('excludeDeselectAll')?.addEventListener('click', () => this.includeAllTests());
+                document.getElementById('excludeAllButBest')?.addEventListener('click', () => this.excludeAllButBest());
 
                 // Auto-apply filters on change
                 const filterIds = ['summaryFilterTestType', 'summaryFilterDate', 'summaryFilterSignificance', 'summaryFilterOriginalSource', 'summaryFilterInputSource', 'summaryFilterFileName'];
@@ -462,12 +447,47 @@
                 });
             }
 
+            scheduleRefresh() {
+                if (this._refreshTimer) {
+                    clearTimeout(this._refreshTimer);
+                }
+                this._refreshTimer = setTimeout(() => {
+                    this.loadResults();
+                    this.render();
+                }, 100);
+            }
+
+            setupLiveDataSync() {
+                // Cross-tab: records written by index/suite pages in another tab
+                window.addEventListener('storage', (e) => {
+                    if (e.key === 'iconTestRunRecords' || (e.key && e.key.startsWith('iconTestResults_'))) {
+                        this.scheduleRefresh();
+                    }
+                });
+
+                // Same-tab: if summary shares context with a run source tab
+                if (window.RunStateStore) {
+                    this.testFormats.forEach((format) => {
+                        window.RunStateStore.onCompletion(format, () => this.scheduleRefresh());
+                    });
+                }
+
+                // Refresh after returning to summary tab (covers missed events)
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') {
+                        this.scheduleRefresh();
+                    }
+                });
+            }
+
             populateFilterDropdowns() {
+                const allRecords = this.getActiveRunRecords();
+
                 // Test type
                 const typeSelect = document.getElementById('summaryFilterTestType');
                 const types = new Set();
-                this.archiveHistory.forEach(r => {
-                    const t = r.testConfiguration?.testType;
+                allRecords.forEach(r => {
+                    const t = r.testType || r.testConfiguration?.testType;
                     if (t) types.add(t);
                 });
                 const order = ['single', 'bulk', 'stress', 'statistical', 'massive', 'ultra', 'extreme', 'css'];
@@ -488,15 +508,8 @@
                 // Original source
                 const srcSelect = document.getElementById('summaryFilterOriginalSource');
                 const sources = new Set();
-                this.archiveHistory.forEach(r => {
-                    const src = r.sourceInfo?.originalSource || (this.inferFormatFromResults(r.results) + '.html');
-                    if (src && src !== 'null.html' && src !== 'unknown') sources.add(src);
-                });
-                // Also add from live per-format keys
-                this.testFormats.forEach(f => {
-                    try {
-                        if (localStorage.getItem(`iconTestResults_${f}`)) sources.add(`${f}.html`);
-                    } catch(e) {}
+                allRecords.forEach(r => {
+                    if (r.format) sources.add(`${r.format}.html`);
                 });
                 Array.from(sources).sort().forEach(src => {
                     const opt = document.createElement('option');
@@ -505,12 +518,11 @@
                     srcSelect.appendChild(opt);
                 });
 
-                // File name
+                // File name (imported records only)
                 const fnSelect = document.getElementById('summaryFilterFileName');
                 const fnames = new Set();
-                this.archiveHistory.forEach(r => {
-                    const fn = r.sourceInfo?.fileName;
-                    if (fn && fn !== 'Current Data') fnames.add(fn);
+                allRecords.forEach(r => {
+                    if (r.importedFileName) fnames.add(r.importedFileName);
                 });
                 Array.from(fnames).sort().forEach(fn => {
                     const opt = document.createElement('option');
@@ -602,7 +614,21 @@
                 const groups = new Map();
                 const ensure = (fmt) => { if (!groups.has(fmt)) groups.set(fmt, new Set()); return groups.get(fmt); };
 
-                // Live results — keyed by format name directly
+                // All active records (unfiltered, for global icon type list)
+                const allRecords = this.getActiveRunRecords();
+                allRecords.forEach(record => {
+                    const fmt = record.format;
+                    if (!fmt) return;
+                    const grp = ensure(fmt);
+                    if (record.performanceRanking) {
+                        record.performanceRanking.forEach(r => grp.add(r.iconType));
+                    }
+                    if (record.results) {
+                        Object.keys(record.results).forEach(k => grp.add(k));
+                    }
+                });
+
+                // Also include current display results (already loaded)
                 Object.entries(this.results).forEach(([format, data]) => {
                     const grp = ensure(format);
                     if (data.performanceRanking) {
@@ -613,19 +639,6 @@
                     }
                 });
 
-                // Archive — derive format from sourceInfo.originalSource (e.g. "css.html" → "css")
-                this.archiveHistory.forEach(entry => {
-                    const src = entry.sourceInfo?.originalSource || '';
-                    const format = src.replace(/\.html$/i, '') || this.inferFormatFromResults(entry.results);
-                    if (!format) return;
-                    const grp = ensure(format);
-                    if (entry.performanceRanking) {
-                        entry.performanceRanking.forEach(r => grp.add(r.iconType));
-                    }
-                    if (entry.results) {
-                        Object.keys(entry.results).forEach(k => grp.add(k));
-                    }
-                });
                 return groups;
             }
 
@@ -706,6 +719,23 @@
                 this.render();
             }
 
+            excludeAllButBest() {
+                // Collect the best-performing iconType per format (lowest averageTime)
+                const bestTypes = new Set();
+                Object.values(this.results).forEach(data => {
+                    const ranking = data?.performanceRanking;
+                    if (!Array.isArray(ranking) || ranking.length === 0) return;
+                    const best = [...ranking].sort((a, b) => a.averageTime - b.averageTime)[0];
+                    if (best?.iconType) bestTypes.add(best.iconType);
+                });
+                // Exclude everything that isn't a best-performing type
+                const allTypes = this.collectAllIconTypesFlat();
+                this.excludedTests.clear();
+                allTypes.forEach(t => { if (!bestTypes.has(t)) this.excludedTests.add(t); });
+                this.saveExcludedTests();
+                this.render();
+            }
+
             includeAllTests() {
                 this.excludedTests.clear();
                 this.saveExcludedTests();
@@ -723,8 +753,10 @@
                 if (this.excludedTests.size === 0) return data.statisticalAnalysis;
                 const filtered = {};
                 Object.entries(data.statisticalAnalysis).forEach(([comparison, stats]) => {
-                    const mentionsExcluded = [...this.excludedTests].some(test => comparison.includes(test));
-                    if (!mentionsExcluded) {
+                    // Split "TypeA vs TypeB" and check each side with exact set lookup
+                    const parts = comparison.split(' vs ');
+                    const eitherExcluded = parts.some(p => this.excludedTests.has(p.trim()));
+                    if (!eitherExcluded) {
                         filtered[comparison] = stats;
                     }
                 });
@@ -734,8 +766,8 @@
             render() {
                 const hasData = Object.keys(this.results).length > 0;
                 const filterSection = document.getElementById('summaryFilterSection');
-                // Show filters whenever there's any underlying data (archive or live), even if current filters yield nothing
-                const hasAnyData = this.archiveHistory.length > 0 || this.testFormats.some(f => { try { return !!localStorage.getItem(`iconTestResults_${f}`); } catch(e) { return false; } });
+                // Show filters whenever there's any underlying active records, even if current filters yield nothing
+                const hasAnyData = this.getActiveRunRecords().length > 0;
                 
                 if (filterSection) {
                     if (hasAnyData) {
@@ -760,6 +792,7 @@
                 this.renderPerformanceChart();
                 this.renderResultsTable();
                 this.renderStatisticalAnalysis();
+                this.renderCrossFormatComparisons();
                 this.renderTestEnvironment();
             }
 
@@ -940,8 +973,10 @@
                 let html = '';
 
                 Object.entries(this.results).forEach(([format, data]) => {
-                    const statusClass = data.iterations > 1000 ? 'text-green-600' : 'text-yellow-600';
-                    const status = data.iterations > 1000 ? this.t('summary.status.complete') : this.t('summary.status.partial');
+                    // Status based on test completion (presence of endTime indicates completion)
+                    const isComplete = !!data.testEndedAt;
+                    const statusClass = isComplete ? 'text-green-600' : 'text-yellow-600';
+                    const status = isComplete ? this.t('summary.status.complete') : this.t('summary.status.partial');
                     
                     const filteredRanking = this.getFilteredRanking(data);
                     const bestResult = filteredRanking.length > 0 ? [...filteredRanking].sort((a, b) => a.averageTime - b.averageTime)[0] : null;
@@ -1023,26 +1058,163 @@
                 container.innerHTML = html;
             }
 
+            computeCrossFormatComparisons() {
+                const bests = [];
+                Object.entries(this.results).forEach(([format, data]) => {
+                    const ranking = this.getFilteredRanking(data);
+                    if (!ranking || ranking.length === 0) return;
+                    const sorted = [...ranking].sort((a, b) => a.averageTime - b.averageTime);
+                    const best = sorted[0];
+                    if (best && best.confidenceInterval) {
+                        bests.push({ format, iconType: best.iconType, mean: best.averageTime, ci: best.confidenceInterval });
+                    }
+                });
+
+                const comparisons = [];
+                for (let i = 0; i < bests.length; i++) {
+                    for (let j = i + 1; j < bests.length; j++) {
+                        const a = bests[i];
+                        const b = bests[j];
+                        const overlap = a.ci.lower <= b.ci.upper && b.ci.lower <= a.ci.upper;
+                        const diff = Math.abs(a.mean - b.mean);
+                        const faster = a.mean <= b.mean ? a : b;
+                        const slower  = a.mean <= b.mean ? b : a;
+                        const halfWidthA = (a.ci.upper - a.ci.lower) / 2;
+                        const halfWidthB = (b.ci.upper - b.ci.lower) / 2;
+                        const pooledSpread = (halfWidthA + halfWidthB) / 2;
+                        const effectSize = pooledSpread > 0 ? diff / pooledSpread : 0;
+                        const diffPct   = slower.mean > 0 ? (diff / slower.mean) * 100 : 0;
+                        comparisons.push({ a, b, overlap, diff, faster, slower, effectSize, diffPct });
+                    }
+                }
+                return { bests, comparisons };
+            }
+
+            renderCrossFormatComparisons() {
+                const container = document.getElementById('crossFormatComparison');
+                if (!container) return;
+
+                const { bests, comparisons } = this.computeCrossFormatComparisons();
+
+                if (bests.length < 2) {
+                    container.innerHTML = `<div class="text-gray-500 text-center">${this.t('summary.cross_format.no_data')}</div>`;
+                    return;
+                }
+
+                let html = `<p class="text-sm text-gray-600 mb-4">${this.t('summary.cross_format.description')}</p>`;
+
+                // Best per format quick-view chips
+                html += `<div class="flex flex-wrap gap-3 mb-6">`;
+                bests.forEach(b => {
+                    html += `<div class="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs">
+                        <span class="font-semibold text-blue-800">${b.format.toUpperCase()}</span>
+                        <span class="text-gray-600 ml-1">${b.iconType}</span>
+                        <span class="font-mono ml-2 text-blue-700">${b.mean.toFixed(3)}ms</span>
+                    </div>`;
+                });
+                html += `</div>`;
+
+                // Pairwise comparison table
+                html += `<div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-gray-50 border-b">
+                                <th class="p-3 text-left">${this.t('summary.cross_format.format_a')}</th>
+                                <th class="p-3 text-left">${this.t('summary.cross_format.format_b')}</th>
+                                <th class="p-3 text-right">${this.t('summary.cross_format.difference')}</th>
+                                <th class="p-3 text-center">${this.t('summary.cross_format.effect_size')}</th>
+                                <th class="p-3 text-center">${this.t('summary.cross_format.verdict')}</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                comparisons.forEach(({ a, b, overlap, diff, faster, slower, effectSize, diffPct }) => {
+                    const verdictClass = overlap
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-green-100 text-green-800';
+                    const verdictText = overlap
+                        ? this.t('summary.cross_format.overlapping')
+                        : this.t('summary.cross_format.no_overlap');
+                    const esClass = effectSize > 1.2 ? 'text-green-600'
+                                  : effectSize > 0.5 ? 'text-yellow-600'
+                                  : 'text-gray-400';
+                    html += `<tr class="border-b hover:bg-gray-50">
+                        <td class="p-3">
+                            <span class="font-semibold">${a.format.toUpperCase()}</span>
+                            <span class="text-gray-500 text-xs ml-1">${a.iconType} (${a.mean.toFixed(3)}ms)</span>
+                        </td>
+                        <td class="p-3">
+                            <span class="font-semibold">${b.format.toUpperCase()}</span>
+                            <span class="text-gray-500 text-xs ml-1">${b.iconType} (${b.mean.toFixed(3)}ms)</span>
+                        </td>
+                        <td class="p-3 text-right font-mono">${diff.toFixed(3)}ms <span class="text-gray-400">(${diffPct.toFixed(1)}%)</span></td>
+                        <td class="p-3 text-center ${esClass}">${effectSize.toFixed(2)}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-medium ${verdictClass}">${verdictText}</span></td>
+                    </tr>`;
+                });
+
+                html += `</tbody></table></div>`;
+                container.innerHTML = html;
+            }
+
             renderTestEnvironment() {
                 const container = document.getElementById('testEnvironment');
-                
-                // Use the first available result for environment info
+
                 const firstResult = Object.values(this.results)[0];
-                if (!firstResult || !firstResult.testMetadata) {
+                if (!firstResult) {
                     container.innerHTML = '<div class="text-gray-500">' + this.t('summary.env.no_info') + '</div>';
                     return;
                 }
 
-                const metadata = firstResult.testMetadata;
-                const timerAvail = performance.timeOrigin ? this.t('summary.env.available') : this.t('summary.env.unavailable');
-                const memoryAvail = performance.memory ? this.t('summary.env.available') : this.t('summary.env.unavailable');
-                const navAvail = performance.navigation ? this.t('summary.env.available') : this.t('summary.env.unavailable');
+                const metadata = firstResult.testMetadata || {};
+                const sys      = firstResult.systemSpecifications || {};
+                const auto     = sys.autoDetected || {};
+                const man      = sys.manual || {};
+                const proc     = man.processor || {};
+                const mem      = man.memory || {};
+                const gfx      = man.graphics || {};
+                const conf     = man.systemConfiguration || {};
+                const screen   = auto.screen || {};
+
+                // Parse browser name from raw UA (live records) or use pre-sanitized value
+                const browserName = auto.browserName
+                    || SystemSpecsUtils.parseBrowserName(auto.userAgent || metadata.userAgent || '');
+
+                // OS: use pre-sanitized value or strip verbose Belarc text
+                const os = SystemSpecsUtils.extractOSName(conf.operatingSystem || '') || auto.platform || '';
+
+                // GPU: prefer named adapters, fall back to WebGL ANGLE string
+                const gpuFromManual = SystemSpecsUtils.extractGPUNames(gfx.integrated || '')
+                    || SystemSpecsUtils.extractGPUNames(gfx.discrete || '');
+                const gpu = gpuFromManual || SystemSpecsUtils.extractAutoGPU(auto.gpu || '');
+
+                const cores      = SystemSpecsUtils.extractCoreCount(proc.cache || '', auto.hardwareConcurrency);
+                const ram        = mem.totalRAM || '';
+                const resolution = screen.resolution || '';
+                const bootMode   = (conf.bootMode || '').replace(/UEFI with successful Secure Boot/i, 'UEFI Secure Boot');
+
+                const timerAvail  = performance.timeOrigin ? this.t('summary.env.available') : this.t('summary.env.unavailable');
+                const memoryAvail = performance.memory     ? this.t('summary.env.available') : this.t('summary.env.unavailable');
+                const navAvail    = performance.navigation ? this.t('summary.env.available') : this.t('summary.env.unavailable');
+
+                const envRows = [
+                    ['Browser',    browserName],
+                    os         ? ['OS',       os]       : null,
+                    ram        ? ['RAM',       ram]      : null,
+                    cores      ? ['CPU Cores', cores]    : null,
+                    gpu        ? ['GPU',       gpu]      : null,
+                    resolution ? ['Display',   resolution] : null,
+                    bootMode   ? ['Boot Mode', bootMode] : null,
+                ].filter(Boolean).map(([label, value]) =>
+                    `<div class="flex justify-between gap-4"><span class="text-gray-500">${label}</span><span class="text-gray-800 font-medium text-right">${value}</span></div>`
+                ).join('');
+
                 container.innerHTML = `
                     <div class="space-y-2">
                         <h4 class="font-medium text-gray-800">${this.t('summary.env.browser_info')}</h4>
-                        <div class="text-gray-600">${metadata.userAgent}</div>
+                        <div class="space-y-1 text-sm">${envRows}</div>
                     </div>
-                    
+
                     <div class="space-y-2">
                         <h4 class="font-medium text-gray-800">${this.t('summary.env.perf_metrics')}</h4>
                         <div class="space-y-1 text-gray-600">
@@ -1061,7 +1233,7 @@
                 }
 
                 const rows = [
-                    ['Format', 'Test Started', 'Test Completed', 'Duration (s)', 'Iterations', 'Implementation', 'Rank', 'Average Time (ms)', 'CI Lower', 'CI Upper', 'Std Dev', 'Memory Used Avg (bytes)', 'Sample Size', 'Source Page', 'Data Source', 'Imported']
+                    ['Format', 'Run ID', 'Suite Run ID', 'Test Result ID', 'Test Started', 'Test Completed', 'Duration (ms)', 'Duration (s)', 'Iterations', 'Implementation', 'Rank', 'Average Time (ms)', 'CI Lower', 'CI Upper', 'Std Dev', 'Memory Used Avg (bytes)', 'Sample Size', 'Source Page', 'Data Source', 'Imported']
                 ];
 
                 Object.entries(this.results).forEach(([format, data]) => {
@@ -1076,8 +1248,12 @@
                             }
                             rows.push([
                                 format.toUpperCase(),
+                                data.runId || 'N/A',
+                                data.suiteRunId || 'N/A',
+                                data.testResultId || 'N/A',
                                 data.testStartedAt || 'N/A',
-                                new Date(data.testDate).toISOString(),
+                                data.testEndedAt || new Date(data.testDate).toISOString(),
+                                data.durationMs != null ? data.durationMs : 'N/A',
                                 (data.testDuration || 0).toFixed(1),
                                 data.iterations || 0,
                                 result.iconType,
@@ -1211,7 +1387,21 @@
                         hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
                         memoryApi: !!performance.memory
                     },
-                    sourceData: this.results
+                    sourceData: Object.fromEntries(
+                        Object.entries(this.results).map(([format, data]) => {
+                            // Strip internal _record reference, add RunRecord identity fields
+                            const { _record, ...rest } = data;
+                            return [format, {
+                                ...rest,
+                                runId:        data.runId        || null,
+                                suiteRunId:   data.suiteRunId   || null,
+                                testResultId: data.testResultId || null,
+                                startTime:    data.testStartedAt || null,
+                                endTime:      data.testEndedAt   || null,
+                                durationMs:   data.durationMs    || null
+                            }];
+                        })
+                    )
                 };
 
                 const jsonContent = JSON.stringify(exportData, null, 2);
@@ -1232,12 +1422,18 @@
 
             clearAllData() {
                 if (confirm(this.t('summary.clear_confirm'))) {
+                    // Clear all localStorage keys used by the app
+                    localStorage.removeItem('iconTestRunRecords');
+                    localStorage.removeItem('iconTestProgressState');
                     this.testFormats.forEach(format => {
                         localStorage.removeItem(`iconTestResults_${format}`);
                     });
+                    // Clear in-memory active runs
+                    if (window.RunStateStore && window.RunStateStore._active) {
+                        window.RunStateStore._active.clear();
+                    }
                     this.results = {};
                     this.render();
-                    alert(this.t('summary.clear_success'));
                 }
             }
         }
@@ -1247,6 +1443,7 @@
         function initDashboard() {
             if (!dashboardInstance) {
                 dashboardInstance = new SummaryDashboard();
+                window.summaryDashboard = dashboardInstance;
             } else {
                 // Re-render on language change
                 dashboardInstance.loadResults();

@@ -7,10 +7,9 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title data-i18n="png.page_title">PNG Icon Performance Testing</title>
-    <link rel="icon" href="https://simpsonconcepts.com/img/favicon_io/favicon.ico" type="image/x-icon">
-    <!-- Tailwind CSS CDN - Intentionally used for testing/research project per minimal approach policy -->
-    <!-- CDN warning is expected and acceptable for non-production performance testing tool -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="css/tailwind.css">
     <!-- Internationalization System -->
     <script src="js/i18n.js"></script>
 
@@ -147,18 +146,19 @@
                     <div id="testProgress" class="hidden">
                         <div class="mb-2">
                             <div class="flex justify-between text-sm">
-                                <span id="currentIcon" data-i18n="css.testing_progress">Testing...</span>
-                                <span id="progressText">0%</span>
+                                <span id="progressText" data-i18n="css.testing_progress">Testing...</span>
+                                <span id="progressPercent">0%</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
                                 <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-gray-600">
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-xs text-gray-600">
                             <div><span data-i18n="css.iterations">Iterations:</span> <span id="currentIteration" class="font-medium">0</span></div>
                             <div><span data-i18n="css.elapsed">Elapsed:</span> <span id="elapsedTime" class="font-medium">0s</span></div>
                             <div><span data-i18n="css.eta">ETA:</span> <span id="eta" class="font-medium">--</span></div>
                             <div><span data-i18n="css.memory">Memory:</span> <span id="memoryUsage" class="font-medium">0 MB</span></div>
+                            <div><span>Test Type:</span> <span id="activeTestType" class="font-medium">--</span></div>
                         </div>
                         <button id="stopTest" class="mt-3 bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600 hidden" data-i18n="css.stop_test">
                             Stop Test
@@ -210,124 +210,282 @@
 
     <!-- Shared System Specifications Module -->
     <script src="js/system-specs.js"></script>
-    <!-- Signal that this page handles its own StressTestManager initialization -->
-    <script>window.__stressTestManagerInit = true;</script>
-    <!-- External JavaScript Module -->
+    <!-- Foundation modules -->
+    <script src="js/icon-configs.js"></script>
+    <script src="js/run-id.js"></script>
+    <script src="js/run-record.js"></script>
+    <script src="js/reporters.js"></script>
+    <script src="js/run-state.js"></script>
+    <script src="js/run-handle.js"></script>
+    <script src="js/suite-runner.js"></script>
+    <!-- StressTestManager (engine) -->
     <script src="js/stress-test-manager.js"></script>
 
     <!-- Tab switching functionality (global scope for onclick) -->
     <script>
-        let stressTestManager;
-
         // Global tab switching function for onclick handlers
         function switchTab(tabName) {
-            console.log('Switching to tab:', tabName);
-
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(b => {
+                b.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                b.classList.add('border-transparent', 'text-gray-500');
             });
 
-            // Remove active class from all tab buttons
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active', 'border-blue-500', 'text-blue-600');
-                button.classList.add('border-transparent', 'text-gray-500');
-            });
-
-            // Show selected tab content
-            if (tabName === 'testing') {
-                document.getElementById('testingContent').classList.remove('hidden');
-                const testingTab = document.getElementById('testingTab');
-                testingTab.classList.add('active', 'border-blue-500', 'text-blue-600');
-                testingTab.classList.remove('border-transparent', 'text-gray-500');
-            } else if (tabName === 'rendering') {
-                document.getElementById('renderingContent').classList.remove('hidden');
-                const renderingTab = document.getElementById('renderingTab');
-                renderingTab.classList.add('active', 'border-blue-500', 'text-blue-600');
-                renderingTab.classList.remove('border-transparent', 'text-gray-500');
-            }
-
-            console.log('Tab switch completed');
+            const id = tabName === 'testing' ? 'testingContent' : 'renderingContent';
+            const tab = tabName === 'testing' ? 'testingTab' : 'renderingTab';
+            document.getElementById(id).classList.remove('hidden');
+            const btn = document.getElementById(tab);
+            btn.classList.add('active', 'border-blue-500', 'text-blue-600');
+            btn.classList.remove('border-transparent', 'text-gray-500');
         }
     </script>
 
-    <!-- Initialize the stress test manager when DOM is ready -->
+    <!-- Suite page initialisation — wired through SuiteRunner + DOMReporter -->
     <script>
-
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, setting up tabs');
+            const FORMAT = 'png';
+            let currentHandle = null;
+            let isLocalRun = false; // true while a locally-initiated run is in flight
 
-            // Setup tab event listeners FIRST before StressTestManager
-            const testingTab = document.getElementById('testingTab');
+            // ── Tab listeners ──────────────────────────────────
+            const testingTab  = document.getElementById('testingTab');
             const renderingTab = document.getElementById('renderingTab');
+            if (testingTab)  testingTab.addEventListener('click',  function(e) { e.preventDefault(); switchTab('testing');  });
+            if (renderingTab) renderingTab.addEventListener('click', function(e) { e.preventDefault(); switchTab('rendering'); });
 
-            console.log('Found tabs:', { testingTab: !!testingTab, renderingTab: !!renderingTab });
+            // ── Browser info ───────────────────────────────────
+            const browserInfo = document.getElementById('currentBrowserInfo');
 
-            if (testingTab) {
-                testingTab.addEventListener('click', function(e) {
-                    console.log('Testing tab clicked');
-                    e.preventDefault();
-                    switchTab('testing');
+            // ── DOMReporter + StressTestManager (for HTML rendering) ──
+            const reporter = new window.Reporters.DOMReporter();
+            window.stressTestManager = new StressTestManager({
+                iconConfigs: window.IconConfigs.allIconConfigs[FORMAT],
+                format: FORMAT,
+                reporter: reporter
+            });
+            reporter.setManager(window.stressTestManager);
+
+            if (browserInfo) {
+                browserInfo.textContent = window.stressTestManager.parseBrowserName();
+            }
+
+            // ── Button wiring ──────────────────────────────────
+            const startBtn = document.getElementById('startTest');
+            const stopBtn  = document.getElementById('stopTest');
+            const clearBtn = document.getElementById('clearResults');
+            const testProgress = document.getElementById('testProgress');
+
+            if (startBtn) {
+                startBtn.addEventListener('click', function() {
+                    const testTypeEl = document.getElementById('testType');
+                    const testType = testTypeEl ? testTypeEl.value : 'bulk';
+                    isLocalRun = true;
+                    const atElLocal = document.getElementById('activeTestType');
+                    if (atElLocal) atElLocal.textContent = TEST_TYPE_LABELS[testType] || testType;
+                    currentHandle = window.SuiteRunner.runSuite(FORMAT, testType, { reporter: reporter });
                 });
-                console.log('Testing tab listener added');
-            } else {
-                console.error('Testing tab not found!');
             }
 
-            if (renderingTab) {
-                renderingTab.addEventListener('click', function(e) {
-                    console.log('Rendering tab clicked');
-                    e.preventDefault();
-                    switchTab('rendering');
+            if (stopBtn) {
+                stopBtn.addEventListener('click', function() {
+                    if (currentHandle) {
+                        window.SuiteRunner.cancelSuite(currentHandle);
+                        currentHandle = null;
+                    } else {
+                        window.stressTestManager.stopTest();
+                    }
                 });
-                console.log('Rendering tab listener added');
-            } else {
-                console.error('Rendering tab not found!');
             }
 
-            // Initialize StressTestManager with PNG-specific icon configs
-            const pngIconConfigs = [
-                {
-                    name: 'Standard PNG',
-                    selector: 'img[alt="Standard PNG icon"]',
-                    containerSelector: 'img[alt="Standard PNG icon"]',
-                    renderType: 'external-svg',
-                    hasNetworkOverhead: true,
-                    src: 'img/remix_circle_icon.png'
-                },
-                {
-                    name: 'High DPI PNG (2×)',
-                    selector: 'img[alt="High DPI PNG icon"]',
-                    containerSelector: 'img[alt="High DPI PNG icon"]',
-                    renderType: 'external-svg',
-                    hasNetworkOverhead: true,
-                    src: 'img/remix_circle_icon_2x.png'
-                },
-                {
-                    name: 'Compressed PNG',
-                    selector: 'img[alt="Compressed PNG icon"]',
-                    containerSelector: 'img[alt="Compressed PNG icon"]',
-                    renderType: 'external-svg',
-                    hasNetworkOverhead: true,
-                    src: 'img/remix_circle_icon_compressed.png'
-                }
-            ];
-
-            try {
-                window.stressTestManager = new StressTestManager({ iconConfigs: pngIconConfigs });
-                console.log('StressTestManager initialized with PNG configs');
-
-                // Display current browser information
-                const browserInfo = document.getElementById('currentBrowserInfo');
-                if (browserInfo && window.stressTestManager) {
-                    const parsedBrowser = window.stressTestManager.parseBrowserName();
-                    browserInfo.textContent = parsedBrowser;
-                }
-            } catch (error) {
-                console.error('Error initializing StressTestManager:', error);
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function() {
+                    const resultsDiv = document.getElementById('results');
+                    if (resultsDiv) {
+                        resultsDiv.innerHTML = '<div class="text-gray-500" data-i18n="css.no_tests_message">No tests run yet. Click "Start Stress Test" to begin performance analysis.</div>';
+                    }
+                });
             }
 
-            console.log('Tab event listeners set up');
+            // ── Cross-tab batch progress monitoring ──
+            let currentBatchRunId = null; // Track current batch to prevent stale data override
+            let lastDisplayedPercentage = -1; // Prevent redundant UI updates
+            let batchStartedFromChannelUpdate = false; // Only display progress after first live broadcast update
+            const renderingTabContainer = document.getElementById('renderingTabContainer');
+
+            const updateUIForBatchStatus = () => {
+                const isBatchRunning = window.RunStateStore.getProgressForFormat(FORMAT) !== null;
+                if (startBtn) {
+                    startBtn.disabled = isBatchRunning;
+                    startBtn.classList.toggle('opacity-50', isBatchRunning);
+                    startBtn.classList.toggle('cursor-not-allowed', isBatchRunning);
+                }
+                if (testProgress) {
+                    testProgress.classList.toggle('hidden', !isBatchRunning && !currentHandle);
+                }
+                if (stopBtn) {
+                    stopBtn.classList.toggle('hidden', !isBatchRunning && !currentHandle);
+                }
+            };
+
+            const updateLiveRenderingStatus = (state, message = '') => {
+                if (!renderingTabContainer) return;
+
+                if (state === 'running') {
+                    renderingTabContainer.innerHTML = `<div class="text-blue-600 text-center py-8">Live batch update: ${message || 'Running...'}</div>`;
+                    return;
+                }
+
+                if (state === 'waiting') {
+                    renderingTabContainer.innerHTML = `<div class="text-gray-500 text-center py-8">Batch is running in another tab. Waiting for live updates...</div>`;
+                    return;
+                }
+
+                if (state === 'completed') {
+                    renderingTabContainer.innerHTML = `<div class="text-green-600 text-center py-8">Batch completed. Results rendered below.</div>`;
+                }
+            };
+
+            const TEST_TYPE_LABELS = {
+                single:      'Single Icon Test (2,000 iterations per type)',
+                bulk:        'Bulk Icon Test (50 iterations × 100 icons)',
+                stress:      'Stress Test (200 iterations × 500 icons)',
+                statistical: 'Statistical Power Test (200 iterations × 100 icons)',
+                massive:     'High Power Test (1,000 iterations × 100 icons)',
+                ultra:       'Ultra Power Test (10,000 iterations × 100 icons)',
+                extreme:     'Extreme Power Test (20,000 iterations × 100 icons)'
+            };
+
+            const displayBatchProgress = (runState, isFromBroadcast) => {
+                // Validate that we have complete, valid progress data
+                if (!runState || !runState.progress) {
+                    console.warn(`[${FORMAT}] Received invalid progress data:`, runState);
+                    return;
+                }
+                
+                // Only display progress from BroadcastChannel (live updates)
+                // Don't display stale restored data (which is at 0%)
+                if (!isFromBroadcast && batchStartedFromChannelUpdate) {
+                    console.log(`[${FORMAT}] Ignoring stale restored data in favor of live broadcast`);
+                    return;
+                }
+                
+                // On first display of a batch, track its runId
+                if (!currentBatchRunId && runState.runId) {
+                    currentBatchRunId = runState.runId;
+                    console.log(`[${FORMAT}] Starting batch tracking for runId:`, currentBatchRunId);
+                }
+                
+                // Only update if this is from the current batch we're tracking
+                if (runState.runId && runState.runId !== currentBatchRunId) {
+                    console.warn(`[${FORMAT}] Ignoring progress from different batch (${runState.runId} vs ${currentBatchRunId})`);
+                    return;
+                }
+                
+                // Validate that progress data has required fields
+                if (typeof runState.progress.percentage !== 'number' || !runState.progress.message) {
+                    console.warn(`[${FORMAT}] Progress data missing required fields:`, runState.progress);
+                    return;
+                }
+                
+                // Only update UI if percentage actually changed (avoid redundant updates)
+                if (runState.progress.percentage === lastDisplayedPercentage) {
+                    console.debug(`[${FORMAT}] Skipping redundant update at ${runState.progress.percentage}%`);
+                    return;
+                }
+                
+                lastDisplayedPercentage = runState.progress.percentage;
+                // Only reveal the progress bar for live broadcasts, not snapshots from peer tabs
+                if (!runState.snapshot) {
+                    updateUIForBatchStatus();
+                }
+                reporter.onProgress(runState.progress.percentage, runState.progress.message,
+                    runState.progress.completedIterations, runState.progress.totalIterations);
+                const atEl = document.getElementById('activeTestType');
+                if (atEl && runState.testType && !isLocalRun) {
+                    atEl.textContent = TEST_TYPE_LABELS[runState.testType] || runState.testType;
+                    const selEl = document.getElementById('testType');
+                    if (selEl) selEl.value = runState.testType;
+                }
+                updateLiveRenderingStatus('running', `${Math.round(runState.progress.percentage)}% — ${runState.progress.message}`);
+            };
+
+            // Check for existing batch run from localStorage/restoration
+            // NOTE: Don't show progress bar yet - wait for a LIVE (non-snapshot) broadcast
+            // to confirm the run is genuinely active. If no confirmation within 3s,
+            // treat as orphaned and clean up silently.
+            const activeRun = window.RunStateStore.getProgressForFormat(FORMAT);
+            if (activeRun) {
+                console.log(`[${FORMAT}] Detected batch in storage - awaiting live confirmation`, activeRun);
+                currentBatchRunId = activeRun.runId; // Initialize batch tracking
+
+                // If no live update received within 3s, treat as orphaned
+                setTimeout(function() {
+                    if (!batchStartedFromChannelUpdate && currentBatchRunId === activeRun.runId) {
+                        console.warn(`[${FORMAT}] No live update received — clearing orphaned run state`);
+                        window.RunStateStore._active.delete(activeRun.suiteRunId);
+                        window.RunStateStore._removeRunFromProgressState(activeRun.suiteRunId);
+                        currentBatchRunId = null;
+                    }
+                }, 3000);
+            }
+
+            // Subscribe to progress updates from batch runs (live updates only)
+            window.RunStateStore.onProgressChange(FORMAT, function(runState) {
+                console.log(`[${FORMAT}] Progress update via BroadcastChannel:`, runState);
+                if (!runState.snapshot) {
+                    batchStartedFromChannelUpdate = true;
+                    lastDisplayedPercentage = -1;
+                }
+                displayBatchProgress(runState, true);
+            });
+
+            // Subscribe to completion to hide progress UI
+            window.RunStateStore.onCompletion(FORMAT, function(runRecord) {
+                if (isLocalRun) { isLocalRun = false; currentHandle = null; return; }
+                // Handle cancellation — reset UI without rendering results
+                if (runRecord && runRecord.cancelled) {
+                    currentBatchRunId = null;
+                    lastDisplayedPercentage = -1;
+                    batchStartedFromChannelUpdate = false;
+                    currentHandle = null;
+                    updateUIForBatchStatus();
+                    return;
+                }
+                console.log(`[${FORMAT}] Batch completed`);
+                const total = runRecord?.iterations || 0;
+                reporter.onProgress(100, 'Completed', total, total);
+                currentBatchRunId = null; // Clear batch tracking
+                lastDisplayedPercentage = -1;
+                batchStartedFromChannelUpdate = false;
+                updateUIForBatchStatus();
+                updateLiveRenderingStatus('completed');
+
+                if (runRecord && runRecord.results && window.stressTestManager) {
+                    window.stressTestManager.results = runRecord.results || {};
+                    window.stressTestManager.statisticalAnalysis = runRecord.statisticalAnalysis || {};
+                    window.stressTestManager.performanceRanking = runRecord.performanceRanking || [];
+                    window.stressTestManager.testMetadata = runRecord.testMetadata || {};
+                    window.stressTestManager.testConfiguration = runRecord.testConfiguration || {};
+                    window.stressTestManager.systemInfo = runRecord.systemSpecifications || {};
+                    window.stressTestManager.completedIterations = runRecord.iterations || 0;
+                    window.stressTestManager.testStartedAt = runRecord.startTime || null;
+
+                    window.stressTestManager
+                        .displayAggregatedResults({
+                            fromSaved: true,
+                            savedDuration: typeof runRecord.durationMs === 'number'
+                                ? runRecord.durationMs / 1000
+                                : (runRecord.testDuration || null)
+                        })
+                        .catch((err) => {
+                            console.error(`[${FORMAT}] Failed to render completion results:`, err);
+                        });
+                }
+            });
+
+            if (typeof window.RunStateStore.requestActiveStateFromPeers === 'function') {
+                window.RunStateStore.requestActiveStateFromPeers();
+            }
         });
     </script>
 </body>

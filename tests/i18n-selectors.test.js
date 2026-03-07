@@ -56,7 +56,7 @@ test.describe('Index Page - Locale-Independent Structure', () => {
 
     const archiveLink = page.locator('a[data-i18n="archive.view_button"]');
     await expect(archiveLink).toBeVisible();
-    await expect(archiveLink).toHaveAttribute('href', 'past-results.html');
+    await expect(archiveLink).toHaveAttribute('href', 'results-library.html');
   });
 
   test('methodology section is present', async ({ page }) => {
@@ -84,13 +84,13 @@ test.describe('Summary Page - Locale-Independent Structure', () => {
   test('header navigation has correct link targets', async ({ page }) => {
     const header = page.locator('header');
     const backLink = header.locator('a[href="index.html"]');
-    const pastLink = header.locator('a[href="past-results.html"]');
+    const pastLink = header.locator('a[href="results-library.html"]');
 
     await expect(backLink).toBeVisible();
     await expect(backLink).toHaveAttribute('data-i18n', 'summary.back_to_tests');
 
     await expect(pastLink).toBeVisible();
-    await expect(pastLink).toHaveAttribute('data-i18n', 'summary.view_past_results');
+    await expect(pastLink).toHaveAttribute('data-i18n', 'summary.view_results_library');
   });
 
   test('export controls exist with correct IDs', async ({ page }) => {
@@ -105,20 +105,40 @@ test.describe('Summary Page - Locale-Independent Structure', () => {
     await expect(noData).toBeVisible();
 
     await expect(noData.locator('a[href="index.html"]')).toBeVisible();
-    await expect(noData.locator('a[href="past-results.html"]')).toBeVisible();
+    await expect(noData.locator('a[href="results-library.html"]')).toBeVisible();
   });
 
   test('no-data message is hidden when data is present', async ({ page }) => {
     await page.evaluate(() => {
-      localStorage.setItem('iconTestResults_css', JSON.stringify({
-        css_font_square: { mean: 1.5, stdDev: 0.2, iterations: 100 }
-      }));
+      const mockRecord = {
+        schemaVersion: 2,
+        testResultId: 'test-result-i18n',
+        runId: 'run-i18n',
+        suiteRunId: 'suite-i18n',
+        format: 'css',
+        source: 'local',
+        importedFileName: null,
+        active: true,
+        startTime: new Date().toISOString(),
+        endTime: new Date().toISOString(),
+        durationMs: 1000,
+        testType: 'single',
+        iterations: 100,
+        testDuration: 1,
+        results: { css_font_square: { mean: 1.5, stdDev: 0.2, iterations: 100 } },
+        statisticalAnalysis: {},
+        performanceRanking: [{ iconType: 'css_font_square', rank: 1, averageTime: 1.5, confidenceInterval: { lower: 1.3, upper: 1.7 }, standardDeviation: 0.2, sampleSize: 100 }],
+        testMetadata: {},
+        testConfiguration: { testType: 'single', iterations: 100 },
+        systemSpecifications: {}
+      };
+      localStorage.setItem('iconTestRunRecords', JSON.stringify([mockRecord]));
     });
     await page.goto('summary.html');
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('#noDataMessage')).toBeHidden();
-    await page.evaluate(() => localStorage.removeItem('iconTestResults_css'));
+    await page.evaluate(() => localStorage.removeItem('iconTestRunRecords'));
   });
 
   test('last updated display exists', async ({ page }) => {
@@ -196,23 +216,28 @@ test.describe('CSS Page - Locale-Independent Structure', () => {
   });
 });
 
-test.describe('Past Results Page - Locale-Independent Structure', () => {
+test.describe('Results Library Page - Locale-Independent Structure', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('past-results.html');
-    await page.waitForLoadState('networkidle');
+    await page.goto('results-library.html');
+    await page.waitForLoadState('domcontentloaded');
+    // Wait for Tabulator to finish rendering (CDN-loaded; networkidle never settles)
+    await page.waitForSelector('.tabulator-header', { timeout: 15000 });
   });
 
-  test('page has h1 with the past results title i18n key', async ({ page }) => {
-    const h1 = page.locator('h1[data-i18n="past.title"]');
+  test('page has h1 with the library title i18n key', async ({ page }) => {
+    const h1 = page.locator('h1[data-i18n="library.title"]');
     await expect(h1).toHaveCount(1);
     await expect(h1).toBeVisible();
   });
 
   test('header navigation links point to correct pages', async ({ page }) => {
-    const backLink = page.locator('a[href="summary.html"]');
-    await expect(backLink).toBeVisible();
-    const newTestLink = page.locator('a[href="css.html"]').first();
-    await expect(newTestLink).toBeVisible();
+    const dashboardLink = page.locator('a[href="index.html"]');
+    await expect(dashboardLink).toBeVisible();
+    await expect(dashboardLink).toHaveAttribute('data-i18n', 'library.nav_dashboard');
+
+    const summaryLink = page.locator('a[href="summary.html"]');
+    await expect(summaryLink).toBeVisible();
+    await expect(summaryLink).toHaveAttribute('data-i18n', 'library.nav_summary');
   });
 
   test('language selector is present with all supported locales', async ({ page }) => {
@@ -226,38 +251,35 @@ test.describe('Past Results Page - Locale-Independent Structure', () => {
     }
   });
 
-  test('action buttons exist with correct IDs and i18n keys', async ({ page }) => {
-    await expect(page.locator('#clearHistory[data-i18n="past.clear_history"]')).toBeVisible();
-    await expect(page.locator('#exportHistory[data-i18n="past.export_history"]')).toBeVisible();
-    await expect(page.locator('#importHistory[data-i18n="past.import_results"]')).toBeVisible();
-    await expect(page.locator('#loadExample[data-i18n="past.load_example"]')).toBeVisible();
+  test('import section has button, file input, and checkbox', async ({ page }) => {
+    await expect(page.locator('#importBtn[data-i18n="library.import_btn"]')).toBeVisible();
+    await expect(page.locator('#importFileInput[accept=".json"]')).toBeAttached();
+    await expect(page.locator('#importActiveCheckbox')).toBeChecked();
   });
 
-  test('filter section has all expected controls', async ({ page }) => {
-    await expect(page.locator('[data-i18n="past.filter_title"]')).toBeVisible();
-    await expect(page.locator('#filterTestType')).toBeVisible();
-    await expect(page.locator('#filterDate')).toBeVisible();
-    await expect(page.locator('#filterSignificance')).toBeVisible();
-    await expect(page.locator('#filterOriginalSource')).toBeVisible();
-    await expect(page.locator('#filterInputSource')).toBeVisible();
-    await expect(page.locator('#filterFileName')).toBeVisible();
-    await expect(page.locator('#applyFilters[data-i18n="past.apply_filters"]')).toBeVisible();
-    // clearFilters starts hidden (shown dynamically when filters are active)
-    await expect(page.locator('#clearFilters[data-i18n="past.clear_filters"]')).toBeAttached();
+  test('bulk action buttons exist with correct IDs and i18n keys', async ({ page }) => {
+    await expect(page.locator('#exportSelectedBtn[data-i18n="library.export_selected"]')).toBeVisible();
+    await expect(page.locator('#deleteSelectedBtn[data-i18n="library.delete_selected"]')).toBeVisible();
+    await expect(page.locator('#toggleActiveBtn[data-i18n="library.toggle_active"]')).toBeVisible();
+    await expect(page.locator('#clearAllBtn[data-i18n="library.clear_all"]')).toBeVisible();
   });
 
-  test('summary stats section has all four stat cards', async ({ page }) => {
-    await expect(page.locator('#resultsSummary')).toBeVisible();
-    await expect(page.locator('[data-i18n="past.total_tests"]')).toBeVisible();
-    await expect(page.locator('[data-i18n="past.significant_tests"]')).toBeVisible();
-    await expect(page.locator('[data-i18n="past.total_iterations"]')).toBeVisible();
-    await expect(page.locator('[data-i18n="past.total_test_time"]')).toBeVisible();
+  test('Tabulator table container exists', async ({ page }) => {
+    await expect(page.locator('#results-table')).toBeVisible();
+    await page.waitForSelector('.tabulator-header');
+    const headerText = await page.locator('.tabulator-header').textContent();
+    expect(headerText).toContain('Format');
+    expect(headerText).toContain('Test Type');
   });
 
-  test('no-results message has link to run tests', async ({ page }) => {
-    // Default state (no localStorage data) should show #noResults
-    const noResults = page.locator('#noResults');
-    await expect(noResults).toBeVisible();
-    await expect(noResults.locator('a[href="css.html"]')).toBeVisible();
+  test('details panel is hidden by default with action buttons attached', async ({ page }) => {
+    await expect(page.locator('#detailsPanel')).toBeHidden();
+    await expect(page.locator('#detailExportBtn[data-i18n="library.detail_export"]')).toBeAttached();
+    await expect(page.locator('#detailToggleBtn[data-i18n="library.detail_toggle"]')).toBeAttached();
+    await expect(page.locator('#detailDeleteBtn[data-i18n="library.detail_delete"]')).toBeAttached();
+  });
+
+  test('selection count shows 0 selected', async ({ page }) => {
+    await expect(page.locator('#selectionCount')).toContainText('0 selected');
   });
 });

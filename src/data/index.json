@@ -1,0 +1,6 @@
+{
+  "files": [
+    { "name": "icon-test-history-default-example.json", "label": "Default Example Data" },
+    { "name": "icon_performance_results_200.json",       "label": "Performance Results (200 iterations)" }
+  ]
+}
